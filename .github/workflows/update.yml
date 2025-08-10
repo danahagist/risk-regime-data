@@ -1,3 +1,6 @@
+- name: Test Yahoo Finance API
+  run: python src/test_yfinance.py
+
 name: Weekly signals updater
 on:
   schedule:
