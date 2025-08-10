@@ -1,10 +1,7 @@
-- name: Test Yahoo Finance API
-  run: python src/test_yfinance.py
-
 name: Weekly signals updater
 on:
   schedule:
-    - cron: "0 2 * * 6"   # SAT 02:00 UTC == FRI 4:00 PM HST
+    - cron: "0 2 * * 6"   # SAT 02:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -18,12 +15,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r requirements.txt
-      - run: python src/compute_risk.py
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      # ✅ NEW: quick API smoke test
+      - name: Test Yahoo Finance API
+        run: python src/test_yfinance.py
+
+      # Optional: list files to confirm paths
+      - name: List repo files
+        run: ls -R
+
+      - name: Compute signals
+        run: python src/compute_risk.py
+
       - name: Commit CSV
         run: |
           git config user.name github-actions
           git config user.email actions@github.com
-          git add risk_weekly_history.csv
+          git add data/risk_weekly_history.csv
           git commit -m "Weekly update" || echo "No changes"
           git push
