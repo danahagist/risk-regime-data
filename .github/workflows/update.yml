@@ -1,7 +1,9 @@
 name: Weekly signals updater
+
 on:
   schedule:
-    - cron: "0 2 * * 6"   # SAT 02:00 UTC
+    # SAT 02:00 UTC == FRI 4:00 PM HST (adjust as you like)
+    - cron: "0 2 * * 6"
   workflow_dispatch:
 
 permissions:
@@ -10,30 +12,54 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repo
+      # Pull the latest commit from your default branch (usually main)
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install dependencies (latest yfinance)
         run: pip install -r requirements.txt
 
-      # ✅ NEW: quick API smoke test
+      - name: Show versions
+        run: |
+          python - << 'PY'
+          import yfinance, pandas, numpy, sys
+          print("yfinance:", yfinance.__version__)
+          print("pandas  :", pandas.__version__)
+          print("numpy   :", numpy.__version__)
+          print("python  :", sys.version)
+          PY
+
+      # Smoke test: quick 5-day fetch so we can see if Yahoo responds in CI.
+      # This step is informational; it won't stop the workflow if Yahoo hiccups.
       - name: Test Yahoo Finance API
         run: python src/test_yfinance.py
 
-      # Optional: list files to confirm paths
-      - name: List repo files
-        run: ls -R
-
+      # Your main computation. Make sure src/compute_risk.py has the guards we added
+      # (retries, VIX3M fallback, and skip on empty data) so this step doesn't crash.
       - name: Compute signals
         run: python src/compute_risk.py
 
+      # Commit the updated CSV (currently in REPO ROOT).
+      # If you later move it to data/risk_weekly_history.csv, update the path here.
       - name: Commit CSV
         run: |
           git config user.name github-actions
           git config user.email actions@github.com
-          git add data/risk_weekly_history.csv
+          git add risk_weekly_history.csv
           git commit -m "Weekly update" || echo "No changes"
           git push
+
+      # Optional: show the last few lines after commit so you can verify in logs
+      - name: Tail CSV (optional)
+        run: |
+          test -f risk_weekly_history.csv && tail -n 5 risk_weekly_history.csv || echo "CSV not found"
