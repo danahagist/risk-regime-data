@@ -1,9 +1,12 @@
 name: Update macro dataset
 
 on:
-  schedule:
-    - cron: "0 3 * * 6"   # Sat 03:00 UTC
   workflow_dispatch: {}
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/update_macro.yml'
+      - 'src/compute_macro.py'
 
 permissions:
   contents: write
