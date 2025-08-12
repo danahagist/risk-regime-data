@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
 
-OUT_PATH = "macro_history.csv"
+OUT_PATH = "data/macro_weekly_history.csv"
 START = "1980-01-01"
 
 FRED = {
