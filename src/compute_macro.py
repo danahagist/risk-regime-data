@@ -3,59 +3,65 @@ import os, time
 import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
-from pandas_datareader.fred import FredReader  # API-based reader when api_key is provided
 
 OUT_PATH = "macro_history.csv"
 START = "1980-01-01"
 
 FRED = {
     # Regime trio
-    "PMI":      "NAPM",        # ISM Manufacturing PMI (index, monthly)
-    "LEI":      "USSLIND",     # Leading Economic Index (index, monthly)
-    "YC_10Y3M": "T10Y3M",      # 10Y - 3M spread (%)
+    "PMI":      "NAPM",
+    "LEI":      "USSLIND",
+    "YC_10Y3M": "T10Y3M",
     # Health dashboard
-    "HY_OAS":   "BAMLH0A0HYM2",# HY OAS (%)
-    "BAA10Y":   "BAA10Y",      # Moody's Baa - 10Y Treasury spread (%)
-    "UNRATE":   "UNRATE",      # Unemployment rate (%)
-    "ICSA":     "ICSA",        # Initial jobless claims (weekly)
-    "CPI":      "CPIAUCSL",    # CPI (index, monthly)
-    "UMCSENT":  "UMCSENT",     # U. Michigan Consumer Sentiment (index)
-    "RSAFS":    "RSAFS",       # Retail Sales, Advance (level, monthly)
+    "HY_OAS":   "BAMLH0A0HYM2",
+    "BAA10Y":   "BAA10Y",
+    "UNRATE":   "UNRATE",
+    "ICSA":     "ICSA",
+    "CPI":      "CPIAUCSL",
+    "UMCSENT":  "UMCSENT",
+    "RSAFS":    "RSAFS",
 }
 
 API_KEY = os.getenv("FRED_API_KEY", "").strip()
 
 def fred_series(code, start=START):
     """
-    Prefer the official FRED API (requires FRED_API_KEY). If no key, fall back to the legacy CSV endpoint.
-    Retries both paths a few times before giving up.
+    When API key exists, use the official FRED API (DataReader with api_key).
+    Do NOT fall back to fredgraph.csv if a key is present.
+    Without a key, use the legacy CSV endpoint with retries.
     """
     last_err = None
-    # 1) API path (recommended)
+
+    # 1) Preferred: official API
     if API_KEY:
         for i in range(3):
             try:
-                fr = FredReader(symbols=code, start=start, end=None, api_key=API_KEY)
-                df = fr.read()
+                # pandas-datareader will hit api.stlouisfed.org when api_key is provided
+                df = pdr.DataReader(code, "fred", start=start, api_key=API_KEY)
                 s = df.iloc[:, 0] if isinstance(df, pd.DataFrame) else df
                 s = s.dropna()
                 s.name = code
+                print(f"[FRED API] {code}: {len(s)} rows")
                 return s
             except Exception as e:
                 last_err = e
+                print(f"[FRED API] attempt {i+1} failed for {code}: {e}")
                 time.sleep(2*(i+1))
-        # if API keeps failing, fall through to legacy path as a last resort
+        # If we get here, API failed 3x -> raise (don’t hit CSV when key exists)
+        raise last_err
 
-    # 2) Legacy CSV path (no key)
+    # 2) No key: legacy CSV path (fredgraph.csv)
     for i in range(3):
         try:
-            df = pdr.DataReader(code, "fred", start=start)  # hits fredgraph.csv
+            df = pdr.DataReader(code, "fred", start=start)
             s = df.iloc[:, 0] if isinstance(df, pd.DataFrame) else df
             s = s.dropna()
             s.name = code
+            print(f"[FRED CSV] {code}: {len(s)} rows")
             return s
         except Exception as e:
             last_err = e
+            print(f"[FRED CSV] attempt {i+1} failed for {code}: {e}")
             time.sleep(2*(i+1))
     raise last_err
 
@@ -91,9 +97,9 @@ def main():
     cpi_yoy   = pct_yoy(m["CPI"])
     rsafs_yoy = pct_yoy(m["RSAFS"])
 
-    pmi_score = np.where(m["PMI"] > 50, 1, -1)
-    lei_score = np.where(lei_yoy > 0, 1, -1)
-    yc_score  = np.where(m["YC_10Y3M"] > 0, 1, -1)
+    pmi_score = (m["PMI"] > 50).astype(int).where(True, -1)
+    lei_score = (lei_yoy > 0).astype(int).where(True, -1)
+    yc_score  = (m["YC_10Y3M"] > 0).astype(int).where(True, -1)
     regime_total = pmi_score + lei_score + yc_score
     macro_regime = np.where(regime_total >= 2, "Expansion",
                      np.where(regime_total <= -2, "Contraction", "Borderline"))
