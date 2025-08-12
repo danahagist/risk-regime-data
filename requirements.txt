@@ -1,4 +1,6 @@
 pandas==2.2.2
 numpy==1.26.4
+yfinance==0.2.26
 pandas-datareader==0.10.0
-yfinance
+fredapi==0.5.1
+requests==2.31.0
