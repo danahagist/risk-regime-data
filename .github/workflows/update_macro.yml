@@ -1,5 +1,5 @@
 name: Update macro dataset
-# testing comment
+
 on:
   workflow_dispatch: {}
   push:
@@ -15,9 +15,6 @@ jobs:
   update-macro:
     runs-on: ubuntu-latest
     steps:
-      - name: Kickoff marker
-        run: echo "Runner started for update-macro ✅"
-
       - name: Check out repo
         uses: actions/checkout@v4
 
@@ -32,12 +29,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Set FRED key (optional)
-        if: ${{ secrets.FRED_API_KEY != '' }}
-        run: echo "FRED_API_KEY=${{ secrets.FRED_API_KEY }}" >> $GITHUB_ENV
+      - name: Export FRED key (optional)
+        run: |
+          if [ -n "${{ secrets.FRED_API_KEY }}" ]; then
+            echo "FRED_API_KEY=${{ secrets.FRED_API_KEY }}" >> "$GITHUB_ENV"
+            echo "✅ FRED_API_KEY set"
+          else
+            echo "ℹ️ No FRED_API_KEY secret set; proceeding without it"
+          fi
 
-      # Non-blocking smoke test
-      - name: Test FRED (optional)
+      - name: Test FRED (non-blocking)
         continue-on-error: true
         run: |
           python - << 'PY'
