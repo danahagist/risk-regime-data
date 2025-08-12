@@ -2,7 +2,7 @@ name: Update macro dataset
 
 on:
   schedule:
-    - cron: "0 3 * * 6"   # Sat 03:00 UTC (after your risk job)
+    - cron: "0 3 * * 6"   # Sat 03:00 UTC
   workflow_dispatch: {}
 
 permissions:
@@ -29,15 +29,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # If you add FRED_API_KEY in repo secrets, expose it here
       - name: Set FRED key (optional)
         if: ${{ secrets.FRED_API_KEY != '' }}
         run: echo "FRED_API_KEY=${{ secrets.FRED_API_KEY }}" >> $GITHUB_ENV
 
-      # (Optional) quick connection check — won’t fail the run
-      - name: Test FRED (non-blocking)
+      # Non-blocking smoke test
+      - name: Test FRED (optional)
         continue-on-error: true
-        run: python src/test_fred.py
+        run: |
+          python - << 'PY'
+          from pandas_datareader import data as pdr
+          for c in ["NAPM","USSLIND","T10Y3M"]:
+              df = pdr.DataReader(c, "fred", start="1990-01-01")
+              print(c, "rows:", len(df))
+          PY
 
       - name: Compute macro dataset
         run: python src/compute_macro.py
