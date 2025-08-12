@@ -21,7 +21,7 @@ FRED = {
     "ICSA":     "ICSA",        # Initial jobless claims (weekly)
     "CPI":      "CPIAUCSL",    # CPI (index, monthly)
     "UMCSENT":  "UMCSENT",     # U. Michigan Consumer Sentiment (index)
-    "RSAFS":    "RSAFS",       # Retail Sales, Advance (level, nominal, monthly)
+    "RSAFS":    "RSAFS",       # Retail Sales, Advance (level, monthly)
 }
 
 def fred_series(code, start=START):
@@ -59,17 +59,17 @@ def zscore_full(s: pd.Series) -> pd.Series:
     return (s - s.mean()) / s.std(ddof=0)
 
 def main():
-    # 1) Pull all series from FRED
+    # 1) Pull all series
     raw = {}
     for label, code in FRED.items():
         s = fred_series(code)
-        if label == "ICSA":
+        if label == "ICSA":  # weekly → monthly last
             s = weekly_to_monthly_last(s)
         else:
             s = month_end_align(s)
         raw[label] = s
 
-    # 2) Combine monthly panel, ffill for publication lag
+    # 2) Combine monthly panel; ffill for publication lag
     m = pd.concat(raw, axis=1).sort_index().ffill()
 
     # 3) Derived measures
@@ -85,20 +85,19 @@ def main():
     macro_regime = np.where(regime_total >= 2, "Expansion",
                      np.where(regime_total <= -2, "Contraction", "Borderline"))
 
-    # Health composite (equal-weight z-scores; sign so “higher = better”)
+    # Health composite (equal-weight z-scores; sign so higher=better)
     health_inputs = pd.DataFrame({
         "PMI_z":        zscore_full(m["PMI"]),
         "LEI_yoy_z":    zscore_full(lei_yoy),
         "YC_10Y3M_z":   zscore_full(m["YC_10Y3M"]),
-        "HY_OAS_z":    -zscore_full(m["HY_OAS"]),   # lower is better
-        "BAA10Y_z":    -zscore_full(m["BAA10Y"]),   # lower is better
-        "UNRATE_z":    -zscore_full(m["UNRATE"]),   # lower is better
-        "ICSA_z":      -zscore_full(m["ICSA"]),     # lower is better
-        "CPI_yoy_z":   -zscore_full(cpi_yoy),       # lower is better
+        "HY_OAS_z":    -zscore_full(m["HY_OAS"]),
+        "BAA10Y_z":    -zscore_full(m["BAA10Y"]),
+        "UNRATE_z":    -zscore_full(m["UNRATE"]),
+        "ICSA_z":      -zscore_full(m["ICSA"]),
+        "CPI_yoy_z":   -zscore_full(cpi_yoy),
         "UMCSENT_z":    zscore_full(m["UMCSENT"]),
         "RSAFS_yoy_z":  zscore_full(rsafs_yoy),
     }, index=m.index).dropna(how="all")
-
     health_composite = health_inputs.mean(axis=1)
 
     # 4) Assemble output table
@@ -122,12 +121,11 @@ def main():
     out["macro_regime"] = macro_regime
     out["health_composite"] = health_composite
 
-    # keep rows where the trio are present
     out = out.dropna(subset=["pmi","lei","yc_10y3m"])
     out = out.reset_index().rename(columns={"index":"date"})
     out["date"] = pd.to_datetime(out["date"]).dt.date.astype(str)
 
-    # 5) Write full history (overwrite file each run)
+    # 5) Write full history (overwrite each run)
     out.to_csv(OUT_PATH, index=False)
     print(f"Wrote {OUT_PATH} with {len(out)} monthly rows.")
 
