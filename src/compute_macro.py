@@ -1,104 +1,125 @@
 # src/compute_macro.py
-import os, sys, time, json, math
-from datetime import datetime
+import os
+import time
+from datetime import datetime, date
 import pandas as pd
 from fredapi import Fred
-import requests
 
-START = "1970-01-01"
-OUTFILE = "data/macro_weekly_history.csv"
+FRED_API_KEY = os.getenv("FRED_API_KEY")
+if not FRED_API_KEY:
+    raise RuntimeError("FRED_API_KEY not set in environment.")
 
-API_KEY = os.getenv("FRED_API_KEY", "").strip()
-if not API_KEY:
-    print("ERROR: FRED_API_KEY is not set. Add it as a GitHub Secret and pass it in the workflow env.")
-    sys.exit(1)
+fred = Fred(api_key=FRED_API_KEY)
 
-fred = Fred(api_key=API_KEY)
+# Output file (weekly history)
+OUT_PATH = "data/macro_weekly_history.csv"
+os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
 
-# ---- Indicator catalog ----
-# code: {name, transform}
-# transform: one of {None, "yoy", "mom", "diff"} applied BEFORE weekly alignment
-INDICATORS = {
-    # Your 3 regime drivers
-    "NAPM":        {"name": "ISM_Manufacturing_PMI", "transform": None},          # level (>50 expansion)
-    "USSLIND":     {"name": "LEI_Smoothed_Diffs",    "transform": None},          # already a change index
-    "T10Y3M":      {"name": "YieldCurve_10Y_minus_3M","transform": None},         # spread (bps)
+# Start date for long history
+START = "1990-01-01"
 
-    # Core “market health” dashboard examples
-    "PAYEMS":      {"name": "Nonfarm_Payrolls",      "transform": "diff"},        # monthly change
-    "UNRATE":      {"name": "Unemployment_Rate",     "transform": None},          # level
-    "CPIAUCSL":    {"name": "CPI_All_Items_YoY",     "transform": "yoy"},         # YoY %
-    "PCEPILFE":    {"name": "Core_PCE_YoY",          "transform": "yoy"},         # YoY %
-    "INDPRO":      {"name": "Industrial_Production_YoY","transform": "yoy"},      # YoY %
-    "PERMIT":      {"name": "Housing_Permits_MoM",   "transform": "mom"},         # MoM %
-    "RSAFS":       {"name": "Retail_Sales_Advance_MoM","transform": "mom"},       # MoM %
-}
+# Live FRED series:
+# PMI: S&P Global US Manufacturing PMI
+PMI_CODE = "USPMI"
+# LEI: Philly Fed Leading Index for the United States
+LEI_CODE = "USSLIND"
+# Yield curve components: 10Y constant maturity minus 3M T-Bill
+DGS10_CODE = "DGS10"
+DGS3MO_CODE = "DGS3MO"
 
-def get_series(code: str, start: str = START, retries: int = 3, backoff: float = 2.0) -> pd.Series:
+def get_series(code: str, start: str) -> pd.Series:
+    """Fetch a single FRED series with basic retry."""
     last_err = None
-    for i in range(retries):
+    for i, wait in enumerate([0, 2, 4], start=1):
         try:
             s = fred.get_series(code, observation_start=start)
-            s = pd.Series(s).dropna()
+            if s is None or len(s) == 0:
+                raise ValueError(f"{code} returned empty series")
+            s = s.dropna()
             s.index = pd.to_datetime(s.index)
-            s.name = code
-            print(f"[fredapi] {code}: {len(s)} rows")
+            s = s.sort_index()
             return s
-        except (requests.exceptions.RequestException, Exception) as e:
+        except Exception as e:
             last_err = e
-            wait = backoff * (i + 1)
-            print(f"[fredapi] attempt {i+1} failed for {code}: {e} (sleep {wait}s)")
+            print(f"[fredapi] attempt {i} failed for {code}: {e} (sleep {wait}s)")
             time.sleep(wait)
     raise last_err
 
-def apply_transform(s: pd.Series, transform: str | None) -> pd.Series:
-    if transform is None:
-        return s
-    if transform == "yoy":
-        # YoY percent change (assumes monthly/native cadence)
-        return s.pct_change(12) * 100.0
-    if transform == "mom":
-        return s.pct_change(1) * 100.0
-    if transform == "diff":
-        return s.diff(1)
-    raise ValueError(f"Unknown transform: {transform}")
+def weeklyize_last(s: pd.Series) -> pd.Series:
+    """
+    Convert any frequency series to WEEKLY (Friday) using last observation available.
+    Forward-fill so the latest monthly/daily value carries through to each week.
+    """
+    s = s.asfreq("D")  # daily grid
+    s = s.ffill()
+    # Use Friday as weekly anchor to match market-style weeks
+    s_w = s.resample("W-FRI").last()
+    return s_w
 
-def align_weekly_last(s: pd.Series) -> pd.Series:
+def classify_macro(pmi: float, lei: float, yc: float) -> str:
     """
-    Align to weekly Fridays using last available observation then forward-fill.
-    Limit ffill to 8 weeks to avoid carrying stale values indefinitely.
+    Expansion/Contraction by simple majority of favorable signals:
+    - PMI favorable if >= 50
+    - LEI favorable if > 0 (Philly Fed leading index is MoM annualized; >0 = positive momentum)
+    - Yield curve favorable if spread > 0
     """
-    # Resample to weekly Friday with last known point as of that week
-    # We first asfreq to daily via bfill/ffill to avoid gaps, then take Friday
-    s_weekly = s.resample("W-FRI").last()
-    # If a month has not reported yet, forward-fill for a short window
-    s_weekly = s_weekly.ffill(limit=8)
-    return s_weekly
+    votes = 0
+    votes += 1 if pmi is not None and pmi >= 50 else 0
+    votes += 1 if lei is not None and lei > 0 else 0
+    votes += 1 if yc is not None and yc > 0 else 0
+    return "Expansion" if votes >= 2 else "Contraction"
 
 def main():
-    os.makedirs(os.path.dirname(OUTFILE), exist_ok=True)
+    # Fetch base series
+    pmi = get_series(PMI_CODE, START)        # level
+    lei = get_series(LEI_CODE, START)        # level (Philly Fed leading index)
+    dgs10 = get_series(DGS10_CODE, START)    # percent
+    dgs3m = get_series(DGS3MO_CODE, START)   # percent
 
-    weekly_cols = {}
-    for code, meta in INDICATORS.items():
-        raw = get_series(code, START)
-        transformed = apply_transform(raw, meta["transform"]).dropna()
-        weekly = align_weekly_last(transformed).rename(meta["name"])
-        weekly_cols[meta["name"]] = weekly
+    # Compute yield curve (10y - 3m)
+    yc = (dgs10 - dgs3m).dropna()
+    # Align to weekly
+    pmi_w = weeklyize_last(pmi.rename("pmi"))
+    lei_w = weeklyize_last(lei.rename("lei"))
+    yc_w = weeklyize_last(yc.rename("yield_curve"))
 
-    # Combine all weekly series
-    df = pd.concat(weekly_cols.values(), axis=1).sort_index()
-    # Keep only rows where we have at least one value; optional threshold:
-    df = df.dropna(how="all")
+    # Combine
+    df = pd.concat([pmi_w, lei_w, yc_w], axis=1).dropna(how="all")
+    # Simple per-row classification
+    df["macro_environment"] = df.apply(
+        lambda r: classify_macro(r.get("pmi"), r.get("lei"), r.get("yield_curve")),
+        axis=1
+    )
 
-    # Write (create or overwrite) weekly history
-    # If you'd prefer append semantics, switch to the append/merge pattern.
-    df_out = df.copy()
-    df_out.index.name = "date"
-    df_out.reset_index(inplace=True)
-    df_out["date"] = df_out["date"].dt.date.astype(str)
+    # Keep only the last week to append to history (same pattern as your risk file)
+    last_row = df.iloc[[-1]].copy()
+    out_row = pd.DataFrame([{
+        "date": last_row.index[-1].date().isoformat(),
+        "pmi": float(last_row["pmi"].iloc[0]) if pd.notna(last_row["pmi"].iloc[0]) else None,
+        "lei": float(last_row["lei"].iloc[0]) if pd.notna(last_row["lei"].iloc[0]) else None,
+        "yield_curve": float(last_row["yield_curve"].iloc[0]) if pd.notna(last_row["yield_curve"].iloc[0]) else None,
+        "macro_environment": last_row["macro_environment"].iloc[0]
+    }])
 
-    df_out.to_csv(OUTFILE, index=False)
-    print(f"Wrote {OUTFILE} with {len(df_out)} weekly rows and {len(df_out.columns)-1} indicators.")
+    # Initialize file with header if missing
+    if not os.path.exists(OUT_PATH):
+        out_row.to_csv(OUT_PATH, index=False)
+    else:
+        # Append if this date isn’t already present
+        hist = pd.read_csv(OUT_PATH)
+        if "date" not in hist.columns:
+            hist = pd.DataFrame(columns=["date", "pmi", "lei", "yield_curve", "macro_environment"])
+        if not (hist["date"] == out_row["date"].iloc[0]).any():
+            out_row.to_csv(OUT_PATH, mode="a", header=False, index=False)
+        else:
+            # Replace existing last row for idempotency (optional)
+            hist = hist[hist["date"] != out_row["date"].iloc[0]]
+            hist = pd.concat([hist, out_row], ignore_index=True).sort_values("date")
+            hist.to_csv(OUT_PATH, index=False)
+
+    # Also print the latest values to logs for quick visibility
+    print("Latest macro:")
+    print(out_row.to_string(index=False))
 
 if __name__ == "__main__":
     main()
