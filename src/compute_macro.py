@@ -1,173 +1,104 @@
 # src/compute_macro.py
-import os
-import time
-import numpy as np
+import os, sys, time, json, math
+from datetime import datetime
 import pandas as pd
-from pandas_datareader import data as pdr
+from fredapi import Fred
+import requests
 
-# =========================
-# Config
-# =========================
-OUT_PATH = "data/macro_weekly_history.csv"   # final output location
-START = "1980-01-01"
-
-# FRED series (codes)
-FRED = {
-    # Regime trio
-    "PMI":      "NAPM",        # ISM Manufacturing PMI (index, monthly)
-    "LEI":      "USSLIND",     # Leading Economic Index (index, monthly)
-    "YC_10Y3M": "T10Y3M",      # 10Y - 3M spread (%)
-
-    # Health dashboard
-    "HY_OAS":   "BAMLH0A0HYM2",# HY OAS (%)
-    "BAA10Y":   "BAA10Y",      # Moody's Baa - 10Y Treasury spread (%)
-    "UNRATE":   "UNRATE",      # Unemployment rate (%)
-    "ICSA":     "ICSA",        # Initial jobless claims (weekly)
-    "CPI":      "CPIAUCSL",    # CPI (index, monthly)
-    "UMCSENT":  "UMCSENT",     # U. Michigan Consumer Sentiment (index)
-    "RSAFS":    "RSAFS",       # Retail Sales, Advance (level, monthly)
-}
+START = "1970-01-01"
+OUTFILE = "data/macro_weekly_history.csv"
 
 API_KEY = os.getenv("FRED_API_KEY", "").strip()
+if not API_KEY:
+    print("ERROR: FRED_API_KEY is not set. Add it as a GitHub Secret and pass it in the workflow env.")
+    sys.exit(1)
 
-# =========================
-# Helpers
-# =========================
-def fred_series(code: str, start: str = START) -> pd.Series:
-    """
-    Prefer the official FRED API (requires FRED_API_KEY). If not present, fall back to the CSV endpoint.
-    Retry each path up to 3 times before failing.
-    """
+fred = Fred(api_key=API_KEY)
+
+# ---- Indicator catalog ----
+# code: {name, transform}
+# transform: one of {None, "yoy", "mom", "diff"} applied BEFORE weekly alignment
+INDICATORS = {
+    # Your 3 regime drivers
+    "NAPM":        {"name": "ISM_Manufacturing_PMI", "transform": None},          # level (>50 expansion)
+    "USSLIND":     {"name": "LEI_Smoothed_Diffs",    "transform": None},          # already a change index
+    "T10Y3M":      {"name": "YieldCurve_10Y_minus_3M","transform": None},         # spread (bps)
+
+    # Core “market health” dashboard examples
+    "PAYEMS":      {"name": "Nonfarm_Payrolls",      "transform": "diff"},        # monthly change
+    "UNRATE":      {"name": "Unemployment_Rate",     "transform": None},          # level
+    "CPIAUCSL":    {"name": "CPI_All_Items_YoY",     "transform": "yoy"},         # YoY %
+    "PCEPILFE":    {"name": "Core_PCE_YoY",          "transform": "yoy"},         # YoY %
+    "INDPRO":      {"name": "Industrial_Production_YoY","transform": "yoy"},      # YoY %
+    "PERMIT":      {"name": "Housing_Permits_MoM",   "transform": "mom"},         # MoM %
+    "RSAFS":       {"name": "Retail_Sales_Advance_MoM","transform": "mom"},       # MoM %
+}
+
+def get_series(code: str, start: str = START, retries: int = 3, backoff: float = 2.0) -> pd.Series:
     last_err = None
-
-    # 1) Preferred: official API path when key exists
-    if API_KEY:
-        for i in range(3):
-            try:
-                # pandas_datareader will use the API when api_key is provided
-                df = pdr.DataReader(code, "fred", start=start, api_key=API_KEY)
-                s = df.iloc[:, 0] if isinstance(df, pd.DataFrame) else df
-                s = s.dropna()
-                s.name = code
-                print(f"[FRED API] {code}: {len(s)} rows")
-                return s
-            except Exception as e:
-                last_err = e
-                print(f"[FRED API] attempt {i+1} failed for {code}: {e}")
-                time.sleep(2 * (i + 1))
-        # If API fails with a key present, stop here so we notice & fix the key/quotas/etc.
-        raise last_err
-
-    # 2) Fallback: legacy CSV (no key)
-    for i in range(3):
+    for i in range(retries):
         try:
-            df = pdr.DataReader(code, "fred", start=start)  # fredgraph.csv
-            s = df.iloc[:, 0] if isinstance(df, pd.DataFrame) else df
-            s = s.dropna()
+            s = fred.get_series(code, observation_start=start)
+            s = pd.Series(s).dropna()
+            s.index = pd.to_datetime(s.index)
             s.name = code
-            print(f"[FRED CSV] {code}: {len(s)} rows")
+            print(f"[fredapi] {code}: {len(s)} rows")
             return s
-        except Exception as e:
+        except (requests.exceptions.RequestException, Exception) as e:
             last_err = e
-            print(f"[FRED CSV] attempt {i+1} failed for {code}: {e}")
-            time.sleep(2 * (i + 1))
+            wait = backoff * (i + 1)
+            print(f"[fredapi] attempt {i+1} failed for {code}: {e} (sleep {wait}s)")
+            time.sleep(wait)
     raise last_err
 
+def apply_transform(s: pd.Series, transform: str | None) -> pd.Series:
+    if transform is None:
+        return s
+    if transform == "yoy":
+        # YoY percent change (assumes monthly/native cadence)
+        return s.pct_change(12) * 100.0
+    if transform == "mom":
+        return s.pct_change(1) * 100.0
+    if transform == "diff":
+        return s.diff(1)
+    raise ValueError(f"Unknown transform: {transform}")
 
-def month_end_align(s: pd.Series) -> pd.Series:
-    """Ensure monthly, month-end index."""
-    s = s.dropna()
-    if s.index.freq is None:
-        s = s.resample("M").last()
-    return s
+def align_weekly_last(s: pd.Series) -> pd.Series:
+    """
+    Align to weekly Fridays using last available observation then forward-fill.
+    Limit ffill to 8 weeks to avoid carrying stale values indefinitely.
+    """
+    # Resample to weekly Friday with last known point as of that week
+    # We first asfreq to daily via bfill/ffill to avoid gaps, then take Friday
+    s_weekly = s.resample("W-FRI").last()
+    # If a month has not reported yet, forward-fill for a short window
+    s_weekly = s_weekly.ffill(limit=8)
+    return s_weekly
 
-
-def weekly_to_monthly_last(s: pd.Series) -> pd.Series:
-    """Weekly → month-end by taking the last weekly print each month."""
-    s = s.asfreq("W-FRI")
-    return s.resample("M").last()
-
-
-def pct_yoy(s: pd.Series) -> pd.Series:
-    return s.pct_change(12) * 100.0
-
-
-def zscore_full(s: pd.Series) -> pd.Series:
-    return (s - s.mean()) / s.std(ddof=0)
-
-
-# =========================
-# Main
-# =========================
 def main():
-    # Pull & align series
-    raw = {}
-    for label, code in FRED.items():
-        s = fred_series(code)
-        s = weekly_to_monthly_last(s) if label == "ICSA" else month_end_align(s)
-        raw[label] = s
+    os.makedirs(os.path.dirname(OUTFILE), exist_ok=True)
 
-    # Combine & forward-fill publication lags
-    m = pd.concat(raw, axis=1).sort_index().ffill()
+    weekly_cols = {}
+    for code, meta in INDICATORS.items():
+        raw = get_series(code, START)
+        transformed = apply_transform(raw, meta["transform"]).dropna()
+        weekly = align_weekly_last(transformed).rename(meta["name"])
+        weekly_cols[meta["name"]] = weekly
 
-    # Derived measures
-    lei_yoy   = pct_yoy(m["LEI"])
-    cpi_yoy   = pct_yoy(m["CPI"])
-    rsafs_yoy = pct_yoy(m["RSAFS"])
+    # Combine all weekly series
+    df = pd.concat(weekly_cols.values(), axis=1).sort_index()
+    # Keep only rows where we have at least one value; optional threshold:
+    df = df.dropna(how="all")
 
-    # Regime scoring (transparent)
-    pmi_score = np.where(m["PMI"] > 50, 1, -1)
-    lei_score = np.where(lei_yoy > 0, 1, -1)
-    yc_score  = np.where(m["YC_10Y3M"] > 0, 1, -1)
-    regime_total = pmi_score + lei_score + yc_score
-    macro_regime = np.where(regime_total >= 2, "Expansion",
-                     np.where(regime_total <= -2, "Contraction", "Borderline"))
+    # Write (create or overwrite) weekly history
+    # If you'd prefer append semantics, switch to the append/merge pattern.
+    df_out = df.copy()
+    df_out.index.name = "date"
+    df_out.reset_index(inplace=True)
+    df_out["date"] = df_out["date"].dt.date.astype(str)
 
-    # Health composite (equal-weight z-scores; sign so higher=better)
-    health_inputs = pd.DataFrame({
-        "PMI_z":        zscore_full(m["PMI"]),
-        "LEI_yoy_z":    zscore_full(lei_yoy),
-        "YC_10Y3M_z":   zscore_full(m["YC_10Y3M"]),
-        "HY_OAS_z":    -zscore_full(m["HY_OAS"]),   # lower spread is better
-        "BAA10Y_z":    -zscore_full(m["BAA10Y"]),   # lower spread is better
-        "UNRATE_z":    -zscore_full(m["UNRATE"]),   # lower unemployment is better
-        "ICSA_z":      -zscore_full(m["ICSA"]),     # lower claims is better
-        "CPI_yoy_z":   -zscore_full(cpi_yoy),       # lower inflation is better
-        "UMCSENT_z":    zscore_full(m["UMCSENT"]),
-        "RSAFS_yoy_z":  zscore_full(rsafs_yoy),
-    }, index=m.index).dropna(how="all")
-    health_composite = health_inputs.mean(axis=1)
-
-    # Assemble output
-    out = pd.DataFrame(index=m.index)
-    out["pmi"]        = m["PMI"]
-    out["lei"]        = m["LEI"]
-    out["yc_10y3m"]   = m["YC_10Y3M"]
-    out["lei_yoy"]    = lei_yoy
-    out["unrate"]     = m["UNRATE"]
-    out["icsa"]       = m["ICSA"]
-    out["cpi_yoy"]    = cpi_yoy
-    out["umcsent"]    = m["UMCSENT"]
-    out["rsafs_yoy"]  = rsafs_yoy
-    out["hy_oas"]     = m["HY_OAS"]
-    out["baa10y"]     = m["BAA10Y"]
-
-    out["pmi_score"]  = pmi_score
-    out["lei_score"]  = lei_score
-    out["yc_score"]   = yc_score
-    out["macro_regime_score"] = regime_total
-    out["macro_regime"] = macro_regime
-    out["health_composite"] = health_composite
-
-    # Keep rows where the regime trio is present
-    out = out.dropna(subset=["pmi", "lei", "yc_10y3m"])
-    out = out.reset_index().rename(columns={"index": "date"})
-    out["date"] = pd.to_datetime(out["date"]).dt.date.astype(str)
-
-    # Ensure data/ exists, then write
-    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
-    out.to_csv(OUT_PATH, index=False)
-    print(f"Wrote {OUT_PATH} with {len(out)} monthly rows.")
+    df_out.to_csv(OUTFILE, index=False)
+    print(f"Wrote {OUTFILE} with {len(df_out)} weekly rows and {len(df_out.columns)-1} indicators.")
 
 if __name__ == "__main__":
     main()
