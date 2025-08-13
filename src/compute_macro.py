@@ -189,7 +189,13 @@ def main():
     lei_sig, lei_yoy_w, lei_level_w = signal_lei(w_ix)
     curve_sig, curve_spread_w, dgs10_w, dgs3m_w = signal_yield_curve(w_ix)
 
-    macro_score = (indpro_sig + lei_sig + curve_sig).astype(int).rename("macro_score")
+    signals = pd.concat(
+        [indpro_sig.rename("indpro"), lei_sig.rename("lei"), curve_sig.rename("curve")],
+        axis=1
+    ).dropna(how="any")
+    
+    # Sum across columns to get a 0–3 macro score (ints)
+    macro_score = signals.sum(axis=1).astype("int64").rename("macro_score")
 
     # Assemble core frame
     core = pd.DataFrame(index=w_ix)
