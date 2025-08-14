@@ -1,10 +1,10 @@
 # src/compute_macro_monthly.py
-# Macro + base risk series (FRED-only), monthly pipeline
-# - Fetch from FRED
-# - Daily/Monthly/Quarterly -> Monthly (month-end sample -> stamp to 1st of month)
-# - Forward-fill so each month has a value
-# - Compute MoM% and YoY% on the filled levels
+# Macro + Risk (FRED-only) monthly pipeline
+# - Fetch FRED series
+# - Convert to monthly (month-end sample -> stamp to 1st of month), forward-fill
+# - Compute MoM% and YoY% on filled levels
 # - Core 3 Macro signals: INDPRO YoY>0, LEI YoY>0, YieldCurve>0 (bps)
+# - Risk signals: trend_on (SP500 >= 10m SMA), credit_off (HY OAS > max(500, 12m SMA)), vix_off (VIX > 25)
 # - Output: data/macro_monthly_history.csv (append + de-dup by date)
 
 import os
@@ -38,6 +38,13 @@ GDP_SAAR = "A191RL1Q225SBEA"   # Real GDP, QoQ % SAAR (quarterly rate, %)
 UMCSENT  = "UMCSENT"           # University of Michigan Consumer Sentiment (level)
 HOUST    = "HOUST"             # Housing Starts (SAAR, thousands)
 SP500    = "SP500"             # S&P 500 index level
+VIXCLS   = "VIXCLS"            # CBOE VIX Index (level)
+
+# Risk params
+TREND_SMA_MONTHS = 10
+CREDIT_SMA_MONTHS = 12
+CREDIT_OAS_BPS_THRESHOLD = 500.0
+VIX_THRESHOLD = 25.0
 
 # -------------------------------
 # Helpers
@@ -69,11 +76,8 @@ def to_monthly_ffill(series: pd.Series) -> pd.Series:
     if series is None or series.empty:
         return pd.Series(dtype="float64")
     s = pd.Series(series).dropna().sort_index()
-    # month-end sample (M) -> take last obs each month
-    s = s.resample("M").last()
-    # stamp to the 1st of month (start)
-    s.index = s.index.to_period("M").to_timestamp(how="start")
-    # forward-fill to remove holes (e.g., quarterly GDP between quarters)
+    s = s.resample("M").last()  # month-end sample
+    s.index = s.index.to_period("M").to_timestamp(how="start")  # 1st of month
     return s.ffill()
 
 def pct_mom_yoy_ffilled(level: pd.Series) -> tuple[pd.Series, pd.Series]:
@@ -99,6 +103,7 @@ def main():
     umcsent_raw  = safe_get_series(UMCSENT,  START_DATE)   # level
     houst_raw    = safe_get_series(HOUST,    START_DATE)   # SAAR (thousands)
     sp500_raw    = safe_get_series(SP500,    START_DATE)   # level (daily)
+    vix_raw      = safe_get_series(VIXCLS,   START_DATE)   # level (daily)
 
     # 2) Convert all to monthly (first-of-month) and forward-fill
     indpro_m   = to_monthly_ffill(indpro_raw).rename("indpro")
@@ -112,19 +117,21 @@ def main():
     umcsent_m  = to_monthly_ffill(umcsent_raw).rename("umcsent")
     houst_m    = to_monthly_ffill(houst_raw).rename("houst")
     sp500_m    = to_monthly_ffill(sp500_raw).rename("sp500")
+    vix_m      = to_monthly_ffill(vix_raw).rename("vix")
 
     # 3) Outer join to a single monthly frame, then ffill once more (alignment polish)
     df = pd.concat(
-        [indpro_m, lei_m, dgs10_m, dgs3mo_m, hy_oas_m, unrate_m, cpi_m,
-         gdp_m, umcsent_m, houst_m, sp500_m],
+        [
+            indpro_m, lei_m, dgs10_m, dgs3mo_m, hy_oas_m, unrate_m, cpi_m,
+            gdp_m, umcsent_m, houst_m, sp500_m, vix_m
+        ],
         axis=1
     ).sort_index().ffill()
 
-    # 4) Derived fields
-    # Yield curve spread in basis points
+    # 4) Derived fields: Yield curve (bps), MoM/YoY for each
     df["yield_curve_spread"] = (df["dgs10"] - df["dgs3mo"]) * 100.0
 
-    # Percent changes (MoM/YoY) on levels
+    # Percent changes (MoM/YoY)
     df["indpro_mom"],   df["indpro_yoy"]   = pct_mom_yoy_ffilled(df["indpro"])
     df["lei_mom"],      df["lei_yoy"]      = pct_mom_yoy_ffilled(df["lei"])
     df["yc_mom"],       df["yc_yoy"]       = pct_mom_yoy_ffilled(df["yield_curve_spread"])
@@ -135,6 +142,7 @@ def main():
     df["umcsent_mom"],  df["umcsent_yoy"]  = pct_mom_yoy_ffilled(df["umcsent"])
     df["houst_mom"],    df["houst_yoy"]    = pct_mom_yoy_ffilled(df["houst"])
     df["sp500_mom"],    df["sp500_yoy"]    = pct_mom_yoy_ffilled(df["sp500"])
+    df["vix_mom"],      df["vix_yoy"]      = pct_mom_yoy_ffilled(df["vix"])
 
     # 5) Core 3 Macro signals
     df["indpro_signal"]      = (df["indpro_yoy"] > 0).astype(float)
@@ -144,14 +152,46 @@ def main():
     df["macro_score"]  = df[["indpro_signal", "lei_signal", "yield_curve_signal"]].sum(axis=1)
     df["macro_regime"] = df["macro_score"].apply(lambda x: "expansion" if x >= 2 else "contraction")
 
-    # 6) Final formatting
-    out = df.copy()
-    out = out.reset_index().rename(columns={"index": "date"})
+    # 6) Risk signals (monthly)
+    # SMAs
+    df["sp500_sma_10m"]  = df["sp500"].rolling(window=TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean()
+    df["hy_oas_sma_12m"] = df["hy_oas"].rolling(window=CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean()
+
+    # Trend: ON if SP500 >= 10m SMA (only when SMA available; else 0)
+    df["trend_on"] = ((df["sp500"] >= df["sp500_sma_10m"]) & df["sp500_sma_10m"].notna()).astype(int)
+
+    # Credit: OFF if HY OAS > max(500 bps, 12m SMA)
+    hy_barrier = pd.concat(
+        [
+            pd.Series(CREDIT_OAS_BPS_THRESHOLD, index=df.index),
+            df["hy_oas_sma_12m"]
+        ],
+        axis=1
+    ).max(axis=1)
+    df["credit_off"] = (df["hy_oas"] > hy_barrier).astype(int)
+
+    # Vol: OFF if VIX > 25
+    df["vix_off"] = (df["vix"] > VIX_THRESHOLD).astype(int)
+
+    df["off_votes"] = df["credit_off"] + df["vix_off"]
+
+    def _risk_regime(row):
+        if (row["trend_on"] == 1) and (row["off_votes"] == 0):
+            return "On"
+        if row["off_votes"] >= 2:
+            return "Off"
+        return "Mixed"
+
+    df["risk_regime"] = df.apply(_risk_regime, axis=1)
+
+    # 7) Final formatting
+    out = df.reset_index().rename(columns={"index": "date"})
     out["date"] = out["date"].dt.strftime("%Y-%m-%d")  # always YYYY-MM-01
 
-    # Column order: levels, changes, signals, scores
+    # Column order
     cols = [
         "date",
+        # Macro levels & changes
         "indpro", "indpro_mom", "indpro_yoy", "indpro_signal",
         "lei", "lei_mom", "lei_yoy", "lei_signal",
         "dgs10", "dgs3mo", "yield_curve_spread", "yc_mom", "yc_yoy", "yield_curve_signal",
@@ -162,11 +202,16 @@ def main():
         "umcsent", "umcsent_mom", "umcsent_yoy",
         "houst", "houst_mom", "houst_yoy",
         "sp500", "sp500_mom", "sp500_yoy",
+        "vix", "vix_mom", "vix_yoy",
+        # Macro regime
         "macro_score", "macro_regime",
+        # Risk extras & regime
+        "sp500_sma_10m", "hy_oas_sma_12m",
+        "trend_on", "credit_off", "vix_off", "off_votes", "risk_regime",
     ]
     out = out[cols]
 
-    # 7) Append + de-duplicate by date
+    # 8) Append + de-duplicate by date
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     if os.path.exists(OUT_PATH):
         try:
