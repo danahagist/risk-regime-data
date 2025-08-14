@@ -1,21 +1,22 @@
 # src/compute_macro_monthly.py
-# Macro + Risk (FRED-only) monthly pipeline
-# - Fetch FRED series
-# - Convert to monthly (month-end sample -> stamp to 1st of month), forward-fill
-# - Compute MoM% and YoY% on filled levels
-# - Core 3 Macro signals: INDPRO YoY>0, LEI YoY>0, YieldCurve>0 (bps)
-# - Risk signals: trend_on (SP500 >= 10m SMA), credit_off (HY OAS > max(500, 12m SMA)), vix_off (VIX > 25)
-# - Output: data/macro_monthly_history.csv (append + de-dup by date)
+# Unified Macro + Risk monthly pipeline (FRED-only) with per-series completion rules.
+# - Daily series: monthly median; if a month missing entirely -> time interpolate, then ffill/bfill.
+# - Monthly series: use monthly; if missing -> time interpolate (avg of prior & next), then ffill/bfill at edges.
+# - Quarterly series: repeat value to all months in quarter (ffill monthly), then bfill at start.
+# - MoM: daily/monthly -> pct_change(1); quarterly -> pct_change(3).
+# - YoY: pct_change(12).
+# - Macro signals: INDPRO YoY>0, USSLIND YoY>0, spread(DGS10-DGS3MO)>0 (bps)
+# - Risk signals: SP500 >= 10m SMA -> trend_on; HY OAS > max(500, 12m SMA) -> credit_off; VIX > 25 -> vix_off
+# - Writes/merges: data/macro_monthly_history.csv
 
 import os
 import sys
 import time
+import math
 import pandas as pd
+from datetime import datetime
 from fredapi import Fred
 
-# -------------------------------
-# Config
-# -------------------------------
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 if not FRED_API_KEY:
     print("ERROR: FRED_API_KEY is not set in the environment.", file=sys.stderr)
@@ -26,33 +27,43 @@ fred = Fred(api_key=FRED_API_KEY)
 OUT_PATH   = "data/macro_monthly_history.csv"
 START_DATE = "1990-01-01"
 
-# FRED series codes
-INDPRO   = "INDPRO"            # Industrial Production: Total Index (level)
-LEI      = "USSLIND"           # Leading Index for the United States (level)
-DGS10    = "DGS10"             # 10Y Treasury Constant Maturity (percent)
-DGS3MO   = "DGS3MO"            # 3M Treasury Constant Maturity (percent)
-HY_OAS   = "BAMLH0A0HYM2"      # ICE BofA US High Yield OAS (bps)
-UNRATE   = "UNRATE"            # Unemployment Rate (%)
-CPI      = "CPIAUCSL"          # CPI All Urban Consumers (Index, SA)
-GDP_SAAR = "A191RL1Q225SBEA"   # Real GDP, QoQ % SAAR (quarterly rate, %)
-UMCSENT  = "UMCSENT"           # University of Michigan Consumer Sentiment (level)
-HOUST    = "HOUST"             # Housing Starts (SAAR, thousands)
-SP500    = "SP500"             # S&P 500 index level
-VIXCLS   = "VIXCLS"            # CBOE VIX Index (level)
+# ------------ Series codes (FRED) ------------
+# Macro Core 3
+INDPRO   = "INDPRO"              # monthly (idx)
+USSLIND  = "USSLIND"             # monthly (idx)
+DGS10    = "DGS10"               # daily (%)
+DGS3MO   = "DGS3MO"              # daily (%)
 
-# Risk params
+# Additional Macro
+BAML_OAS = "BAMLH0A0HYM2"        # daily (bps)
+UNRATE   = "UNRATE"              # monthly (%)
+CPI      = "CPIAUCSL"            # monthly (idx)
+GDP_SAAR = "A191RL1Q225SBEA"     # quarterly (%, QoQ SAAR)
+UMCSENT  = "UMCSENT"             # monthly (idx)
+HOUST    = "HOUST"               # monthly (units, SAAR)
+
+# Risk (from FRED)
+SP500    = "SP500"               # daily (index level)
+VIXCLS   = "VIXCLS"              # daily (level)
+
+# ------------ Risk parameters ------------
 TREND_SMA_MONTHS = 10
 CREDIT_SMA_MONTHS = 12
 CREDIT_OAS_BPS_THRESHOLD = 500.0
 VIX_THRESHOLD = 25.0
 
-# -------------------------------
-# Helpers
-# -------------------------------
-def safe_get_series(code: str, start: str) -> pd.Series:
-    """Fetch a FRED series with basic retries. Returns Series with DatetimeIndex."""
+# ------------ Helpers ------------
+def month_index(start=START_DATE, end=None):
+    if end is None:
+        # up to current month start
+        end = pd.Timestamp.today().to_period("M").to_timestamp("MS")
+    idx = pd.date_range(pd.to_datetime(start).to_period("M").to_timestamp("MS"),
+                        end, freq="MS")
+    return idx
+
+def safe_fred(code, start=START_DATE):
     last_err = None
-    for i in range(4):
+    for i in range(3):
         try:
             s = fred.get_series(code, observation_start=start)
             s = pd.Series(s)
@@ -66,157 +77,196 @@ def safe_get_series(code: str, start: str) -> pd.Series:
             time.sleep(wait)
     raise last_err
 
-def to_monthly_ffill(series: pd.Series) -> pd.Series:
-    """
-    Convert daily/monthly/quarterly to monthly:
-      - resample to month-end and take the last observation,
-      - convert to Period(M) then to Timestamp at month start (YYYY-MM-01),
-      - forward-fill so every month has a value.
-    """
-    if series is None or series.empty:
-        return pd.Series(dtype="float64")
-    s = pd.Series(series).dropna().sort_index()
-    s = s.resample("M").last()  # month-end sample
-    s.index = s.index.to_period("M").to_timestamp(how="start")  # 1st of month
-    return s.ffill()
+def complete_daily_to_monthly_median(s: pd.Series, idx: pd.DatetimeIndex) -> pd.Series:
+    """Daily -> monthly median, aligned to month-start. Fill any empty months via time interpolation, then ffill/bfill."""
+    # Resample to monthly start using median of daily obs within the month
+    m = s.resample("MS").median()  # median of all daily values per calendar month
+    # Align to full index
+    m = m.reindex(idx)
+    # Fill gaps via time-based interpolation (avg of neighbors when single missing)
+    m = m.interpolate(method="time", limit_direction="both")
+    # Final pad in case edges remain
+    m = m.ffill().bfill()
+    return m
 
-def pct_mom_yoy_ffilled(level: pd.Series) -> tuple[pd.Series, pd.Series]:
-    """Percent MoM and YoY on a forward-filled level series (in %)."""
-    l = level.astype(float)
-    mom = l.pct_change(1) * 100.0
-    yoy = l.pct_change(12) * 100.0
-    return mom, yoy
+def complete_monthly(s: pd.Series, idx: pd.DatetimeIndex) -> pd.Series:
+    """Monthly source -> align; fill missing as average of prior/next (time interpolation), then ffill/bfill edges."""
+    # Ensure monthly start index for the raw series
+    s_m = s.resample("MS").last()
+    s_m = s_m.reindex(idx)
+    s_m = s_m.interpolate(method="time", limit_direction="both")
+    s_m = s_m.ffill().bfill()
+    return s_m
 
-# -------------------------------
-# Main
-# -------------------------------
+def complete_quarterly_to_monthly(s: pd.Series, idx: pd.DatetimeIndex) -> pd.Series:
+    """Quarterly source -> repeat the quarter's value for each month in the quarter (ffill), then bfill edges."""
+    # Put quarterly points onto monthly grid by forward fill
+    # First, ensure the series has a monthly index holding quarter-end points
+    s_q = s.copy()
+    s_q = s_q.resample("M").last()  # quarter prints typically at quarter-end month
+    s_q = s_q.reindex(pd.date_range(idx.min(), idx.max(), freq="M"))
+    s_q = s_q.ffill().bfill()
+    # Now place onto month-start index
+    s_ms = s_q.resample("MS").first()  # convert "month-end aligned" to month-start stamps
+    s_ms = s_ms.reindex(idx)
+    s_ms = s_ms.ffill().bfill()
+    return s_ms
+
+def pct_mom(series: pd.Series, quarterly: bool) -> pd.Series:
+    """MoM: daily/monthly -> 1 month; quarterly -> 3 months (month vs prior quarter)."""
+    periods = 3 if quarterly else 1
+    return series.pct_change(periods) * 100.0
+
+def pct_yoy(series: pd.Series) -> pd.Series:
+    return series.pct_change(12) * 100.0
+
+# ------------ Main ------------
 def main():
-    # 1) Fetch raw series from FRED
-    indpro_raw   = safe_get_series(INDPRO,   START_DATE)   # level
-    lei_raw      = safe_get_series(LEI,      START_DATE)   # level
-    dgs10_raw    = safe_get_series(DGS10,    START_DATE)   # percent
-    dgs3mo_raw   = safe_get_series(DGS3MO,   START_DATE)   # percent
-    hy_oas_raw   = safe_get_series(HY_OAS,   START_DATE)   # bps
-    unrate_raw   = safe_get_series(UNRATE,   START_DATE)   # %
-    cpi_raw      = safe_get_series(CPI,      START_DATE)   # index
-    gdp_raw      = safe_get_series(GDP_SAAR, START_DATE)   # % q/q SAAR (quarterly)
-    umcsent_raw  = safe_get_series(UMCSENT,  START_DATE)   # level
-    houst_raw    = safe_get_series(HOUST,    START_DATE)   # SAAR (thousands)
-    sp500_raw    = safe_get_series(SP500,    START_DATE)   # level (daily)
-    vix_raw      = safe_get_series(VIXCLS,   START_DATE)   # level (daily)
+    idx = month_index()
 
-    # 2) Convert all to monthly (first-of-month) and forward-fill
-    indpro_m   = to_monthly_ffill(indpro_raw).rename("indpro")
-    lei_m      = to_monthly_ffill(lei_raw).rename("lei")
-    dgs10_m    = to_monthly_ffill(dgs10_raw).rename("dgs10")
-    dgs3mo_m   = to_monthly_ffill(dgs3mo_raw).rename("dgs3mo")
-    hy_oas_m   = to_monthly_ffill(hy_oas_raw).rename("hy_oas")
-    unrate_m   = to_monthly_ffill(unrate_raw).rename("unrate")
-    cpi_m      = to_monthly_ffill(cpi_raw).rename("cpi")
-    gdp_m      = to_monthly_ffill(gdp_raw).rename("gdp_saar")
-    umcsent_m  = to_monthly_ffill(umcsent_raw).rename("umcsent")
-    houst_m    = to_monthly_ffill(houst_raw).rename("houst")
-    sp500_m    = to_monthly_ffill(sp500_raw).rename("sp500")
-    vix_m      = to_monthly_ffill(vix_raw).rename("vix")
+    # ---- Pull raw ----
+    s_indpro   = safe_fred(INDPRO, START_DATE)
+    s_lei      = safe_fred(USSLIND, START_DATE)
+    s_dgs10    = safe_fred(DGS10, START_DATE)
+    s_dgs3mo   = safe_fred(DGS3MO, START_DATE)
+    s_hyoas    = safe_fred(BAML_OAS, START_DATE)
+    s_unrate   = safe_fred(UNRATE, START_DATE)
+    s_cpi      = safe_fred(CPI, START_DATE)
+    s_gdp      = safe_fred(GDP_SAAR, START_DATE)
+    s_umcsent  = safe_fred(UMCSENT, START_DATE)
+    s_houst    = safe_fred(HOUST, START_DATE)
+    s_sp500    = safe_fred(SP500, START_DATE)
+    s_vix      = safe_fred(VIXCLS, START_DATE)
 
-    # 3) Outer join to a single monthly frame, then ffill once more (alignment polish)
-    df = pd.concat(
-        [
-            indpro_m, lei_m, dgs10_m, dgs3mo_m, hy_oas_m, unrate_m, cpi_m,
-            gdp_m, umcsent_m, houst_m, sp500_m, vix_m
-        ],
-        axis=1
-    ).sort_index().ffill()
+    # ---- Complete to monthly per your rules ----
+    # Daily -> monthly median
+    dgs10_m   = complete_daily_to_monthly_median(s_dgs10, idx)
+    dgs3mo_m  = complete_daily_to_monthly_median(s_dgs3mo, idx)
+    hyoas_m   = complete_daily_to_monthly_median(s_hyoas, idx)
+    sp500_m   = complete_daily_to_monthly_median(s_sp500, idx)
+    vix_m     = complete_daily_to_monthly_median(s_vix, idx)
 
-    # 4) Derived fields: Yield curve (bps), MoM/YoY for each
-    df["yield_curve_spread"] = (df["dgs10"] - df["dgs3mo"]) * 100.0
+    # Monthly -> monthly with time interpolation for gaps
+    indpro_m  = complete_monthly(s_indpro, idx)
+    lei_m     = complete_monthly(s_lei, idx)
+    unrate_m  = complete_monthly(s_unrate, idx)
+    cpi_m     = complete_monthly(s_cpi, idx)
+    umcsent_m = complete_monthly(s_umcsent, idx)
+    houst_m   = complete_monthly(s_houst, idx)
 
-    # Percent changes (MoM/YoY)
-    df["indpro_mom"],   df["indpro_yoy"]   = pct_mom_yoy_ffilled(df["indpro"])
-    df["lei_mom"],      df["lei_yoy"]      = pct_mom_yoy_ffilled(df["lei"])
-    df["yc_mom"],       df["yc_yoy"]       = pct_mom_yoy_ffilled(df["yield_curve_spread"])
-    df["hy_oas_mom"],   df["hy_oas_yoy"]   = pct_mom_yoy_ffilled(df["hy_oas"])
-    df["unrate_mom"],   df["unrate_yoy"]   = pct_mom_yoy_ffilled(df["unrate"])
-    df["cpi_mom"],      df["cpi_yoy"]      = pct_mom_yoy_ffilled(df["cpi"])
-    df["gdp_mom"],      df["gdp_yoy"]      = pct_mom_yoy_ffilled(df["gdp_saar"])
-    df["umcsent_mom"],  df["umcsent_yoy"]  = pct_mom_yoy_ffilled(df["umcsent"])
-    df["houst_mom"],    df["houst_yoy"]    = pct_mom_yoy_ffilled(df["houst"])
-    df["sp500_mom"],    df["sp500_yoy"]    = pct_mom_yoy_ffilled(df["sp500"])
-    df["vix_mom"],      df["vix_yoy"]      = pct_mom_yoy_ffilled(df["vix"])
+    # Quarterly -> monthly repeat per quarter
+    gdp_m     = complete_quarterly_to_monthly(s_gdp, idx)
 
-    # 5) Core 3 Macro signals
-    df["indpro_signal"]      = (df["indpro_yoy"] > 0).astype(float)
-    df["lei_signal"]         = (df["lei_yoy"] > 0).astype(float)
-    df["yield_curve_signal"] = (df["yield_curve_spread"] > 0).astype(float)
+    # ---- Derived: yield curve spread (bps) ----
+    spread_m = (dgs10_m - dgs3mo_m) * 100.0
 
-    df["macro_score"]  = df[["indpro_signal", "lei_signal", "yield_curve_signal"]].sum(axis=1)
-    df["macro_regime"] = df["macro_score"].apply(lambda x: "expansion" if x >= 2 else "contraction")
+    # ---- MoM & YoY for each metric ----
+    # Quarterly flag only for GDP
+    metrics = {
+        "indpro":      (indpro_m,      False),
+        "lei":         (lei_m,         False),
+        "yield_curve": (spread_m,      False),
+        "hy_oas":      (hyoas_m,       False),
+        "unrate":      (unrate_m,      False),
+        "cpi":         (cpi_m,         False),
+        "gdp_saar":    (gdp_m,         True),   # quarterly logic
+        "umcsent":     (umcsent_m,     False),
+        "houst":       (houst_m,       False),
+        "sp500":       (sp500_m,       False),
+        "vix":         (vix_m,         False),
+        "dgs10":       (dgs10_m,       False),
+        "dgs3mo":      (dgs3mo_m,      False),
+    }
 
-    # 6) Risk signals (monthly)
-    # SMAs
-    df["sp500_sma_10m"]  = df["sp500"].rolling(window=TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean()
-    df["hy_oas_sma_12m"] = df["hy_oas"].rolling(window=CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean()
+    frames = []
+    for name, (ser, is_quarterly) in metrics.items():
+        df = pd.DataFrame({name: ser})
+        df[f"{name}_mom"] = pct_mom(ser, quarterly=is_quarterly)
+        df[f"{name}_yoy"] = pct_yoy(ser)
+        frames.append(df)
 
-    # Trend: ON if SP500 >= 10m SMA (only when SMA available; else 0)
-    df["trend_on"] = ((df["sp500"] >= df["sp500_sma_10m"]) & df["sp500_sma_10m"].notna()).astype(int)
+    all_df = pd.concat(frames, axis=1).reindex(idx).sort_index()
 
-    # Credit: OFF if HY OAS > max(500 bps, 12m SMA)
+    # ---- Macro signals/scores ----
+    # YoY for indpro/lei computed above
+    indpro_sig = (all_df["indpro_yoy"] > 0).astype(int)
+    lei_sig    = (all_df["lei_yoy"] > 0).astype(int)
+    curve_sig  = (all_df["yield_curve"] > 0).astype(int)
+
+    macro_score  = (indpro_sig + lei_sig + curve_sig).astype(int)
+    macro_regime = macro_score.apply(lambda x: "expansion" if x >= 2 else "contraction")
+
+    all_df["indpro_signal"]        = indpro_sig
+    all_df["lei_signal"]           = lei_sig
+    all_df["yield_curve_signal"]   = curve_sig
+    all_df["macro_score"]          = macro_score
+    all_df["macro_regime"]         = macro_regime
+
+    # ---- Risk signals/scores ----
+    # SP500 10m SMA (monthly series), HY OAS 12m SMA (monthly series)
+    all_df["sp500_sma_10m"]  = all_df["sp500"].rolling(TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean()
+    all_df["hy_oas_sma_12m"] = all_df["hy_oas"].rolling(CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean()
+
+    all_df["trend_on"] = (all_df["sp500"] >= all_df["sp500_sma_10m"]).astype(int)
+
     hy_barrier = pd.concat(
         [
-            pd.Series(CREDIT_OAS_BPS_THRESHOLD, index=df.index),
-            df["hy_oas_sma_12m"]
+            pd.Series(CREDIT_OAS_BPS_THRESHOLD, index=all_df.index),
+            all_df["hy_oas_sma_12m"]
         ],
         axis=1
     ).max(axis=1)
-    df["credit_off"] = (df["hy_oas"] > hy_barrier).astype(int)
+    all_df["credit_off"] = (all_df["hy_oas"] > hy_barrier).astype(int)
 
-    # Vol: OFF if VIX > 25
-    df["vix_off"] = (df["vix"] > VIX_THRESHOLD).astype(int)
+    all_df["vix_off"] = (all_df["vix"] > VIX_THRESHOLD).astype(int)
 
-    df["off_votes"] = df["credit_off"] + df["vix_off"]
+    all_df["off_votes"] = (all_df["credit_off"] + all_df["vix_off"]).astype(int)
 
-    def _risk_regime(row):
+    def risk_reg(row):
         if (row["trend_on"] == 1) and (row["off_votes"] == 0):
             return "On"
         if row["off_votes"] >= 2:
             return "Off"
         return "Mixed"
 
-    df["risk_regime"] = df.apply(_risk_regime, axis=1)
+    all_df["risk_regime"] = all_df.apply(risk_reg, axis=1)
 
-    # 7) Final formatting
-    out = df.reset_index().rename(columns={"index": "date"})
-    out["date"] = out["date"].dt.strftime("%Y-%m-%d")  # always YYYY-MM-01
+    # ---- Final formatting ----
+    out = all_df.reset_index().rename(columns={"index": "date"})
+    out["date"] = out["date"].dt.strftime("%Y-%m-%d")
 
-    # Column order
-    cols = [
+    # Column order (grouped)
+    ordered = [
         "date",
-        # Macro levels & changes
-        "indpro", "indpro_mom", "indpro_yoy", "indpro_signal",
-        "lei", "lei_mom", "lei_yoy", "lei_signal",
-        "dgs10", "dgs3mo", "yield_curve_spread", "yc_mom", "yc_yoy", "yield_curve_signal",
-        "hy_oas", "hy_oas_mom", "hy_oas_yoy",
-        "unrate", "unrate_mom", "unrate_yoy",
-        "cpi", "cpi_mom", "cpi_yoy",
-        "gdp_saar", "gdp_mom", "gdp_yoy",
-        "umcsent", "umcsent_mom", "umcsent_yoy",
-        "houst", "houst_mom", "houst_yoy",
-        "sp500", "sp500_mom", "sp500_yoy",
-        "vix", "vix_mom", "vix_yoy",
-        # Macro regime
-        "macro_score", "macro_regime",
-        # Risk extras & regime
-        "sp500_sma_10m", "hy_oas_sma_12m",
-        "trend_on", "credit_off", "vix_off", "off_votes", "risk_regime",
+        # Core macro levels
+        "indpro","lei","yield_curve",
+        "indpro_mom","lei_mom","yield_curve_mom",
+        "indpro_yoy","lei_yoy","yield_curve_yoy",
+        "indpro_signal","lei_signal","yield_curve_signal","macro_score","macro_regime",
+        # Additional macro levels
+        "hy_oas","unrate","cpi","gdp_saar","umcsent","houst",
+        "hy_oas_mom","unrate_mom","cpi_mom","gdp_saar_mom","umcsent_mom","houst_mom",
+        "hy_oas_yoy","unrate_yoy","cpi_yoy","gdp_saar_yoy","umcsent_yoy","houst_yoy",
+        # Risk inputs
+        "sp500","sp500_sma_10m","vix","hy_oas_sma_12m",
+        "sp500_mom","vix_mom","hy_oas_mom",
+        "sp500_yoy","vix_yoy","hy_oas_yoy",
+        # Risk signals
+        "trend_on","credit_off","vix_off","off_votes","risk_regime",
+        # Raw rates levels (optional reference)
+        "dgs10","dgs3mo","dgs10_mom","dgs3mo_mom","dgs10_yoy","dgs3mo_yoy",
     ]
+    # Keep only columns that exist
+    cols = [c for c in ordered if c in out.columns]
     out = out[cols]
 
-    # 8) Append + de-duplicate by date
+    # ---- Save (append + de-dup on date) ----
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     if os.path.exists(OUT_PATH):
         try:
-            prev = pd.read_csv(OUT_PATH, dtype=str)
-            combined = pd.concat([prev, out.astype(str)], ignore_index=True)
+            old = pd.read_csv(OUT_PATH, parse_dates=["date"])
+            old["date"] = old["date"].dt.strftime("%Y-%m-%d")
+            combined = pd.concat([old, out], ignore_index=True)
             combined = combined.sort_values("date").drop_duplicates(subset=["date"], keep="last")
             combined.to_csv(OUT_PATH, index=False)
         except Exception as e:
