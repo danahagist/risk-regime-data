@@ -1,72 +1,63 @@
-# src/compute_macro_monthly.py
-# Combined Macro + Risk (FRED-only), 2020+ with interpolation stats.
-# - Daily series -> monthly median (month-start date)
-# - Monthly series -> neighbor-avg fill for isolated missing months (per-series only)
-# - Quarterly series -> repeat across months in quarter
-# - Computes MoM% & YoY% for all series
-# - Macro core signals: INDPRO YoY>0, USSLIND YoY>0, (DGS10-DGS3MO)>0
-# - Risk signals: Trend (SP500 >= 10m SMA), Credit (HY OAS > max(500, 12m SMA)), Vol (VIX>25)
-# - Outputs:
-#     data/macro_monthly_history.csv
-#     data/interpolation_stats.csv
-
 import os
 import sys
 import time
+import math
 import pandas as pd
 import numpy as np
 from fredapi import Fred
 
+# ------------------------
+# Config
+# ------------------------
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 if not FRED_API_KEY:
-    print("ERROR: FRED_API_KEY not set.", file=sys.stderr)
+    print("ERROR: FRED_API_KEY is not set.", file=sys.stderr)
     sys.exit(1)
 
 fred = Fred(api_key=FRED_API_KEY)
 
-# --------------------
-# Config
-# --------------------
-START_DATE = "2020-01-01"  # restrict to 2020+
-OUT_PATH    = "data/macro_monthly_history.csv"
-STATS_PATH  = "data/interpolation_stats.csv"
+OUT_PATH = "data/macro_monthly_history.csv"
+INTERP_REPORT_PATH = "data/interpolation_report.csv"
+START_DATE = "2020-01-01"   # limit as requested
 
 # FRED codes
-INDPRO   = "INDPRO"            # Industrial Production (monthly)
-USSLIND  = "USSLIND"           # Leading Index (monthly)
-DGS10    = "DGS10"             # 10Y Treasury (daily)
-DGS3MO   = "DGS3MO"            # 3M T-Bill (daily)
-BAML_HYOAS = "BAMLH0A0HYM2"    # HY OAS (daily)
-UNRATE   = "UNRATE"            # Unemployment (monthly)
-CPI      = "CPIAUCSL"          # CPI (monthly)
-GDP_SAAR = "A191RL1Q225SBEA"   # Real GDP QoQ SAAR (quarterly)
-UMCSENT  = "UMCSENT"           # Michigan Sentiment (monthly)
-HOUST    = "HOUST"             # Housing Starts (monthly)
-SP500    = "SP500"             # S&P 500 Level (daily)
-VIXCLS   = "VIXCLS"            # VIX (daily)
+INDPRO = "INDPRO"                  # Industrial Production (index)
+CFNAI  = "CFNAI"                   # Chicago Fed National Activity Index
+DGS10  = "DGS10"                   # 10Y Treasury (percent, daily)
+DGS3MO = "DGS3MO"                  # 3M Treasury (percent, daily)
+BAML_OAS = "BAMLH0A0HYM2"          # HY OAS (bps, daily)
+UNRATE = "UNRATE"                  # Unemployment rate (%)
+CPI    = "CPIAUCSL"                # CPI (index, SA)
+GDP_Q  = "A191RL1Q225SBEA"         # Real GDP QoQ SAAR (%), quarterly
+UMCSENT = "UMCSENT"                # Michigan Sentiment (index)
+HOUST   = "HOUST"                  # Housing starts (SAAR)
+VIXCLS  = "VIXCLS"                 # VIX (index level, daily)
+SP500   = "SP500"                  # S&P 500 (index level, daily)
 
-# Risk thresholds/params
-TREND_SMA_MONTHS  = 10
+# Risk params
+TREND_SMA_MONTHS = 10
 CREDIT_SMA_MONTHS = 12
-CREDIT_OAS_FLOOR  = 500.0
-VIX_THRESHOLD     = 25.0
+CREDIT_OAS_BPS_THRESHOLD = 500.0
+VIX_THRESHOLD = 25.0
 
-# --------------------
+# ------------------------
 # Helpers
-# --------------------
-def month_index():
-    start = pd.Timestamp(START_DATE).replace(day=1)
-    end = pd.Timestamp.today().replace(day=1)
-    return pd.date_range(start, end, freq="MS")
-
+# ------------------------
 def ensure_dir(path: str):
     d = os.path.dirname(path)
     if d and not os.path.exists(d):
         os.makedirs(d, exist_ok=True)
 
+def month_index(start=START_DATE, end=None):
+    if end is None:
+        end = pd.Timestamp.today().to_period("M").to_timestamp(how="start")
+    idx = pd.date_range(start=pd.Timestamp(start), end=end, freq="MS")  # 1st of month
+    return idx
+
 def fred_series(code: str, start: str) -> pd.Series:
+    """Fetch FRED series with simple retries; return DatetimeIndex Series."""
     last_err = None
-    for i in range(3):
+    for i in range(4):
         try:
             s = fred.get_series(code, observation_start=start)
             s = pd.Series(s)
@@ -79,269 +70,272 @@ def fred_series(code: str, start: str) -> pd.Series:
             time.sleep(wait)
     raise last_err
 
-def to_month_start_daily_median(s: pd.Series, idx: pd.DatetimeIndex):
-    """
-    Daily -> (series, stats)
-    - monthly median stamped to month-start (idx)
-    - stats: months_with_data, months_without_data
-    """
+def to_monthly_from_daily(s: pd.Series) -> pd.Series:
+    """Daily -> monthly median; index to month-start; independent interpolation (linear + edge fill)."""
     if s.empty:
-        ser = pd.Series(index=idx, dtype="float64")
-        return ser, {"metric": "", "method":"daily_median", "months_with_data":0, "months_without_data":len(idx), "filled_count":0, "filled_pct":0.0}
+        return s
     s = s.sort_index()
-    # compute median per calendar month on an MS index
-    med = s.resample("MS").median()
-    ser = med.reindex(idx)
+    m = s.resample("M").median()  # month-end labels
+    # relabel to month start (avoid 'MS' freq string in Period)
+    m.index = m.index.to_period("M").to_timestamp(how="start")
+    # ensure full monthly index, then interpolate within the series (no cross-metric impact)
+    full_idx = month_index(start=max(pd.Timestamp(START_DATE), m.index.min()))
+    m = m.reindex(full_idx)
+    interp_mask_before = m.isna()
+    m = m.interpolate(method="linear", limit_direction="both")
+    # for any leading/trailing NaNs still left (unlikely), ffill/bfill to ensure a value every month
+    m = m.ffill().bfill()
+    interp_mask_after = m.isna()
+    # return series + a boolean mask of which points were originally interpolated
+    return m, interp_mask_before & (~interp_mask_after)
 
-    months_with_data = ser.notna().sum()
-    months_without_data = ser.isna().sum()
-    # we do NOT interpolate daily medians across empty months
-    stats = {
-        "metric": "",  # fill later
-        "method": "daily_median",
-        "months_with_data": int(months_with_data),
-        "months_without_data": int(months_without_data),
-        "filled_count": 0,          # we didn't fill across months here
-        "filled_pct": 0.0
-    }
-    return ser, stats
-
-def to_monthly_with_neighbor_avg_fill(s: pd.Series, idx: pd.DatetimeIndex):
-    """
-    Monthly -> (series, stats)
-    - normalize to MS, align to idx
-    - fill only single-month interior gaps with (prev+next)/2, per-series (no cross-series effects)
-    - stats returns how many fills happened
-    """
-    s = s.copy().sort_index()
-    s.index = s.index.to_period("M").to_timestamp()
-    s = s.groupby(level=0).last()
-    ser = s.reindex(idx)
-
-    before_na = ser.isna().sum()
-    # only fill where both neighbors exist
-    mask = ser.isna()
-    prev = ser.shift(1)
-    nxt  = ser.shift(-1)
-    fill_candidates = mask & prev.notna() & nxt.notna()
-    ser.loc[fill_candidates] = (prev + nxt) / 2.0
-
-    filled_count = int(fill_candidates.sum())
-    after_na = ser.isna().sum()
-    # any remaining NaNs are left as-is
-    stats = {
-        "metric": "",  # fill later
-        "method": "monthly_neighbor_avg",
-        "months_with_data": int(ser.notna().sum()),
-        "months_without_data": int(ser.isna().sum()),
-        "filled_count": filled_count,
-        "filled_pct": float(filled_count) / float(len(idx)) * 100.0 if len(idx) else 0.0,
-    }
-    return ser, stats
-
-def quarterly_to_months_repeat(s: pd.Series, idx: pd.DatetimeIndex):
-    """
-    Quarterly -> (series, stats)
-    - normalize to quarter start, forward-fill to months
-    - all months within a quarter are repeats; reported as 'repeated_count' (informational)
-    """
+def to_monthly_from_monthly(s: pd.Series) -> pd.Series:
+    """Monthly -> monthly; fill missing by averaging prior/next (linear); edge ffill/bfill."""
     if s.empty:
-        ser = pd.Series(index=idx, dtype="float64")
-        stats = {
-            "metric": "",
-            "method": "quarterly_repeat",
-            "months_with_data": 0,
-            "months_without_data": len(idx),
-            "filled_count": 0,      # not interpolation; just expansion
-            "filled_pct": 0.0,
-            "repeated_count": 0
-        }
-        return ser, stats
+        return s
+    s = s.sort_index()
+    s.index = s.index.to_period("M").to_timestamp(how="start")
+    full_idx = month_index(start=max(pd.Timestamp(START_DATE), s.index.min()))
+    m = s.reindex(full_idx)
+    interp_mask_before = m.isna()
+    m = m.interpolate(method="linear", limit_direction="both")
+    m = m.ffill().bfill()
+    interp_mask_after = m.isna()
+    return m, interp_mask_before & (~interp_mask_after)
 
-    s = s.copy().sort_index()
-    s.index = s.index.to_period("Q").to_timestamp(how="S")
-    m = s.reindex(pd.date_range(idx.min(), idx.max(), freq="MS")).ffill()
-    ser = m.reindex(idx)
+def to_monthly_from_quarterly(s: pd.Series) -> pd.Series:
+    """Quarterly -> repeat same value for each month of the quarter; fill edges ffill/bfill."""
+    if s.empty:
+        return s
+    s = s.sort_index()
+    # make quarterly period index, then reindex to monthly (start-of-month) and ffill within quarter
+    q = s.copy()
+    # most FRED quarterly are end-of-quarter dates; convert robustly:
+    q.index = q.index.to_period("Q").to_timestamp(how="end")
+    monthly_idx = month_index(start=max(pd.Timestamp(START_DATE), q.index.min().to_period("M").to_timestamp(how="start")))
+    # map each month to its quarter's value by forward-filling a monthly view
+    qm = q.resample("MS").ffill()  # month-start freq, ffill inside quarter
+    qm = qm.reindex(monthly_idx).ffill().bfill()
+    # track "fills": months that did not align exactly to the original quarter endpoints
+    # we’ll mark all months that are not at the original quarter-end month as "filled"
+    quarter_end_ms = q.index.to_period("Q").to_timestamp(how="end").to_period("M").to_timestamp(how="start")
+    filled_mask = ~qm.index.isin(quarter_end_ms)
+    return qm, pd.Series(filled_mask, index=qm.index)
 
-    # Count how many months are from repeats (all but first month of each quarter after an observation)
-    # This is informational; not counted as "filled/interpolated".
-    q_labels = ser.index.to_period("Q")
-    # months that are not the first month of their quarter are repeats if value equals previous month
-    repeated = (ser == ser.shift(1)) & (q_labels == q_labels.shift(1)) & (ser.notna())
-    repeated_count = int(repeated.sum())
+def mom_yoy_pct_monthly(level: pd.Series) -> (pd.Series, pd.Series):
+    """MoM% and YoY% from a monthly level series."""
+    x = level.astype(float)
+    return x.pct_change(1) * 100.0, x.pct_change(12) * 100.0
 
-    stats = {
-        "metric": "",
-        "method": "quarterly_repeat",
-        "months_with_data": int(ser.notna().sum()),
-        "months_without_data": int(ser.isna().sum()),
-        "filled_count": 0,   # we don't treat repeat as interpolation
-        "filled_pct": 0.0,
-        "repeated_count": repeated_count
-    }
-    return ser, stats
+def mom_yoy_pct_quarterly_month_view(level_q_monthly: pd.Series) -> (pd.Series, pd.Series):
+    """
+    For the monthly view of a quarterly series (repeated per month):
+    - MoM%: month vs prior quarter’s value -> compute QoQ at quarter-ends, repeat across the quarter.
+    - YoY%: vs same month last year (equivalently last year's quarter since repeated).
+    """
+    # identify quarter-end months
+    idx = level_q_monthly.index
+    q_end = (idx.to_period("Q").asfreq("M", how="end") == idx.to_period("M"))
+    q_vals = level_q_monthly[q_end]
+    q_qoq = q_vals.pct_change(1) * 100.0
+    q_yoy = q_vals.pct_change(4) * 100.0
+    # repeat each quarter's change across its 3 months
+    mom = level_q_monthly.copy() * np.nan
+    yoy = level_q_monthly.copy() * np.nan
+    for t in q_vals.index:
+        q_end_ts = t
+        q_start_ts = (t - pd.offsets.MonthEnd(2)).to_period("M").to_timestamp(how="start")
+        this_q = pd.date_range(q_start_ts, q_end_ts, freq="MS")
+        mom.loc[this_q] = q_qoq.loc[t] if t in q_qoq.index else np.nan
+        yoy.loc[this_q] = q_yoy.loc[t] if t in q_yoy.index else np.nan
+    # edge fill to avoid NaN in early months where change not defined
+    mom = mom.ffill().bfill()
+    yoy = yoy.ffill().bfill()
+    return mom, yoy
 
-def pct_mom(series: pd.Series) -> pd.Series:
-    return series.astype(float).pct_change(1) * 100.0
+def rolling_sma(s: pd.Series, n: int) -> pd.Series:
+    return s.rolling(window=n, min_periods=n).mean()
 
-def pct_yoy(series: pd.Series) -> pd.Series:
-    return series.astype(float).pct_change(12) * 100.0
-
-# --------------------
+# ------------------------
 # Main
-# --------------------
+# ------------------------
 def main():
+    ensure_dir(OUT_PATH)
+    ensure_dir(INTERP_REPORT_PATH)
+
+    # Build common monthly index through current month
     idx = month_index()
-    stats_rows = []
 
-    # ---- Pull & transform
-    # Monthly with neighbor-avg fill
-    indpro_s, st = to_monthly_with_neighbor_avg_fill(fred_series(INDPRO,   START_DATE), idx); st["metric"]="indpro";  stats_rows.append(st)
-    usslind_s, st= to_monthly_with_neighbor_avg_fill(fred_series(USSLIND,  START_DATE), idx); st["metric"]="lei";     stats_rows.append(st)
-    unrate_s, st = to_monthly_with_neighbor_avg_fill(fred_series(UNRATE,   START_DATE), idx); st["metric"]="unrate";  stats_rows.append(st)
-    cpi_s, st    = to_monthly_with_neighbor_avg_fill(fred_series(CPI,      START_DATE), idx); st["metric"]="cpi";     stats_rows.append(st)
-    umcsent_s, st= to_monthly_with_neighbor_avg_fill(fred_series(UMCSENT,  START_DATE), idx); st["metric"]="umcsent"; stats_rows.append(st)
-    houst_s, st  = to_monthly_with_neighbor_avg_fill(fred_series(HOUST,    START_DATE), idx); st["metric"]="houst";   stats_rows.append(st)
+    # ---- Pull raw series
+    indpro_raw = fred_series(INDPRO, START_DATE)        # monthly
+    cfnai_raw  = fred_series(CFNAI, START_DATE)         # monthly
+    dgs10_raw  = fred_series(DGS10, START_DATE)         # daily
+    dgs3m_raw  = fred_series(DGS3MO, START_DATE)        # daily
+    hy_oas_raw = fred_series(BAML_OAS, START_DATE)      # daily
+    unrate_raw = fred_series(UNRATE, START_DATE)        # monthly
+    cpi_raw    = fred_series(CPI, START_DATE)           # monthly
+    gdp_raw    = fred_series(GDP_Q, START_DATE)         # quarterly (% SAAR)
+    umcsent_raw= fred_series(UMCSENT, START_DATE)       # monthly
+    houst_raw  = fred_series(HOUST, START_DATE)         # monthly
+    vix_raw    = fred_series(VIXCLS, START_DATE)        # daily
+    spx_raw    = fred_series(SP500, START_DATE)         # daily
 
-    # Quarterly -> months
-    gdp_s, st    = quarterly_to_months_repeat(fred_series(GDP_SAAR, START_DATE), idx); st["metric"]="gdp_saar"; stats_rows.append(st)
+    # ---- Transform to monthly series per policy, tracking interpolation masks
+    indpro, indpro_interp = to_monthly_from_monthly(indpro_raw)
+    cfnai,  cfnai_interp  = to_monthly_from_monthly(cfnai_raw)
+    dgs10,  dgs10_interp  = to_monthly_from_daily(dgs10_raw)
+    dgs3m,  dgs3m_interp  = to_monthly_from_daily(dgs3m_raw)
+    hy_oas, hy_interp     = to_monthly_from_daily(hy_oas_raw)
+    unrate, unrate_interp = to_monthly_from_monthly(unrate_raw)
+    cpi,    cpi_interp    = to_monthly_from_monthly(cpi_raw)
+    gdp_m,  gdp_interp    = to_monthly_from_quarterly(gdp_raw)  # repeated per month
+    umcs,   umcs_interp   = to_monthly_from_monthly(umcsent_raw)
+    houst,  houst_interp  = to_monthly_from_monthly(houst_raw)
+    vix,    vix_interp    = to_monthly_from_daily(vix_raw)
+    spx,    spx_interp    = to_monthly_from_daily(spx_raw)
 
-    # Daily -> monthly median
-    dgs10_d = fred_series(DGS10,  START_DATE)
-    dgs3m_d = fred_series(DGS3MO, START_DATE)
-    hy_d    = fred_series(BAML_HYOAS, START_DATE)
-    spx_d   = fred_series(SP500,  START_DATE)
-    vix_d   = fred_series(VIXCLS, START_DATE)
+    # Conform all series to common index (independent filling already done)
+    series_dict = {
+        "indpro": indpro.reindex(idx).ffill().bfill(),
+        "cfnai":  cfnai.reindex(idx).ffill().bfill(),
+        "dgs10":  dgs10.reindex(idx).ffill().bfill(),
+        "dgs3mo": dgs3m.reindex(idx).ffill().bfill(),
+        "hy_oas": hy_oas.reindex(idx).ffill().bfill(),
+        "unrate": unrate.reindex(idx).ffill().bfill(),
+        "cpi":    cpi.reindex(idx).ffill().bfill(),
+        "gdp_saar": gdp_m.reindex(idx).ffill().bfill(),
+        "umcsent": umcs.reindex(idx).ffill().bfill(),
+        "houst":   houst.reindex(idx).ffill().bfill(),
+        "vix":     vix.reindex(idx).ffill().bfill(),
+        "sp500":   spx.reindex(idx).ffill().bfill(),
+    }
 
-    dgs10_s, st = to_month_start_daily_median(dgs10_d, idx); st["metric"]="dgs10";  stats_rows.append(st)
-    dgs3m_s, st = to_month_start_daily_median(dgs3m_d, idx); st["metric"]="dgs3mo"; stats_rows.append(st)
-    hy_s,    st = to_month_start_daily_median(hy_d,    idx); st["metric"]="hy_oas"; stats_rows.append(st)
-    spx_s,   st = to_month_start_daily_median(spx_d,   idx); st["metric"]="sp500";  stats_rows.append(st)
-    vix_s,   st = to_month_start_daily_median(vix_d,   idx); st["metric"]="vix";    stats_rows.append(st)
+    df = pd.DataFrame(series_dict, index=idx)
 
-    # Yield curve spread (in percentage points; switch to *100 for bps if desired)
-    yc_spread = (dgs10_s - dgs3m_s).rename("yield_curve_spread")
+    # ---- Macro sub-calcs
+    # Industrial Production YoY
+    df["indpro_yoy"] = df["indpro"].pct_change(12) * 100.0
 
-    # ---- Assemble core DataFrame (aligned to idx)
-    core = pd.concat(
-        [indpro_s.rename("indpro"),
-         usslind_s.rename("lei"),
-         dgs10_s.rename("dgs10"),
-         dgs3m_s.rename("dgs3mo"),
-         yc_spread,
-         hy_s.rename("hy_oas"),
-         unrate_s.rename("unrate"),
-         cpi_s.rename("cpi"),
-         gdp_s.rename("gdp_saar"),
-         umcsent_s.rename("umcsent"),
-         houst_s.rename("houst"),
-         spx_s.rename("sp500"),
-         vix_s.rename("vix")],
-        axis=1
-    ).reindex(idx)
+    # Yield curve (10Y – 3M) in bps
+    df["yield_curve_spread"] = (df["dgs10"] - df["dgs3mo"]) * 100.0
 
-    # ---- Changes (MoM / YoY) for each series
-    def add_changes(df, col):
-        df[f"{col}_mom"] = pct_mom(df[col])
-        df[f"{col}_yoy"] = pct_yoy(df[col])
+    # CPI YoY (%)
+    df["cpi_yoy"] = df["cpi"].pct_change(12) * 100.0
 
-    for col in core.columns:
-        add_changes(core, col)
+    # MoM/YoY for all metrics (monthly view):
+    # Monthly metrics
+    for col in ["indpro", "cfnai", "unrate", "cpi", "umcsent", "houst"]:
+        mom, yoy = mom_yoy_pct_monthly(df[col])
+        df[f"{col}_mom"] = mom
+        df[f"{col}_yoy"] = yoy
 
-    # ---- Macro core signals
-    core["indpro_signal"] = (core["indpro_yoy"] > 0).astype(int)
-    core["lei_signal"] = (core["lei_yoy"] > 0).astype(int)
-    core["yield_curve_signal"] = (core["yield_curve_spread"] > 0).astype(int)
-    core["macro_score"] = core["indpro_signal"] + core["lei_signal"] + core["yield_curve_signal"]
-    core["macro_regime"] = np.where(core["macro_score"] >= 2, "expansion", "contraction")
+    # Daily-derived monthly metrics
+    for col in ["dgs10", "dgs3mo", "hy_oas", "vix", "sp500"]:
+        mom, yoy = mom_yoy_pct_monthly(df[col])
+        df[f"{col}_mom"] = mom
+        df[f"{col}_yoy"] = yoy
 
-    # ---- Risk signals (monthly)
-    core["sp500_sma_10m"] = core["sp500"].rolling(TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean()
-    core["trend_on"] = (core["sp500"] >= core["sp500_sma_10m"]).astype(int)
+    # Quarterly (in monthly view)
+    g_mom, g_yoy = mom_yoy_pct_quarterly_month_view(df["gdp_saar"])
+    df["gdp_saar_mom"] = g_mom
+    df["gdp_saar_yoy"] = g_yoy
 
-    core["hy_oas_sma_12m"] = core["hy_oas"].rolling(CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean()
-    credit_barrier = pd.concat(
-        [pd.Series(CREDIT_OAS_FLOOR, index=core.index), core["hy_oas_sma_12m"]],
+    # ---- Macro signals (Core 3)
+    df["indpro_signal"] = (df["indpro_yoy"] > 0).astype(int)
+    df["cfnai_signal"]  = (df["cfnai"] > 0).astype(int)
+    df["yield_curve_signal"] = (df["yield_curve_spread"] > 0).astype(int)
+
+    df["macro_score"] = (df["indpro_signal"] + df["cfnai_signal"] + df["yield_curve_signal"]).astype(int)
+    df["macro_regime"] = np.where(df["macro_score"] >= 2, "expansion", "contraction")
+
+    # ---- Risk signals (FRED)
+    df["sp500_sma_10m"] = rolling_sma(df["sp500"], TREND_SMA_MONTHS)
+    df["trend_on"] = (df["sp500"] >= df["sp500_sma_10m"]).astype(int)
+
+    df["hy_oas_sma_12m"] = rolling_sma(df["hy_oas"], CREDIT_SMA_MONTHS)
+    hy_barrier = pd.concat(
+        [pd.Series(CREDIT_OAS_BPS_THRESHOLD, index=df.index), df["hy_oas_sma_12m"]],
         axis=1
     ).max(axis=1)
-    core["credit_off"] = (core["hy_oas"] > credit_barrier).astype(int)
+    df["credit_off"] = (df["hy_oas"] > hy_barrier).astype(int)
 
-    core["vix_off"] = (core["vix"] > VIX_THRESHOLD).astype(int)
-    core["off_votes"] = core["credit_off"] + core["vix_off"]
-    core["risk_regime"] = np.where(
-        (core["trend_on"] == 1) & (core["off_votes"] == 0), "On",
-        np.where(core["off_votes"] >= 2, "Off", "Mixed")
-    )
+    df["vix_off"] = (df["vix"] > VIX_THRESHOLD).astype(int)
+    df["off_votes"] = df["credit_off"] + df["vix_off"]
 
-    # ---- Final formatting & column order (regimes/scores first)
-    core = core.reset_index().rename(columns={"index": "date"})
-    core["date"] = core["date"].dt.strftime("%Y-%m-%d")
+    def _risk_regime(row):
+        if (row["trend_on"] == 1) and (row["off_votes"] == 0):
+            return "On"
+        if row["off_votes"] >= 2:
+            return "Off"
+        return "Mixed"
 
-    FRONT = [
+    df["risk_regime"] = df.apply(_risk_regime, axis=1)
+
+    # ---- Order columns: date + regimes/scores first, then the rest
+    df_out = df.copy().reset_index().rename(columns={"index": "date"})
+    df_out["date"] = df_out["date"].dt.strftime("%Y-%m-%d")
+
+    front_cols = [
         "date",
-        # Risk first
-        "trend_on", "credit_off", "vix_off", "off_votes", "risk_regime",
-        # Macro core
-        "indpro_signal", "lei_signal", "yield_curve_signal", "macro_score", "macro_regime",
+        "macro_regime", "macro_score", "indpro_signal", "cfnai_signal", "yield_curve_signal",
+        "risk_regime", "off_votes", "trend_on", "credit_off", "vix_off",
     ]
-    RISK_BLOCK = [
-        "sp500", "sp500_mom", "sp500_yoy", "sp500_sma_10m",
-        "hy_oas", "hy_oas_mom", "hy_oas_yoy", "hy_oas_sma_12m",
-        "vix", "vix_mom", "vix_yoy",
-    ]
-    MACRO_BLOCK = [
+
+    # Everything else, stable order
+    rest_cols = [
+        # Macro levels
         "indpro", "indpro_mom", "indpro_yoy",
-        "lei", "lei_mom", "lei_yoy",
+        "cfnai", "cfnai_mom", "cfnai_yoy",
         "dgs10", "dgs10_mom", "dgs10_yoy",
         "dgs3mo", "dgs3mo_mom", "dgs3mo_yoy",
-        "yield_curve_spread", "yield_curve_spread_mom", "yield_curve_spread_yoy",
+        "yield_curve_spread", "yield_curve_signal",
+        "hy_oas", "hy_oas_mom", "hy_oas_yoy", "hy_oas_sma_12m",
         "unrate", "unrate_mom", "unrate_yoy",
         "cpi", "cpi_mom", "cpi_yoy",
         "gdp_saar", "gdp_saar_mom", "gdp_saar_yoy",
         "umcsent", "umcsent_mom", "umcsent_yoy",
         "houst", "houst_mom", "houst_yoy",
+        "vix", "vix_mom", "vix_yoy",
+        "sp500", "sp500_mom", "sp500_yoy", "sp500_sma_10m",
     ]
 
-    # Keep only columns that exist (in case early periods lack SMA windows)
-    ordered_cols = [c for c in FRONT + RISK_BLOCK + MACRO_BLOCK if c in core.columns]
-    core = core[ordered_cols]
+    # Keep only columns that exist (defensive in case of changes)
+    rest_cols = [c for c in rest_cols if c in df_out.columns]
+    df_out = df_out[front_cols + rest_cols]
 
-    # ---- Write main CSV (append + dedupe by date)
-    ensure_dir(OUT_PATH)
-    if os.path.exists(OUT_PATH):
-        try:
-            old = pd.read_csv(OUT_PATH, dtype=str)
-            combined = pd.concat([old, core], ignore_index=True)
-            combined = combined.drop_duplicates(subset=["date"], keep="last")
-            combined = combined.sort_values("date")
-            combined.to_csv(OUT_PATH, index=False)
-        except Exception as e:
-            print(f"[WARN] Could not merge with existing {OUT_PATH}: {e}", file=sys.stderr)
-            core.to_csv(OUT_PATH, index=False)
-    else:
-        core.to_csv(OUT_PATH, index=False)
+    # ---- Interpolation report
+    # Build masks aligned to idx for each metric (True where we interpolated/filled the monthly view)
+    # Daily→Monthly masks (linear inside series)
+    interp_masks = {
+        "dgs10":  dgs10_interp.reindex(idx).fillna(False),
+        "dgs3mo": dgs3m_interp.reindex(idx).fillna(False),
+        "hy_oas": hy_interp.reindex(idx).fillna(False),
+        "vix":    vix_interp.reindex(idx).fillna(False),
+        "sp500":  spx_interp.reindex(idx).fillna(False),
+        # Monthly masks
+        "indpro": indpro_interp.reindex(idx).fillna(False),
+        "cfnai":  cfnai_interp.reindex(idx).fillna(False),
+        "unrate": unrate_interp.reindex(idx).fillna(False),
+        "cpi":    cpi_interp.reindex(idx).fillna(False),
+        "umcsent": umcs_interp.reindex(idx).fillna(False),
+        "houst":   houst_interp.reindex(idx).fillna(False),
+        # Quarterly mask (months not at quarter-ends are "filled")
+        "gdp_saar": gdp_interp.reindex(idx).fillna(True),
+    }
 
-    # ---- Build & write interpolation stats CSV
-    stats_df = pd.DataFrame(stats_rows)
-    # Add totals & percents normalized to index length
     total_months = len(idx)
-    stats_df["total_months"] = total_months
-    # Ensure consistent column order
-    cols = [
-        "metric", "method",
-        "months_with_data", "months_without_data",
-        "filled_count", "filled_pct",
-        "repeated_count",  # present for quarterly; NaN for others
-        "total_months"
-    ]
-    for c in cols:
-        if c not in stats_df.columns:
-            stats_df[c] = np.nan
-    ensure_dir(STATS_PATH)
-    stats_df = stats_df[cols].sort_values(["metric", "method"])
-    stats_df.to_csv(STATS_PATH, index=False)
+    rows = []
+    for k, mask in interp_masks.items():
+        filled = int(mask.sum())
+        pct = (filled / total_months) * 100.0
+        rows.append({"metric": k, "filled_count": filled, "filled_pct": pct, "total_months": total_months})
+    interp_report = pd.DataFrame(rows).sort_values("metric")
+    interp_report.to_csv(INTERP_REPORT_PATH, index=False)
 
-    print(f"Wrote {OUT_PATH} and {STATS_PATH}. Latest date: {core['date'].iloc[-1]}")
+    # ---- Write main CSV (overwrite full file)
+    df_out.to_csv(OUT_PATH, index=False)
+    print(f"Wrote {OUT_PATH} with {len(df_out)} rows (latest {df_out['date'].iloc[-1]}).")
+    print(f"Wrote interpolation audit to {INTERP_REPORT_PATH}")
 
 if __name__ == "__main__":
     main()
