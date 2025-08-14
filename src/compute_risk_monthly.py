@@ -1,11 +1,10 @@
 # src/compute_risk_monthly.py
-# Risk signals via Yahoo Finance (HYG/LQD, ^GSPC, ^VIX, ^VIX3M)
-# - Pull daily data with yfinance
-# - Aggregate to monthly (month-end), then set date to month-start (YYYY-MM-01)
-# - Compute: 10m SMA for ^GSPC trend, 12m SMA for HYG/LQD ratio (credit),
-#            VIX term-structure OFF if VIX > 25 or VIX > VIX3M
-# - Also compute MoM% and YoY% for sp500, hyg_lqd_ratio, and vix
-# - Append + de-duplicate by date to data/risk_monthly_history.csv
+# Monthly risk pipeline (yfinance for market data):
+# - Pulls SPY (proxy for S&P 500), HYG, LQD, ^VIX, ^VIX3M
+# - Converts daily -> monthly (month-end), then timestamps to month start (YYYY-MM-01)
+# - Computes 10m SMA (SPY), HYG/LQD ratio + 10m SMA, flags, MoM% and YoY%
+# - Vol OFF if VIX>25 or VIX>VIX3M (if ^VIX3M available; otherwise only VIX>25)
+# - Saves to data/risk_monthly_history.csv (appends + de-duplicates by date)
 
 import os
 import sys
@@ -17,157 +16,186 @@ import yfinance as yf
 OUT_PATH = "data/risk_monthly_history.csv"
 START_DATE = "1990-01-01"
 
-# Yahoo tickers
-SPX_TICKER   = "^GSPC"   # S&P 500 index
-HYG_TICKER   = "HYG"     # iShares iBoxx $ High Yield Corp Bond ETF
-LQD_TICKER   = "LQD"     # iShares iBoxx $ Investment Grade Corp Bond ETF
-VIX_TICKER   = "^VIX"    # VIX
-VIX3M_TICKER = "^VIX3M"  # 3M VIX
+# yfinance tickers
+SPX_TICKER   = "SPY"      # proxy for S&P 500 trend
+HYG_TICKER   = "HYG"
+LQD_TICKER   = "LQD"
+VIX_TICKER   = "^VIX"
+VIX3M_TICKER = "^VIX3M"
 
 # Parameters
-TREND_SMA_MONTHS   = 10
-CREDIT_SMA_MONTHS  = 12
-CREDIT_OAS_FLOOR   = None   # not used for ETF ratio (kept for parity)
-VIX_THRESHOLD      = 25.0
+TREND_SMA_MONTHS  = 10
+CREDIT_SMA_MONTHS = 10
+VIX_THRESHOLD     = 25.0
 
 # -------------------------------
-# Helpers
+# Utilities
 # -------------------------------
+def to_month_start_from_daily(s: pd.Series) -> pd.Series:
+    """Daily -> month-end value, then stamp as month-start date."""
+    if s.empty:
+        return s
+    s = s.sort_index()
+    # month-end; pandas warns 'M' is deprecated, use 'ME'
+    s = s.resample("ME").last()
+    # set to first of month
+    s.index = s.index.to_period("M").to_timestamp("MS")
+    return s.dropna()
+
+def to_mom_yoy_pct(s: pd.Series) -> (pd.Series, pd.Series):
+    """Return MoM% and YoY% (percent changes) for a level series."""
+    s = s.astype(float)
+    mom = s.pct_change(1) * 100.0
+    yoy = s.pct_change(12) * 100.0
+    return mom, yoy
+
+def yf_series(ticker: str, start: str, max_retries: int = 4, pause: float = 0.0) -> pd.Series:
+    """
+    Download daily series from yfinance and return a single Series of prices.
+    Prefers 'Adj Close' if available, else 'Close'.
+    Retries with incremental backoff.
+    """
+    last_err = None
+    for i in range(1, max_retries + 1):
+        try:
+            df = yf.download(
+                ticker,
+                start=start,
+                progress=False,
+                auto_adjust=False,
+                threads=False,
+                timeout=30
+            )
+            if df is None or df.empty:
+                raise ValueError("Empty frame from Yahoo")
+
+            col = None
+            if "Adj Close" in df.columns:
+                col = "Adj Close"
+            elif "Close" in df.columns:
+                col = "Close"
+            else:
+                raise ValueError("Neither 'Adj Close' nor 'Close' in dataframe")
+
+            s = df[col].dropna()
+            s.index = pd.to_datetime(s.index)
+            s.name = ticker
+            if s.empty:
+                raise ValueError("Empty series after dropna")
+            return s
+        except Exception as e:
+            last_err = e
+            wait = 0 if i == 1 else [0, 2, 4, 6][i - 1]
+            print(f"[yfinance] attempt {i} failed for {ticker}: {e} (sleep {wait}s)", file=sys.stderr)
+            time.sleep(wait)
+    raise last_err
 
 def ensure_dir(path: str):
     d = os.path.dirname(path)
     if d and not os.path.exists(d):
         os.makedirs(d, exist_ok=True)
 
-def _best_close(df: pd.DataFrame) -> pd.Series:
-    # Prefer Adjusted Close if present; fallback to Close
-    if "Adj Close" in df.columns:
-        return df["Adj Close"]
-    if "Close" in df.columns:
-        return df["Close"]
-    # Handle multi-index columns from multi-ticker download
-    if ("Adj Close" in df.columns.get_level_values(0)):
-        return df["Adj Close"].iloc[:, 0]
-    if ("Close" in df.columns.get_level_values(0)):
-        return df["Close"].iloc[:, 0]
-    raise ValueError("No Close/Adj Close found")
-
-def yf_series(ticker: str, start: str) -> pd.Series:
-    """Download a single ticker with retries; return daily close series."""
-    last_err = None
-    for i in range(4):
-        try:
-            df = yf.download(ticker, start=start, progress=False, auto_adjust=False, threads=False)
-            if df is None or df.empty:
-                raise ValueError("Empty frame from Yahoo")
-            s = _best_close(df).copy()
-            s.index = pd.to_datetime(s.index)
-            s.name = ticker
-            return s.dropna()
-        except Exception as e:
-            last_err = e
-            wait = 2 * i
-            print(f"[yfinance] attempt {i+1} failed for {ticker}: {e} (sleep {wait}s)", file=sys.stderr)
-            time.sleep(wait)
-    raise last_err
-
-def to_month_start_from_daily(s: pd.Series) -> pd.Series:
-    """Daily -> month-end value, then stamp as month-start date."""
-    if s.empty:
-        return s
-    s = s.sort_index()
-    s = s.resample("ME").last()  # month-end (use 'ME' to avoid deprecation)
-    s.index = s.index.to_period("M").to_timestamp("MS")  # first of month
-    return s.dropna()
-
-def mom_yoy_pct(s: pd.Series):
-    s = s.astype(float)
-    return s.pct_change(1) * 100.0, s.pct_change(12) * 100.0
-
 # -------------------------------
 # Main
 # -------------------------------
-
 def main():
-    # 1) Pull daily from Yahoo
-    spx_daily   = yf_series(SPX_TICKER, START_DATE)     # index level
-    hyg_daily   = yf_series(HYG_TICKER, START_DATE)     # ETF price
-    lqd_daily   = yf_series(LQD_TICKER, START_DATE)     # ETF price
-    vix_daily   = yf_series(VIX_TICKER, START_DATE)     # index level
-    vix3m_daily = yf_series(VIX3M_TICKER, START_DATE)   # index level
+    # 1) Pull raw daily series
+    spy_daily   = yf_series(SPX_TICKER, START_DATE)   # proxy for S&P 500
+    hyg_daily   = yf_series(HYG_TICKER, START_DATE)
+    lqd_daily   = yf_series(LQD_TICKER, START_DATE)
+    vix_daily   = yf_series(VIX_TICKER, START_DATE)
 
-    # 2) Daily -> monthly (month-end), then set index to month-start
-    spx   = to_month_start_from_daily(spx_daily).rename("sp500")
-    hyg   = to_month_start_from_daily(hyg_daily).rename("hyg")
-    lqd   = to_month_start_from_daily(lqd_daily).rename("lqd")
-    vix   = to_month_start_from_daily(vix_daily).rename("vix")
-    vix3m = to_month_start_from_daily(vix3m_daily).rename("vix3m")
+    # VIX3M optional
+    try:
+        vix3m_daily = yf_series(VIX3M_TICKER, START_DATE)
+        have_vix3m = True
+    except Exception as e:
+        print(f"[WARN] Could not load {VIX3M_TICKER}: {e}. Falling back to VIX>25 rule only.", file=sys.stderr)
+        vix3m_daily = pd.Series(dtype=float)
+        have_vix3m = False
 
-    # 3) Build combined monthly df (inner join on months with all series)
-    df = pd.concat([spx, hyg, lqd, vix, vix3m], axis=1).dropna().sort_index()
+    # 2) Convert to monthly (month-end -> month-start)
+    spx  = to_month_start_from_daily(spy_daily).rename("sp500")  # keep column name 'sp500'
+    hyg  = to_month_start_from_daily(hyg_daily).rename("hyg")
+    lqd  = to_month_start_from_daily(lqd_daily).rename("lqd")
+    vix  = to_month_start_from_daily(vix_daily).rename("vix")
+    if have_vix3m:
+        vix3m = to_month_start_from_daily(vix3m_daily).rename("vix3m")
+        df_vix = pd.concat([vix, vix3m], axis=1).dropna().sort_index()
+    else:
+        df_vix = vix.to_frame()
 
-    # 4) Credit metric: HYG/LQD ratio
-    df["hyg_lqd_ratio"] = df["hyg"] / df["lqd"]
+    # 3) Build a common monthly index for price/credit
+    df_core = pd.concat([spx, hyg, lqd], axis=1).dropna().sort_index()
 
-    # 5) SMAs
-    df["sp500_sma_10m"]     = df["sp500"].rolling(TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean()
-    df["hyg_lqd_sma_12m"]   = df["hyg_lqd_ratio"].rolling(CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean()
+    # 4) Trend signal (10m SMA on SPY)
+    df_core["sp500_sma_10m"] = df_core["sp500"].rolling(window=TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean()
+    df_core["trend_on"] = (df_core["sp500"] >= df_core["sp500_sma_10m"]).astype(int)
 
-    # 6) Risk signal flags
-    # Trend: ON if SPX >= 10m SMA (where SMA exists)
-    df["trend_on"] = (df["sp500"] >= df["sp500_sma_10m"]).astype(int)
+    # 5) Credit ratio (HYG/LQD) and 10m SMA
+    df_core["hyg_lqd_ratio"] = df_core["hyg"] / df_core["lqd"]
+    df_core["hyg_lqd_ratio_sma_10m"] = df_core["hyg_lqd_ratio"].rolling(window=CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean()
+    df_core["credit_off"] = (df_core["hyg_lqd_ratio"] < df_core["hyg_lqd_ratio_sma_10m"]).astype(int)
 
-    # Credit: OFF if HYG/LQD ratio < its 12m SMA (risk appetite deteriorating)
-    df["credit_off"] = (df["hyg_lqd_ratio"] < df["hyg_lqd_sma_12m"]).astype(int)
-
-    # Vol: OFF if VIX > 25 or VIX > VIX3M
-    df["vix_off"] = ((df["vix"] > VIX_THRESHOLD) | (df["vix"] > df["vix3m"])).astype(int)
+    # 6) Vol OFF: VIX>25 OR (if available) VIX>VIX3M
+    if have_vix3m:
+        df_core = df_core.join(df_vix, how="inner")
+        df_core["vix_off"] = ((df_core["vix"] > VIX_THRESHOLD) | (df_core["vix"] > df_core["vix3m"])).astype(int)
+    else:
+        df_core = df_core.join(df_vix, how="inner")
+        df_core["vix_off"] = (df_core["vix"] > VIX_THRESHOLD).astype(int)
 
     # 7) Composite regime
-    df["off_votes"] = df["credit_off"] + df["vix_off"]
+    df_core["off_votes"] = df_core["credit_off"] + df_core["vix_off"]
+
     def _regime(row):
         if (row["trend_on"] == 1) and (row["off_votes"] == 0):
             return "On"
         if row["off_votes"] >= 2:
             return "Off"
         return "Mixed"
-    df["regime"] = df.apply(_regime, axis=1)
 
-    # 8) MoM% and YoY% for displayed metrics
+    df_core["regime"] = df_core.apply(_regime, axis=1)
+
+    # 8) MoM% and YoY% for metrics we display
     for col in ["sp500", "hyg_lqd_ratio", "vix"]:
-        mom, yoy = mom_yoy_pct(df[col])
-        df[f"{col}_mom"] = mom
-        df[f"{col}_yoy"] = yoy
+        mom, yoy = to_mom_yoy_pct(df_core[col])
+        df_core[f"{col}_mom"] = mom
+        df_core[f"{col}_yoy"] = yoy
 
     # 9) Final formatting
-    df_out = df.reset_index().rename(columns={"index": "date"})
-    df_out["date"] = df_out["date"].dt.strftime("%Y-%m-%d")
+    df = df_core.reset_index().rename(columns={"index": "date"})
+    df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
+    # Column order (kept consistent with earlier file; sp500 is SPY proxy)
     cols = [
         "date",
         "sp500", "sp500_sma_10m", "sp500_mom", "sp500_yoy", "trend_on",
-        "hyg_lqd_ratio", "hyg_lqd_sma_12m", "hyg_lqd_ratio_mom", "hyg_lqd_ratio_yoy", "credit_off",
-        "vix", "vix_mom", "vix_yoy", "vix3m", "vix_off",
-        "off_votes", "regime"
+        "hyg", "lqd", "hyg_lqd_ratio", "hyg_lqd_ratio_sma_10m", "hyg_lqd_ratio_mom", "hyg_lqd_ratio_yoy", "credit_off",
+        "vix",
     ]
-    df_out = df_out[cols]
+    if have_vix3m:
+        cols += ["vix3m"]
+    cols += ["vix_mom", "vix_yoy", "vix_off", "off_votes", "regime"]
 
-    # 10) Append + de-duplicate
+    df = df[cols]
+
+    # 10) Append + de-duplicate vs existing file (by date)
     ensure_dir(OUT_PATH)
     if os.path.exists(OUT_PATH):
         try:
             old = pd.read_csv(OUT_PATH, parse_dates=["date"])
             old["date"] = old["date"].dt.strftime("%Y-%m-%d")
-            combined = pd.concat([old, df_out], ignore_index=True)
+            combined = pd.concat([old, df], ignore_index=True)
             combined = combined.sort_values("date").drop_duplicates(subset=["date"], keep="last")
             combined.to_csv(OUT_PATH, index=False)
         except Exception as e:
             print(f"[WARN] Could not merge with existing {OUT_PATH}: {e}", file=sys.stderr)
-            df_out.to_csv(OUT_PATH, index=False)
+            df.to_csv(OUT_PATH, index=False)
     else:
-        df_out.to_csv(OUT_PATH, index=False)
+        df.to_csv(OUT_PATH, index=False)
 
-    print(f"Wrote {OUT_PATH} with {len(df_out)} rows (latest {df_out['date'].iloc[-1]})")
+    print(f"Wrote {OUT_PATH} with {len(df)} rows (latest date {df['date'].iloc[-1]})")
 
 if __name__ == "__main__":
     main()
