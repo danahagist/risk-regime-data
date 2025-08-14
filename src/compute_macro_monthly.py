@@ -1,303 +1,264 @@
 # src/compute_macro_monthly.py
-# -*- coding: utf-8 -*-
-
-"""
-Compute monthly macro dataset from FRED and write to data/macro_monthly_history.csv.
-
-Rules:
-- Dates truncated to first of month (YYYY-MM-01).
-- Daily series -> monthly median.
-- Monthly series -> monthly value.
-- Quarterly series -> forward-filled to monthly at quarter starts.
-- Compute MoM and YoY percentage changes where meaningful.
-- Macro Core 3 signals:
-    * INDPRO YoY > 0        -> indpro_signal = 1 else 0
-    * USSLIND YoY > 0       -> lei_signal = 1 else 0
-    * Yield curve > 0 bps   -> yield_curve_signal = 1 else 0
-  macro_score = indpro_signal + lei_signal + yield_curve_signal
-- SP500 is pulled from FRED (daily), aggregated to monthly median.
-  sp500_earnings_yield is included as a placeholder column (NaN), since earnings are not from FRED.
-
-Environment:
-- Requires env var FRED_API_KEY.
-"""
+# Combined Macro + Risk (FRED-only), monthly at month-start dates.
+# - Macro Core 3: INDPRO YoY>0, USSLIND YoY>0, yield curve (DGS10-DGS3MO)>0
+# - Additional macro: HY OAS, UNRATE, CPI YoY, GDP SAAR (quarterly->monthly ffill), UMCSENT, HOUST, SP500 level
+# - Risk: SP500 10m trend, HY OAS vs max(500bps, 12m SMA), VIX>25; off_votes, risk_regime
+# - Also include MoM/YoY for SP500, HY OAS, VIX (convenient for UI)
+# - Output: data/macro_monthly_history.csv (append + dedupe by date)
 
 import os
 import sys
-import math
-from typing import Optional, Tuple
-
+import time
 import numpy as np
 import pandas as pd
 from fredapi import Fred
 
-# -----------------------
-# Config
-# -----------------------
+FRED_API_KEY = os.getenv("FRED_API_KEY")
+if not FRED_API_KEY:
+    print("ERROR: FRED_API_KEY is not set.", file=sys.stderr)
+    sys.exit(1)
 
-START_DATE = "1990-01-01"
+fred = Fred(api_key=FRED_API_KEY)
 
-# FRED series codes
-SERIES = {
-    # Core 3
-    "INDPRO": "INDPRO",                # monthly
-    "USSLIND": "USSLIND",              # monthly (Leading Index)
-    "DGS10": "DGS10",                  # daily
-    "DGS3MO": "DGS3MO",                # daily
-    # Additional indicators
-    "BAMLH0A0HYM2": "BAMLH0A0HYM2",    # daily (HY OAS)
-    "UNRATE": "UNRATE",                # monthly
-    "CPIAUCSL": "CPIAUCSL",            # monthly (CPI level, SA)
-    "A191RL1Q225SBEA": "A191RL1Q225SBEA",  # quarterly, Real GDP QoQ SAAR (%)
-    "UMCSENT": "UMCSENT",              # monthly
-    "HOUST": "HOUST",                  # monthly
-    "SP500": "SP500",                  # daily (S&P 500 index level)
-}
+OUT_PATH = "data/macro_monthly_history.csv"
+START = "1990-01-01"
 
-OUTFILE = "data/macro_monthly_history.csv"
+# ----- FRED series codes -----
+# Macro core
+INDPRO = "INDPRO"        # Industrial Production: Total Index (monthly)
+USSLIND = "USSLIND"      # Leading Index for the United States (monthly)
+DGS10 = "DGS10"          # 10-Year Treasury Constant Maturity Rate (daily)
+DGS3MO = "DGS3MO"        # 3-Month Treasury Constant Maturity Rate (daily)
 
+# Additional macro
+HY_OAS = "BAMLH0A0HYM2"  # ICE BofA US High Yield OAS (daily, bps)
+UNRATE = "UNRATE"        # Civilian Unemployment Rate (monthly, %)
+CPI = "CPIAUCSL"         # CPI (monthly, index)
+GDP_SAAR = "A191RL1Q225SBEA"  # Real GDP QoQ SAAR (%) (quarterly)
+UMCSENT = "UMCSENT"      # U. Michigan Consumer Sentiment (monthly)
+HOUST = "HOUST"          # Housing Starts (monthly)
+SP500 = "SP500"          # S&P 500 index level (daily)
+VIXCLS = "VIXCLS"        # CBOE VIX index (daily)
 
-# -----------------------
-# Helpers
-# -----------------------
+# ----- Risk params -----
+TREND_SMA_MONTHS = 10
+CREDIT_SMA_MONTHS = 12
+CREDIT_OAS_BPS_THRESHOLD = 500.0
+VIX_THRESHOLD = 25.0
 
-def get_fred() -> Fred:
-    api_key = os.environ.get("FRED_API_KEY")
-    if not api_key:
-        print("ERROR: FRED_API_KEY is not set in environment.", file=sys.stderr)
-        sys.exit(1)
-    return Fred(api_key=api_key)
+# ===================== Utilities =====================
 
+def safe_get_series(code: str, start: str) -> pd.Series:
+    """Get FRED series with retries, returning a float series with DatetimeIndex."""
+    last_err = None
+    for i in range(3):
+        try:
+            s = fred.get_series(code, observation_start=start)
+            s = pd.Series(s).dropna()
+            s.index = pd.to_datetime(s.index)
+            s = s.astype(float)
+            return s
+        except Exception as e:
+            last_err = e
+            wait = 2 * i
+            print(f"[fredapi] attempt {i+1} failed for {code}: {e} (sleep {wait}s)", file=sys.stderr)
+            time.sleep(wait)
+    raise last_err
 
-def to_month_start_index(idx: pd.Index) -> pd.DatetimeIndex:
-    """
-    Convert any DatetimeIndex to first-of-month timestamps.
-    """
-    dt = pd.to_datetime(idx)
-    return dt.to_period("M").to_timestamp(how="start")
-
-
-def monthly_from_daily_median(s: pd.Series) -> pd.Series:
-    """
-    For daily series: take monthly median and stamp to month start.
-    """
-    s = s.dropna()
+def to_month_start_from_daily(s: pd.Series) -> pd.Series:
+    """Daily -> month-end last -> set index to month start (YYYY-MM-01)."""
     if s.empty:
         return s
-    # groupby month using PeriodIndex, then median, then to month-start timestamps
-    grp = s.groupby(s.index.to_period("M")).median()
-    grp.index = grp.index.to_timestamp(how="start")
-    return grp.sort_index()
+    s = s.sort_index()
+    s = s.resample("ME").last()
+    s.index = s.index.to_period("M").to_timestamp(how="start")
+    return s.dropna()
 
-
-def monthly_from_monthly_value(s: pd.Series) -> pd.Series:
-    """
-    For monthly series: ensure index is month-start and sorted.
-    """
-    s = s.dropna()
-    if s.empty:
-        return s
-    s.index = to_month_start_index(s.index)
-    return s.sort_index()
-
-
-def monthly_from_quarterly_ffill(s: pd.Series) -> pd.Series:
-    """
-    For quarterly series (e.g., Real GDP QoQ SAAR): convert to quarter start,
-    then resample monthly and forward-fill within quarter.
-    """
-    s = s.dropna()
-    if s.empty:
-        return s
-    # Coerce to period Q, then to timestamp at quarter start
-    q = s.copy()
-    q.index = pd.to_datetime(q.index).to_period("Q").to_timestamp(how="start")
-    # Resample monthly and forward fill
-    m = q.resample("MS").ffill()
-    return m.sort_index()
-
-
-def pct_change_safe(s: pd.Series, periods: int) -> pd.Series:
-    """
-    Safe percent change that returns NaN when not enough history.
-    """
-    return s.pct_change(periods=periods) * 100.0
-
-
-def diff_bps(a: pd.Series, b: pd.Series) -> pd.Series:
-    """
-    (a - b) * 100 to get basis points if a,b are in %.
-    """
-    return (a - b) * 100.0
-
-
-def join_left(df: pd.DataFrame, name: str, s: pd.Series) -> pd.DataFrame:
-    return df.join(s.rename(name), how="outer")
-
-
-# -----------------------
-# Fetch & Transform
-# -----------------------
-
-def fetch_series(fred: Fred, code: str, start: str) -> pd.Series:
-    """
-    Fetch series from FRED as a pandas Series indexed by Timestamp.
-    """
-    s = fred.get_series(code, observation_start=start)
-    if s is None or len(s) == 0:
-        return pd.Series(dtype=float)
-    s = s.rename(code)
-    s.index = pd.to_datetime(s.index)
+def to_month_start_from_monthly(s: pd.Series) -> pd.Series:
+    """Monthly series -> set index to month start (YYYY-MM-01)."""
+    s = s.sort_index()
+    s.index = s.index.to_period("M").to_timestamp(how="start")
     return s
 
+def to_month_start_from_quarterly(s: pd.Series) -> pd.Series:
+    """Quarterly -> quarter start -> reindex monthly (MS) with forward-fill."""
+    if s.empty:
+        return s
+    s = s.sort_index()
+    s.index = s.index.to_period("Q").to_timestamp(how="start")  # quarter start
+    # monthly index from first to last, month starts
+    m_idx = pd.date_range(s.index.min(), s.index.max(), freq="MS")
+    s = s.reindex(m_idx).ffill()
+    return s
 
-def build_monthly_frame() -> pd.DataFrame:
-    fred = get_fred()
+def yoy_pct(s: pd.Series) -> pd.Series:
+    return (s / s.shift(12) - 1.0) * 100.0
 
-    # Fetch raw
-    raw = {}
-    for k, code in SERIES.items():
-        try:
-            raw[k] = fetch_series(fred, code, START_DATE)
-        except Exception as e:
-            print(f"[WARN] Failed to fetch {code}: {e}", file=sys.stderr)
-            raw[k] = pd.Series(dtype=float)
+def mom_pct(s: pd.Series) -> pd.Series:
+    return (s / s.shift(1) - 1.0) * 100.0
 
-    # Aggregate to monthly
-    indpro_m = monthly_from_monthly_value(raw["INDPRO"])
-    lei_m    = monthly_from_monthly_value(raw["USSLIND"])
-    dgs10_m  = monthly_from_daily_median(raw["DGS10"])
-    dgs3m_m  = monthly_from_daily_median(raw["DGS3MO"])
-    hy_m     = monthly_from_daily_median(raw["BAMLH0A0HYM2"])
-    unrate_m = monthly_from_monthly_value(raw["UNRATE"])
-    cpi_m    = monthly_from_monthly_value(raw["CPIAUCSL"])
-    gdpq_m   = monthly_from_quarterly_ffill(raw["A191RL1Q225SBEA"])
-    umc_m    = monthly_from_monthly_value(raw["UMCSENT"])
-    houst_m  = monthly_from_monthly_value(raw["HOUST"])
-    spx_m    = monthly_from_daily_median(raw["SP500"])
+def ensure_dir(path: str):
+    d = os.path.dirname(path)
+    if d and not os.path.exists(d):
+        os.makedirs(d, exist_ok=True)
 
-    # Start building output frame with a union of all month starts
-    idx = None
-    for s in [indpro_m, lei_m, dgs10_m, dgs3m_m, hy_m, unrate_m,
-              cpi_m, gdpq_m, umc_m, houst_m, spx_m]:
-        idx = s.index if idx is None else idx.union(s.index)
-
-    if idx is None:
-        return pd.DataFrame()
-
-    idx = pd.DatetimeIndex(sorted(idx))
-    df = pd.DataFrame(index=idx)
-
-    # Join base columns
-    df = join_left(df, "indpro", indpro_m)
-    df = join_left(df, "lei", lei_m)
-    df = join_left(df, "dgs10", dgs10_m)
-    df = join_left(df, "dgs3mo", dgs3m_m)
-    df = join_left(df, "hy_oas", hy_m)
-    df = join_left(df, "unrate", unrate_m)
-    df = join_left(df, "cpi", cpi_m)  # CPI level index (not YoY yet)
-    df = join_left(df, "gdp_saar", gdpq_m)  # QoQ SAAR (%), quarterly ffilled monthly
-    df = join_left(df, "umcsent", umc_m)
-    df = join_left(df, "houst", houst_m)
-    df = join_left(df, "sp500", spx_m)
-
-    # -----------------------
-    # Changes (MoM, YoY)
-    # -----------------------
-    # For level series, compute MoM and YoY % changes.
-    # Note: For gdp_saar (already a rate), MoM and YoY aren’t conceptually perfect,
-    # but included for uniformity (they’ll be diffs of the reported rate across months).
-    def add_changes(prefix: str):
-        s = df[prefix]
-        df[f"{prefix}_mom"] = pct_change_safe(s, periods=1)
-        df[f"{prefix}_yoy"] = pct_change_safe(s, periods=12)
-
-    for col in ["indpro", "lei", "dgs10", "dgs3mo", "hy_oas",
-                "unrate", "cpi", "gdp_saar", "umcsent", "houst", "sp500"]:
-        add_changes(col)
-
-    # -----------------------
-    # Yield Curve (bps) + its changes
-    # -----------------------
-    df["yield_curve_spread"] = diff_bps(df["dgs10"], df["dgs3mo"])
-    df["yield_curve_mom"] = pct_change_safe(df["yield_curve_spread"], periods=1)
-    df["yield_curve_yoy"] = pct_change_safe(df["yield_curve_spread"], periods=12)
-
-    # -----------------------
-    # Core 3 signals & macro_score
-    # -----------------------
-    # INDPRO signal: YoY > 0
-    df["indpro_signal"] = (df["indpro_yoy"] > 0).astype("Int64")
-
-    # LEI signal: YoY > 0
-    df["lei_signal"] = (df["lei_yoy"] > 0).astype("Int64")
-
-    # Yield curve signal: spread > 0 bps
-    df["yield_curve_signal"] = (df["yield_curve_spread"] > 0).astype("Int64")
-
-    # Sum of the 3 signals (handle NA as 0 in the sum)
-    sigs = df[["indpro_signal", "lei_signal", "yield_curve_signal"]].fillna(0).astype(int)
-    df["macro_score"] = sigs.sum(axis=1)
-
-    # Placeholder for earnings yield (we don’t have earnings via FRED)
-    df["sp500_earnings_yield"] = np.nan
-
-    # Clean up index to first-of-month and finalize
-    df.index = to_month_start_index(df.index)
-    df = df.sort_index()
-
-    # Drop rows that are entirely NA across the main base fields (optional)
-    base_cols = ["indpro", "lei", "dgs10", "dgs3mo", "hy_oas", "unrate", "cpi",
-                 "gdp_saar", "umcsent", "houst", "sp500"]
-    df = df.dropna(axis=0, how="all", subset=base_cols)
-
-    # Reorder columns for readability
-    ordered_cols = [
-        # Core inputs
-        "indpro", "indpro_mom", "indpro_yoy", "indpro_signal",
-        "lei", "lei_mom", "lei_yoy", "lei_signal",
-        "dgs10", "dgs10_mom", "dgs10_yoy",
-        "dgs3mo", "dgs3mo_mom", "dgs3mo_yoy",
-        "yield_curve_spread", "yield_curve_mom", "yield_curve_yoy", "yield_curve_signal",
-        "macro_score",
-        # Additional indicators
-        "hy_oas", "hy_oas_mom", "hy_oas_yoy",
-        "unrate", "unrate_mom", "unrate_yoy",
-        "cpi", "cpi_mom", "cpi_yoy",
-        "gdp_saar", "gdp_saar_mom", "gdp_saar_yoy",
-        "umcsent", "umcsent_mom", "umcsent_yoy",
-        "houst", "houst_mom", "houst_yoy",
-        "sp500", "sp500_mom", "sp500_yoy",
-        "sp500_earnings_yield",
-    ]
-    # Keep only those that exist (in case of missing series)
-    ordered_cols = [c for c in ordered_cols if c in df.columns]
-    df = df[ordered_cols]
-
-    return df
-
-
-# -----------------------
-# Main
-# -----------------------
+# ===================== Main =====================
 
 def main():
-    df = build_monthly_frame()
-    if df.empty:
-        print("No data fetched; nothing to write.", file=sys.stderr)
-        sys.exit(2)
+    # ---------- Pull macro ----------
+    indpro_m = to_month_start_from_monthly(safe_get_series(INDPRO, START)).rename("indpro")
+    lei_m = to_month_start_from_monthly(safe_get_series(USSLIND, START)).rename("lei")
 
-    # Ensure output folder exists
-    outdir = os.path.dirname(OUTFILE)
-    if outdir and not os.path.exists(outdir):
-        os.makedirs(outdir, exist_ok=True)
+    dgs10_m = to_month_start_from_daily(safe_get_series(DGS10, START)).rename("dgs10")
+    dgs3mo_m = to_month_start_from_daily(safe_get_series(DGS3MO, START)).rename("dgs3mo")
+    yield_curve_bps = ((dgs10_m - dgs3mo_m) * 100.0).rename("yield_curve_spread")
 
-    # Write CSV with date column (YYYY-MM-01)
-    out = df.copy()
-    out.insert(0, "date", out.index.strftime("%Y-%m-%d"))
-    out.to_csv(OUTFILE, index=False)
-    print(f"Wrote {OUTFILE} with {len(out):,} rows and {len(out.columns):,} columns.")
+    # Core macro signals
+    indpro_yoy = yoy_pct(indpro_m).rename("indpro_yoy")
+    lei_yoy = yoy_pct(lei_m).rename("lei_yoy")
+
+    # (optional) smooth YoY with 3m SMA to mimic your prior *_yoy_sm columns
+    indpro_yoy_sm = indpro_yoy.rolling(3, min_periods=1).mean().rename("indpro_yoy_sm")
+    lei_yoy_sm = lei_yoy.rolling(3, min_periods=1).mean().rename("lei_yoy_sm")
+
+    indpro_signal = (indpro_yoy_sm > 0).astype(int).rename("indpro_signal")
+    lei_signal = (lei_yoy_sm > 0).astype(int).rename("lei_signal")
+    yield_curve_signal = (yield_curve_bps > 0).astype(int).rename("yield_curve_signal")
+
+    macro_score = (indpro_signal + lei_signal + yield_curve_signal).rename("macro_score")
+    macro_regime = macro_score.apply(lambda x: "expansion" if x >= 2 else "contraction").rename("macro_regime")
+
+    # Additional macro indicators
+    hy_oas_m = to_month_start_from_daily(safe_get_series(HY_OAS, START)).rename("hy_oas")      # bps
+    unrate_m = to_month_start_from_monthly(safe_get_series(UNRATE, START)).rename("unrate")   # %
+    cpi_m = to_month_start_from_monthly(safe_get_series(CPI, START)).rename("cpi")
+    cpi_yoy = yoy_pct(cpi_m).rename("cpi_yoy")
+
+    gdp_q = to_month_start_from_quarterly(safe_get_series(GDP_SAAR, START)).rename("gdp_saar")  # % (QoQ SAAR)
+    umcsent_m = to_month_start_from_monthly(safe_get_series(UMCSENT, START)).rename("umcsent")
+    houst_m = to_month_start_from_monthly(safe_get_series(HOUST, START)).rename("houst")
+
+    sp500_m = to_month_start_from_daily(safe_get_series(SP500, START)).rename("sp500")
+
+    # ---------- Risk (FRED-only) ----------
+    vix_m = to_month_start_from_daily(safe_get_series(VIXCLS, START)).rename("vix")
+
+    # MoM/YoY for risk levels (handy for UI)
+    sp500_mom = mom_pct(sp500_m).rename("sp500_mom")
+    sp500_yoy = yoy_pct(sp500_m).rename("sp500_yoy")
+
+    hy_oas_mom = mom_pct(hy_oas_m).rename("hy_oas_mom")
+    hy_oas_yoy = yoy_pct(hy_oas_m).rename("hy_oas_yoy")
+
+    vix_mom = mom_pct(vix_m).rename("vix_mom")
+    vix_yoy = yoy_pct(vix_m).rename("vix_yoy")
+
+    # Trend signal: SP500 vs 10-month SMA
+    sp500_sma_10m = sp500_m.rolling(TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean().rename("sp500_sma_10m")
+    trend_on = (sp500_m >= sp500_sma_10m).astype(int).rename("trend_on")
+
+    # Credit signal: HY OAS vs max(500 bps, 12-month SMA)
+    hy_oas_sma_12m = hy_oas_m.rolling(CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean().rename("hy_oas_sma_12m")
+    hy_barrier = pd.concat(
+        [pd.Series(CREDIT_OAS_BPS_THRESHOLD, index=hy_oas_m.index), hy_oas_sma_12m], axis=1
+    ).max(axis=1)
+    credit_off = (hy_oas_m > hy_barrier).astype(int).rename("credit_off")
+
+    # Vol signal: VIX > 25
+    vix_off = (vix_m > VIX_THRESHOLD).astype(int).rename("vix_off")
+
+    off_votes = (credit_off + vix_off).rename("off_votes")
+
+    def classify_risk(row):
+        if np.isnan(row.get("trend_on")) or np.isnan(row.get("off_votes")):
+            return np.nan
+        if row["trend_on"] == 1 and row["off_votes"] == 0:
+            return "On"
+        if row["off_votes"] >= 2:
+            return "Off"
+        return "Mixed"
+
+    # ---------- Assemble ----------
+    df = (
+        indpro_m.to_frame()
+        .join([indpro_yoy_sm, indpro_signal], how="outer")
+        .join([lei_m, lei_yoy_sm, lei_signal], how="outer")
+        .join([dgs10_m, dgs3mo_m, yield_curve_bps, yield_curve_signal], how="outer")
+        .join([macro_score, macro_regime], how="outer")
+        .join([hy_oas_m, unrate_m, cpi_yoy, gdp_q, umcsent_m, houst_m], how="outer")
+        .join([sp500_m], how="outer")
+        .join([vix_m], how="outer")
+        # risk extras
+        .join([sp500_mom, sp500_yoy, sp500_sma_10m, trend_on], how="outer")
+        .join([hy_oas_mom, hy_oas_yoy, hy_oas_sma_12m, credit_off], how="outer")
+        .join([vix_mom, vix_yoy, vix_off, off_votes], how="outer")
+        .sort_index()
+    )
+
+    df["risk_regime"] = df.apply(classify_risk, axis=1)
+
+    # (Optional) keep rows where we have at least macro core (or risk trio)
+    core_cols = ["indpro", "lei", "yield_curve_spread"]
+    risk_cols = ["sp500", "hy_oas", "vix"]
+    keep_mask = df[core_cols].notna().any(axis=1) | df[risk_cols].notna().any(axis=1)
+    df = df[keep_mask]
+
+    # Final formatting
+    df = df.reset_index().rename(columns={"index": "date"})
+    df["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
+
+    # Order columns: your original header first, then the risk block
+    cols_macro_first = [
+        "date",
+        "indpro", "indpro_yoy_sm", "indpro_signal",
+        "lei", "lei_yoy_sm", "lei_signal",
+        "dgs10", "dgs3mo", "yield_curve_spread", "yield_curve_signal",
+        "macro_score", "macro_regime",
+        "hy_oas", "unrate", "cpi_yoy", "gdp_saar", "umcsent", "houst",
+        "sp500",
+        # sp500_earnings_yield kept for compatibility (not derivable from FRED alone)
+        # leave as NaN so downstream isn’t broken if it expects the column
+        "sp500_earnings_yield",
+    ]
+
+    # Ensure the placeholder column exists
+    if "sp500_earnings_yield" not in df.columns:
+        df["sp500_earnings_yield"] = np.nan
+
+    cols_risk_block = [
+        # Risk levels + changes
+        "sp500_mom", "sp500_yoy",
+        "hy_oas_mom", "hy_oas_yoy",
+        "vix", "vix_mom", "vix_yoy",
+        # Risk SMAs + signals + composite
+        "sp500_sma_10m", "trend_on",
+        "hy_oas_sma_12m", "credit_off",
+        "vix_off", "off_votes", "risk_regime",
+    ]
+
+    # Build final ordered list (only include columns that exist)
+    final_cols = [c for c in cols_macro_first if c in df.columns] + [c for c in cols_risk_block if c in df.columns]
+    df = df[final_cols]
+
+    # Append + de-duplicate
+    ensure_dir(OUT_PATH)
+    if os.path.exists(OUT_PATH):
+        try:
+            old = pd.read_csv(OUT_PATH, parse_dates=["date"])
+            old["date"] = old["date"].dt.strftime("%Y-%m-%d")
+            combined = pd.concat([old, df], ignore_index=True)
+            combined = combined.sort_values("date").drop_duplicates(subset=["date"], keep="last")
+            combined.to_csv(OUT_PATH, index=False)
+            print(f"Wrote {OUT_PATH} with {len(combined):,} rows (latest {combined['date'].iloc[-1]})")
+            return
+        except Exception as e:
+            print(f"[WARN] Could not merge with existing {OUT_PATH}: {e}", file=sys.stderr)
+
+    df.to_csv(OUT_PATH, index=False)
+    print(f"Wrote {OUT_PATH} with {len(df):,} rows (latest {df['date'].iloc[-1]})")
 
 
 if __name__ == "__main__":
+    pd.set_option("display.width", 180)
+    pd.set_option("display.max_columns", 200)
     main()
