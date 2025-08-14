@@ -1,0 +1,35 @@
+name: Compute Monthly Risk
+
+on:
+  workflow_dispatch:   # run manually from GitHub Actions tab
+  schedule:
+    - cron: "0 9 2 * *"  # 9:00 UTC on the 2nd of every month
+
+jobs:
+  compute-risk-monthly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run compute_risk_monthly.py
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          python src/compute_risk_monthly.py
+
+      - name: Commit and push updated CSV
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add data/risk_monthly_history.csv
+          git commit -m "Update monthly risk data" || echo "No changes to commit"
+          git push
