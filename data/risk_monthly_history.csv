@@ -1,5 +1,5 @@
-date
-sp500, sp500_sma_10m, sp500_mom, sp500_yoy, trend_on
-hy_oas, hy_oas_sma_12m, hy_oas_mom, hy_oas_yoy, credit_off
-vix, vix_mom, vix_yoy, vix_off
+date,
+sp500, sp500_sma_10m, sp500_mom, sp500_yoy, trend_on,
+hyg_lqd_ratio, hyg_lqd_sma_12m, hyg_lqd_ratio_mom, hyg_lqd_ratio_yoy, credit_off,
+vix, vix_mom, vix_yoy, vix3m, vix_off,
 off_votes, regime
