@@ -2,7 +2,7 @@
 # Unified Macro + Risk monthly pipeline (FRED-only) with per-series completion rules.
 # - Daily series: monthly median; if a month missing entirely -> time interpolate, then ffill/bfill.
 # - Monthly series: use monthly; if missing -> time interpolate (avg of prior & next), then ffill/bfill at edges.
-# - Quarterly series: repeat value to all months in quarter (ffill monthly), then bfill at start.
+# - Quarterly series: repeat value to all months in the quarter; then bfill at the start.
 # - MoM: daily/monthly -> pct_change(1); quarterly -> pct_change(3).
 # - YoY: pct_change(12).
 # - Macro signals: INDPRO YoY>0, USSLIND YoY>0, spread(DGS10-DGS3MO)>0 (bps)
@@ -12,9 +12,7 @@
 import os
 import sys
 import time
-import math
 import pandas as pd
-from datetime import datetime
 from fredapi import Fred
 
 FRED_API_KEY = os.getenv("FRED_API_KEY")
@@ -55,10 +53,10 @@ VIX_THRESHOLD = 25.0
 # ------------ Helpers ------------
 def month_index(start=START_DATE, end=None):
     if end is None:
-        # up to current month start
-        end = pd.Timestamp.today().to_period("M").to_timestamp("MS")
-    idx = pd.date_range(pd.to_datetime(start).to_period("M").to_timestamp("MS"),
-                        end, freq="MS")
+        # current month start
+        end = pd.Timestamp.today().to_period("M").to_timestamp(how="start")
+    start = pd.to_datetime(start).to_period("M").to_timestamp(how="start")
+    idx = pd.date_range(start, end, freq="MS")
     return idx
 
 def safe_fred(code, start=START_DATE):
@@ -78,42 +76,32 @@ def safe_fred(code, start=START_DATE):
     raise last_err
 
 def complete_daily_to_monthly_median(s: pd.Series, idx: pd.DatetimeIndex) -> pd.Series:
-    """Daily -> monthly median, aligned to month-start. Fill any empty months via time interpolation, then ffill/bfill."""
-    # Resample to monthly start using median of daily obs within the month
-    m = s.resample("MS").median()  # median of all daily values per calendar month
-    # Align to full index
+    """Daily -> monthly median (month-start index). Fill empty months via time interpolation, then ffill/bfill."""
+    m = s.resample("MS").median()
     m = m.reindex(idx)
-    # Fill gaps via time-based interpolation (avg of neighbors when single missing)
-    m = m.interpolate(method="time", limit_direction="both")
-    # Final pad in case edges remain
-    m = m.ffill().bfill()
+    m = m.interpolate(method="time", limit_direction="both").ffill().bfill()
     return m
 
 def complete_monthly(s: pd.Series, idx: pd.DatetimeIndex) -> pd.Series:
-    """Monthly source -> align; fill missing as average of prior/next (time interpolation), then ffill/bfill edges."""
-    # Ensure monthly start index for the raw series
+    """Monthly -> align to month-start index; fill gaps by time interpolation (avg neighbors), then ffill/bfill edges."""
     s_m = s.resample("MS").last()
     s_m = s_m.reindex(idx)
-    s_m = s_m.interpolate(method="time", limit_direction="both")
-    s_m = s_m.ffill().bfill()
+    s_m = s_m.interpolate(method="time", limit_direction="both").ffill().bfill()
     return s_m
 
 def complete_quarterly_to_monthly(s: pd.Series, idx: pd.DatetimeIndex) -> pd.Series:
-    """Quarterly source -> repeat the quarter's value for each month in the quarter (ffill), then bfill edges."""
-    # Put quarterly points onto monthly grid by forward fill
-    # First, ensure the series has a monthly index holding quarter-end points
-    s_q = s.copy()
-    s_q = s_q.resample("M").last()  # quarter prints typically at quarter-end month
-    s_q = s_q.reindex(pd.date_range(idx.min(), idx.max(), freq="M"))
-    s_q = s_q.ffill().bfill()
-    # Now place onto month-start index
-    s_ms = s_q.resample("MS").first()  # convert "month-end aligned" to month-start stamps
-    s_ms = s_ms.reindex(idx)
-    s_ms = s_ms.ffill().bfill()
+    """Quarterly -> repeat the quarter's value for each month in the quarter."""
+    # Put quarterly prints onto quarter-end (Q-DEC) grid, then expand monthly with ffill
+    s_q = s.resample("Q-DEC").last()
+    s_qm = s_q.resample("ME").ffill()   # month-end frequency filled with the quarter value
+    # Convert month-end index to month-start stamps
+    s_ms = s_qm.copy()
+    s_ms.index = s_ms.index.to_period("M").to_timestamp(how="start")
+    # Align to master monthly index
+    s_ms = s_ms.reindex(idx).ffill().bfill()
     return s_ms
 
 def pct_mom(series: pd.Series, quarterly: bool) -> pd.Series:
-    """MoM: daily/monthly -> 1 month; quarterly -> 3 months (month vs prior quarter)."""
     periods = 3 if quarterly else 1
     return series.pct_change(periods) * 100.0
 
@@ -138,7 +126,7 @@ def main():
     s_sp500    = safe_fred(SP500, START_DATE)
     s_vix      = safe_fred(VIXCLS, START_DATE)
 
-    # ---- Complete to monthly per your rules ----
+    # ---- Complete to monthly per rules ----
     # Daily -> monthly median
     dgs10_m   = complete_daily_to_monthly_median(s_dgs10, idx)
     dgs3mo_m  = complete_daily_to_monthly_median(s_dgs3mo, idx)
@@ -146,7 +134,7 @@ def main():
     sp500_m   = complete_daily_to_monthly_median(s_sp500, idx)
     vix_m     = complete_daily_to_monthly_median(s_vix, idx)
 
-    # Monthly -> monthly with time interpolation for gaps
+    # Monthly -> monthly with interpolation for gaps
     indpro_m  = complete_monthly(s_indpro, idx)
     lei_m     = complete_monthly(s_lei, idx)
     unrate_m  = complete_monthly(s_unrate, idx)
@@ -154,14 +142,13 @@ def main():
     umcsent_m = complete_monthly(s_umcsent, idx)
     houst_m   = complete_monthly(s_houst, idx)
 
-    # Quarterly -> monthly repeat per quarter
+    # Quarterly -> monthly (repeat within quarter)
     gdp_m     = complete_quarterly_to_monthly(s_gdp, idx)
 
     # ---- Derived: yield curve spread (bps) ----
     spread_m = (dgs10_m - dgs3mo_m) * 100.0
 
     # ---- MoM & YoY for each metric ----
-    # Quarterly flag only for GDP
     metrics = {
         "indpro":      (indpro_m,      False),
         "lei":         (lei_m,         False),
@@ -188,7 +175,6 @@ def main():
     all_df = pd.concat(frames, axis=1).reindex(idx).sort_index()
 
     # ---- Macro signals/scores ----
-    # YoY for indpro/lei computed above
     indpro_sig = (all_df["indpro_yoy"] > 0).astype(int)
     lei_sig    = (all_df["lei_yoy"] > 0).astype(int)
     curve_sig  = (all_df["yield_curve"] > 0).astype(int)
@@ -203,7 +189,6 @@ def main():
     all_df["macro_regime"]         = macro_regime
 
     # ---- Risk signals/scores ----
-    # SP500 10m SMA (monthly series), HY OAS 12m SMA (monthly series)
     all_df["sp500_sma_10m"]  = all_df["sp500"].rolling(TREND_SMA_MONTHS, min_periods=TREND_SMA_MONTHS).mean()
     all_df["hy_oas_sma_12m"] = all_df["hy_oas"].rolling(CREDIT_SMA_MONTHS, min_periods=CREDIT_SMA_MONTHS).mean()
 
@@ -235,7 +220,6 @@ def main():
     out = all_df.reset_index().rename(columns={"index": "date"})
     out["date"] = out["date"].dt.strftime("%Y-%m-%d")
 
-    # Column order (grouped)
     ordered = [
         "date",
         # Core macro levels
@@ -253,10 +237,9 @@ def main():
         "sp500_yoy","vix_yoy","hy_oas_yoy",
         # Risk signals
         "trend_on","credit_off","vix_off","off_votes","risk_regime",
-        # Raw rates levels (optional reference)
+        # Raw rates levels (reference)
         "dgs10","dgs3mo","dgs10_mom","dgs3mo_mom","dgs10_yoy","dgs3mo_yoy",
     ]
-    # Keep only columns that exist
     cols = [c for c in ordered if c in out.columns]
     out = out[cols]
 
