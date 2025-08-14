@@ -1,0 +1,37 @@
+name: Macro Monthly
+
+on:
+  schedule:
+    # 1st of every month at 13:00 UTC (adjust if you like)
+    - cron: "0 13 1 * *"
+  workflow_dispatch: {}
+
+jobs:
+  compute-macro-monthly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run monthly macro
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          python src/compute_macro_monthly.py
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/macro_monthly_history.csv
+          git diff --quiet && echo "No changes" || (git commit -m "Update macro_monthly_history.csv" && git push)
