@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Methodology — Risk Regime Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e1e4ed;
+    --muted: #8b8fa3;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --blue: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .back { display: inline-block; margin-bottom: 16px; font-size: 0.85rem; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+
+  h2 {
+    font-size: 1.1rem;
+    margin: 32px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .metric-card h3 {
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .metric-card .fred-code {
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: rgba(139,143,163,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  .metric-card .signal-rule {
+    font-size: 0.8rem;
+    color: var(--green);
+    margin: 6px 0 8px;
+    font-weight: 500;
+  }
+  .metric-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .metric-card p:last-child { margin-bottom: 0; }
+
+  .regime-logic {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .regime-logic h3 { font-size: 0.95rem; margin-bottom: 10px; }
+  .regime-logic table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .regime-logic th { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 500; }
+  .regime-logic td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .tag-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .tag-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .tag-yellow { background: rgba(234,179,8,0.15); color: var(--yellow); }
+
+  .data-note {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-top: 24px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .data-note h3 { font-size: 0.95rem; color: var(--text); margin-bottom: 8px; }
+  .data-note ul { margin-left: 18px; }
+  .data-note li { margin-bottom: 4px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.72rem; padding: 20px 0 12px; }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back">&larr; Back to Dashboard</a>
+
+<h1>Methodology</h1>
+<p class="subtitle">How the macro and risk regime classifications are calculated</p>
+
+<!-- ===== MACRO REGIME ===== -->
+<h2>Macro Regime</h2>
+
+<div class="regime-logic">
+  <h3>How it works</h3>
+  <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">
+    Three binary signals are computed each month. Each signal scores 1 (positive) or 0 (negative). The scores are summed to produce a <strong>macro score</strong> from 0 to 3.
+  </p>
+  <table>
+    <thead><tr><th>Score</th><th>Regime</th></tr></thead>
+    <tbody>
+      <tr><td>2 or 3</td><td><span class="tag tag-green">Expansion</span></td></tr>
+      <tr><td>0 or 1</td><td><span class="tag tag-red">Contraction</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="metric-card">
+  <h3>Industrial Production (YoY) <span class="fred-code">INDPRO</span></h3>
+  <div class="signal-rule">Signal ON when: YoY % change &gt; 0</div>
+  <p>The Federal Reserve's index of real output from manufacturing, mining, and utilities. It's one of the broadest measures of the physical economy's output.</p>
+  <p><strong>Why it matters:</strong> When industrial production is growing year-over-year, it indicates that the real economy is expanding. Declining production often leads or coincides with recessions, and is one of the four indicators used by the NBER to date business cycles.</p>
+</div>
+
+<div class="metric-card">
+  <h3>Chicago Fed National Activity Index <span class="fred-code">CFNAI</span></h3>
+  <div class="signal-rule">Signal ON when: CFNAI &gt; 0</div>
+  <p>A weighted average of 85 monthly indicators of national economic activity. The index is designed so that zero represents trend growth and positive values indicate above-trend growth.</p>
+  <p><strong>Why it matters:</strong> Because it aggregates 85 indicators across production, employment, consumption, and housing, it provides a single comprehensive gauge of the economy. Persistent negative readings have historically preceded every recession since its inception.</p>
+</div>
+
+<div class="metric-card">
+  <h3>Yield Curve Spread (10Y &minus; 3M) <span class="fred-code">DGS10, DGS3MO</span></h3>
+  <div class="signal-rule">Signal ON when: spread &gt; 0 (curve is normal/positive)</div>
+  <p>The difference between the 10-Year Treasury yield and the 3-Month Treasury yield, expressed in basis points. A positive spread means long-term rates exceed short-term rates (normal conditions).</p>
+  <p><strong>Why it matters:</strong> An inverted yield curve (negative spread) has preceded every U.S. recession since 1960 with very few false signals. It reflects market expectations that the Fed will need to cut rates in the future due to economic weakness. It's widely regarded as one of the most reliable recession indicators.</p>
+</div>
+
+<!-- ===== RISK REGIME ===== -->
+<h2>Risk Regime</h2>
+
+<div class="regime-logic">
+  <h3>How it works</h3>
+  <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">
+    Three market-based signals are evaluated. The <strong>trend signal</strong> must be on, and zero <strong>stress signals</strong> must be firing, for risk to be fully "On."
+  </p>
+  <table>
+    <thead><tr><th>Condition</th><th>Regime</th></tr></thead>
+    <tbody>
+      <tr><td>Trend on AND 0 off-votes</td><td><span class="tag tag-green">On</span> (risk-on)</td></tr>
+      <tr><td>2 off-votes</td><td><span class="tag tag-red">Off</span> (risk-off)</td></tr>
+      <tr><td>Everything else</td><td><span class="tag tag-yellow">Mixed</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="metric-card">
+  <h3>S&P 500 Trend <span class="fred-code">SP500</span></h3>
+  <div class="signal-rule">Favorable when: S&P 500 &ge; 10-month simple moving average</div>
+  <p>The S&P 500 index level compared to its trailing 10-month simple moving average (SMA). This is a classic trend-following signal.</p>
+  <p><strong>Why it matters:</strong> When the market is above its long-term moving average, the prevailing trend is up — historically associated with positive forward returns. When it breaks below, it often signals the start of a sustained downturn. The 10-month SMA (roughly a 200-day moving average) filters out short-term noise while capturing meaningful trend changes.</p>
+</div>
+
+<div class="metric-card">
+  <h3>High-Yield Credit OAS <span class="fred-code">BAMLH0A0HYM2</span></h3>
+  <div class="signal-rule">Stress when: HY OAS &gt; max(500 bps, 12-month SMA)</div>
+  <p>The option-adjusted spread of the ICE BofA High Yield index — the extra yield investors demand to hold high-yield (junk) bonds over risk-free Treasuries, measured in basis points.</p>
+  <p><strong>Why it matters:</strong> Credit spreads are one of the market's most sensitive real-time measures of financial stress. Widening spreads mean investors are demanding more compensation for default risk, which typically occurs during economic slowdowns, liquidity crises, or market panics. The dual threshold (absolute 500 bps floor + rising above its own 12-month SMA) catches both sudden spikes and gradual deterioration.</p>
+</div>
+
+<div class="metric-card">
+  <h3>VIX (Volatility Index) <span class="fred-code">VIXCLS</span></h3>
+  <div class="signal-rule">Stress when: VIX &gt; 25</div>
+  <p>The CBOE Volatility Index, which measures the market's expectation of 30-day forward volatility implied by S&P 500 option prices. Often called the market's "fear gauge."</p>
+  <p><strong>Why it matters:</strong> Elevated VIX readings indicate that options traders expect large price swings ahead, which is typically associated with uncertainty, risk aversion, and market drawdowns. Readings above 25 historically correspond to periods of meaningful market stress, corrections, or crises. It tends to spike quickly during sell-offs, making it a useful real-time warning signal.</p>
+</div>
+
+<!-- ===== SUPPORTING METRICS ===== -->
+<h2>Supporting Metrics (displayed on dashboard)</h2>
+
+<div class="metric-card">
+  <h3>Unemployment Rate <span class="fred-code">UNRATE</span></h3>
+  <p>The percentage of the labor force that is unemployed and actively seeking work, reported monthly by the Bureau of Labor Statistics.</p>
+  <p><strong>Why it matters:</strong> Unemployment is a lagging indicator — it tends to rise after a recession has already begun and fall well after recovery is underway. However, the rate of change is informative: a rapid increase in unemployment (the "Sahm Rule") has reliably signaled the onset of recessions.</p>
+</div>
+
+<div class="metric-card">
+  <h3>CPI (Consumer Price Index) <span class="fred-code">CPIAUCSL</span></h3>
+  <p>A measure of the average change in prices paid by urban consumers for a basket of goods and services, reported monthly. The dashboard shows YoY % change (headline inflation).</p>
+  <p><strong>Why it matters:</strong> Inflation directly influences Fed policy. Persistently high inflation leads to rate hikes, which tighten financial conditions and can slow growth. Deflation signals weak demand. Both extremes create challenging environments for risk assets.</p>
+</div>
+
+<div class="metric-card">
+  <h3>Real GDP (QoQ SAAR) <span class="fred-code">A191RL1Q225SBEA</span></h3>
+  <p>The quarterly change in real gross domestic product at a seasonally adjusted annual rate. This is the headline GDP growth number reported by the BEA.</p>
+  <p><strong>Why it matters:</strong> GDP is the broadest measure of economic output. Two consecutive quarters of negative GDP growth is the commonly cited (though unofficial) definition of a recession. Because it's quarterly and heavily revised, it's less useful as a real-time signal, but provides important context for the overall economic picture.</p>
+</div>
+
+<div class="metric-card">
+  <h3>Michigan Consumer Sentiment <span class="fred-code">UMCSENT</span></h3>
+  <p>The University of Michigan's survey-based index of consumer confidence, covering personal finances, business conditions, and buying conditions.</p>
+  <p><strong>Why it matters:</strong> Consumer spending drives roughly 70% of U.S. GDP. When consumers feel pessimistic, they tend to pull back on spending, which can become self-fulfilling. Sharp drops in sentiment have preceded several recessions, though the relationship is noisy.</p>
+</div>
+
+<div class="metric-card">
+  <h3>Housing Starts <span class="fred-code">HOUST</span></h3>
+  <p>The number of new residential construction projects begun during a given month, reported at a seasonally adjusted annual rate (SAAR).</p>
+  <p><strong>Why it matters:</strong> Housing is one of the most interest-rate-sensitive sectors of the economy. Declining housing starts often signal that higher rates are biting, and housing downturns have preceded many recessions. Residential investment is a leading indicator in the NBER framework.</p>
+</div>
+
+<!-- ===== DATA NOTES ===== -->
+<div class="data-note">
+  <h3>Data Notes</h3>
+  <ul>
+    <li>All data is sourced from <a href="https://fred.stlouisfed.org/" target="_blank">FRED</a> (Federal Reserve Economic Data).</li>
+    <li>Daily series (S&P 500, VIX, yields, credit spreads) are converted to monthly by taking the median value for each month.</li>
+    <li>Quarterly GDP is repeated across all three months of each quarter.</li>
+    <li>Missing monthly values are filled via linear interpolation and edge-filling to ensure a complete time series.</li>
+    <li>Data is refreshed automatically on the 2nd of each month via GitHub Actions.</li>
+    <li>History begins January 2020.</li>
+  </ul>
+</div>
+
+<footer>
+  <a href="index.html">&larr; Back to Dashboard</a>
+</footer>
+
+</body>
+</html>

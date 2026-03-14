@@ -72,6 +72,27 @@
   .dot-on { background: var(--green); }
   .dot-off { background: var(--red); }
 
+  .signal-group-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .signal-group-label:not(:first-child) { margin-top: 8px; }
+  .signal-group-label a {
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 0.7rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .signal-group-label a:hover { text-decoration: underline; }
+
   /* Charts */
   .chart-grid {
     display: grid;
@@ -194,6 +215,9 @@ function buildDashboard(rows) {
     { name: 'VIX Stress', key: 'vix_off', invert: true },
   ];
 
+  const macroOn = parseInt(latest.macro_score) || 0;
+  const riskOk = (parseInt(latest.trend_on) || 0) + (1 - (parseInt(latest.credit_off) || 0)) + (1 - (parseInt(latest.vix_off) || 0));
+
   const app = document.getElementById('app');
   app.innerHTML = `
     <!-- Regime cards -->
@@ -212,12 +236,20 @@ function buildDashboard(rows) {
 
     <!-- Signal pills -->
     <div class="signals-row">
+      <div class="signal-group-label">
+        <span>Macro Signals (${macroOn}/3 = ${latest.macro_regime})</span>
+        <a href="methodology.html">Learn more &rarr;</a>
+      </div>
       ${macroSignals.map(s => `
         <div class="signal-pill">
           <span>${s.name}</span>
           <span class="dot ${parseInt(latest[s.key]) === 1 ? 'dot-on' : 'dot-off'}"></span>
         </div>
       `).join('')}
+      <div class="signal-group-label">
+        <span>Risk Signals (${riskOk}/3 favorable = ${latest.risk_regime})</span>
+        <a href="methodology.html">Learn more &rarr;</a>
+      </div>
       ${riskSignals.map(s => {
         const on = s.invert ? parseInt(latest[s.key]) === 0 : parseInt(latest[s.key]) === 1;
         return `
