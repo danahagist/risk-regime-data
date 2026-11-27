@@ -342,7 +342,7 @@
    "date": "2007-11",
    "consensus": 1.2674,
    "neutral": 1.2805,
-   "sixty_forty": 1.255,
+   "sixty_forty": 1.2549,
    "stocks": 1.3303
   },
   {
@@ -1020,7 +1020,7 @@
   {
    "date": "2015-12",
    "consensus": 1.9566,
-   "neutral": 1.932,
+   "neutral": 1.9319,
    "sixty_forty": 1.9658,
    "stocks": 2.1708
   },
@@ -1461,7 +1461,7 @@
   {
    "date": "2021-03",
    "consensus": 3.2787,
-   "neutral": 3.3507,
+   "neutral": 3.3506,
    "sixty_forty": 3.3958,
    "stocks": 4.6633
   },
@@ -1908,7 +1908,7 @@
   },
   {
    "date": "2026-07",
-   "consensus": 5.5231,
+   "consensus": 5.523,
    "neutral": 5.4626,
    "sixty_forty": 5.2573,
    "stocks": 9.4352
@@ -1941,34 +1941,34 @@
    "name": "Growth and inflation quadrants",
    "family": "macro",
    "stats": {
-    "start": "2003-05",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 282,
-    "cagr": 0.0691,
-    "volatility": 0.1089,
+    "months": 277,
+    "cagr": 0.0684,
+    "volatility": 0.1093,
     "max_drawdown": -0.2059,
     "worst_12m": -0.2052,
-    "sharpe": 0.5054,
+    "sharpe": 0.4968,
     "horizons": {
-     "3m": 0.0179,
-     "6m": 0.036,
-     "1y": 0.0698,
-     "3y": 0.063,
-     "5y": 0.0606,
-     "10y": 0.0693
+     "3m": 0.0177,
+     "6m": 0.0347,
+     "1y": 0.0687,
+     "3y": 0.0625,
+     "5y": 0.0604,
+     "10y": 0.0698
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1139,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0297,
-      "6m": 0.0605,
-      "1y": 0.1212,
-      "3y": 0.1087,
-      "5y": 0.1035,
-      "10y": 0.1129
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -1985,11 +1985,11 @@
     }
    },
    "time": {
-    "stocks": 0.4645,
-    "mixed": 0.2376,
-    "cash": 0.2979
+    "stocks": 0.4657,
+    "mixed": 0.2419,
+    "cash": 0.2924
    },
-   "switches_per_year": 4.6383,
+   "switches_per_year": 4.6354,
    "forward": {
     "1": {
      "months": 195,
@@ -2016,34 +2016,34 @@
    "name": "Investment Clock",
    "family": "macro",
    "stats": {
-    "start": "2003-09",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 278,
-    "cagr": 0.0817,
-    "volatility": 0.0917,
+    "months": 277,
+    "cagr": 0.0825,
+    "volatility": 0.0918,
     "max_drawdown": -0.1713,
     "worst_12m": -0.1553,
-    "sharpe": 0.7087,
+    "sharpe": 0.7163,
     "horizons": {
-     "3m": 0.0208,
-     "6m": 0.0413,
-     "1y": 0.0822,
-     "3y": 0.0752,
-     "5y": 0.0734,
+     "3m": 0.0207,
+     "6m": 0.041,
+     "1y": 0.0821,
+     "3y": 0.0751,
+     "5y": 0.0735,
      "10y": 0.0758
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1107,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0293,
-      "6m": 0.0593,
-      "1y": 0.1202,
-      "3y": 0.1085,
-      "5y": 0.1038,
-      "10y": 0.1138
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -2060,11 +2060,11 @@
     }
    },
    "time": {
-    "stocks": 0.1439,
-    "mixed": 0.6583,
-    "cash": 0.1978
+    "stocks": 0.1408,
+    "mixed": 0.6606,
+    "cash": 0.1986
    },
-   "switches_per_year": 2.7626,
+   "switches_per_year": 2.7726,
    "forward": {
     "1": {
      "months": 96,
@@ -2091,34 +2091,34 @@
    "name": "Business cycle phase",
    "family": "macro",
    "stats": {
-    "start": "2003-02",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 285,
-    "cagr": 0.0945,
-    "volatility": 0.1043,
+    "months": 277,
+    "cagr": 0.0897,
+    "volatility": 0.1039,
     "max_drawdown": -0.216,
     "worst_12m": -0.1747,
-    "sharpe": 0.7501,
+    "sharpe": 0.7084,
     "horizons": {
-     "3m": 0.0243,
-     "6m": 0.048,
-     "1y": 0.0939,
-     "3y": 0.0855,
-     "5y": 0.0829,
-     "10y": 0.0932
+     "3m": 0.0226,
+     "6m": 0.0448,
+     "1y": 0.0895,
+     "3y": 0.0845,
+     "5y": 0.083,
+     "10y": 0.0935
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1159,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0307,
-      "6m": 0.0618,
-      "1y": 0.1238,
-      "3y": 0.1094,
-      "5y": 0.1037,
-      "10y": 0.1123
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -2135,11 +2135,11 @@
     }
    },
    "time": {
-    "stocks": 0.5088,
-    "mixed": 0.3439,
-    "cash": 0.1474
+    "stocks": 0.4946,
+    "mixed": 0.3538,
+    "cash": 0.1516
    },
-   "switches_per_year": 0.5053,
+   "switches_per_year": 0.5199,
    "forward": {
     "1": {
      "months": 198,
@@ -2166,34 +2166,34 @@
    "name": "Yield curve recession model",
    "family": "recession",
    "stats": {
-    "start": "2003-02",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 285,
-    "cagr": 0.0944,
-    "volatility": 0.1312,
+    "months": 277,
+    "cagr": 0.0896,
+    "volatility": 0.1316,
     "max_drawdown": -0.5078,
     "worst_12m": -0.4342,
-    "sharpe": 0.6199,
+    "sharpe": 0.5835,
     "horizons": {
-     "3m": 0.0254,
-     "6m": 0.0511,
-     "1y": 0.1011,
-     "3y": 0.0885,
-     "5y": 0.0885,
-     "10y": 0.1017
+     "3m": 0.0237,
+     "6m": 0.0479,
+     "1y": 0.0969,
+     "3y": 0.087,
+     "5y": 0.089,
+     "10y": 0.1035
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1159,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0307,
-      "6m": 0.0618,
-      "1y": 0.1238,
-      "3y": 0.1094,
-      "5y": 0.1037,
-      "10y": 0.1123
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -2210,11 +2210,11 @@
     }
    },
    "time": {
-    "stocks": 0.7298,
-    "mixed": 0.1825,
-    "cash": 0.0877
+    "stocks": 0.722,
+    "mixed": 0.1877,
+    "cash": 0.0903
    },
-   "switches_per_year": 0.5895,
+   "switches_per_year": 0.6065,
    "forward": {
     "1": {
      "months": 335,
@@ -2316,34 +2316,34 @@
    "name": "Leading activity (CFNAI)",
    "family": "recession",
    "stats": {
-    "start": "2003-09",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 278,
-    "cagr": 0.0955,
-    "volatility": 0.1062,
+    "months": 277,
+    "cagr": 0.0964,
+    "volatility": 0.1063,
     "max_drawdown": -0.2191,
     "worst_12m": -0.1896,
-    "sharpe": 0.745,
+    "sharpe": 0.7518,
     "horizons": {
-     "3m": 0.0243,
-     "6m": 0.0482,
+     "3m": 0.0241,
+     "6m": 0.0479,
      "1y": 0.096,
      "3y": 0.0897,
-     "5y": 0.0878,
+     "5y": 0.0879,
      "10y": 0.0936
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1107,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0293,
-      "6m": 0.0593,
-      "1y": 0.1202,
-      "3y": 0.1085,
-      "5y": 0.1038,
-      "10y": 0.1138
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -2360,11 +2360,11 @@
     }
    },
    "time": {
-    "stocks": 0.4317,
-    "mixed": 0.5,
-    "cash": 0.0683
+    "stocks": 0.4296,
+    "mixed": 0.5018,
+    "cash": 0.0686
    },
-   "switches_per_year": 1.7698,
+   "switches_per_year": 1.7762,
    "forward": {
     "1": {
      "months": 212,
@@ -2391,34 +2391,34 @@
    "name": "Jobless claims trend",
    "family": "recession",
    "stats": {
-    "start": "2003-02",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 285,
-    "cagr": 0.1039,
-    "volatility": 0.1217,
+    "months": 277,
+    "cagr": 0.0993,
+    "volatility": 0.1218,
     "max_drawdown": -0.2588,
     "worst_12m": -0.1944,
-    "sharpe": 0.7299,
+    "sharpe": 0.6934,
     "horizons": {
-     "3m": 0.027,
-     "6m": 0.0535,
-     "1y": 0.1056,
-     "3y": 0.0951,
-     "5y": 0.0885,
-     "10y": 0.0975
+     "3m": 0.0254,
+     "6m": 0.0504,
+     "1y": 0.1016,
+     "3y": 0.0937,
+     "5y": 0.0881,
+     "10y": 0.0974
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1159,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0307,
-      "6m": 0.0618,
-      "1y": 0.1238,
-      "3y": 0.1094,
-      "5y": 0.1037,
-      "10y": 0.1123
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -2435,11 +2435,11 @@
     }
    },
    "time": {
-    "stocks": 0.8702,
-    "mixed": 0.0316,
-    "cash": 0.0982
+    "stocks": 0.8664,
+    "mixed": 0.0325,
+    "cash": 0.1011
    },
-   "switches_per_year": 0.6737,
+   "switches_per_year": 0.6931,
    "forward": {
     "1": {
      "months": 363,
@@ -2616,34 +2616,34 @@
    "name": "Financial conditions",
    "family": "policy",
    "stats": {
-    "start": "2003-02",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 285,
-    "cagr": 0.123,
-    "volatility": 0.1118,
+    "months": 277,
+    "cagr": 0.119,
+    "volatility": 0.1117,
     "max_drawdown": -0.235,
     "worst_12m": -0.1772,
-    "sharpe": 0.9389,
+    "sharpe": 0.905,
     "horizons": {
-     "3m": 0.0312,
-     "6m": 0.0623,
-     "1y": 0.1247,
-     "3y": 0.1158,
-     "5y": 0.1118,
-     "10y": 0.1156
+     "3m": 0.0297,
+     "6m": 0.0594,
+     "1y": 0.1211,
+     "3y": 0.1149,
+     "5y": 0.1114,
+     "10y": 0.1157
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1159,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0307,
-      "6m": 0.0618,
-      "1y": 0.1238,
-      "3y": 0.1094,
-      "5y": 0.1037,
-      "10y": 0.1123
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -2660,11 +2660,11 @@
     }
    },
    "time": {
-    "stocks": 0.7789,
-    "mixed": 0.1193,
-    "cash": 0.1018
+    "stocks": 0.7726,
+    "mixed": 0.1227,
+    "cash": 0.1047
    },
-   "switches_per_year": 1.5158,
+   "switches_per_year": 1.5596,
    "forward": {
     "1": {
      "months": 336,
@@ -2991,34 +2991,34 @@
    "name": "High-yield spread regime",
    "family": "credit_vol",
    "stats": {
-    "start": "2003-04",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 283,
-    "cagr": 0.1077,
-    "volatility": 0.1061,
+    "months": 277,
+    "cagr": 0.1019,
+    "volatility": 0.1055,
     "max_drawdown": -0.2175,
     "worst_12m": -0.1763,
-    "sharpe": 0.8525,
+    "sharpe": 0.805,
     "horizons": {
-     "3m": 0.0266,
-     "6m": 0.0531,
-     "1y": 0.1051,
-     "3y": 0.0968,
-     "5y": 0.0934,
-     "10y": 0.0975
+     "3m": 0.0256,
+     "6m": 0.051,
+     "1y": 0.103,
+     "3y": 0.096,
+     "5y": 0.0928,
+     "10y": 0.0974
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1173,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0302,
-      "6m": 0.0609,
-      "1y": 0.122,
-      "3y": 0.109,
-      "5y": 0.1035,
-      "10y": 0.1127
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -3035,11 +3035,11 @@
     }
    },
    "time": {
-    "stocks": 0.6537,
-    "mixed": 0.2332,
-    "cash": 0.1131
+    "stocks": 0.6462,
+    "mixed": 0.2383,
+    "cash": 0.1155
    },
-   "switches_per_year": 1.1873,
+   "switches_per_year": 1.213,
    "forward": {
     "1": {
      "months": 271,
@@ -3066,34 +3066,34 @@
    "name": "VIX level and term structure",
    "family": "credit_vol",
    "stats": {
-    "start": "2003-08",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 279,
-    "cagr": 0.0909,
-    "volatility": 0.1042,
+    "months": 277,
+    "cagr": 0.0912,
+    "volatility": 0.1045,
     "max_drawdown": -0.2008,
     "worst_12m": -0.1967,
-    "sharpe": 0.7178,
+    "sharpe": 0.7179,
     "horizons": {
-     "3m": 0.0234,
-     "6m": 0.0466,
-     "1y": 0.0937,
-     "3y": 0.0873,
-     "5y": 0.083,
-     "10y": 0.0909
+     "3m": 0.0231,
+     "6m": 0.0459,
+     "1y": 0.0935,
+     "3y": 0.0871,
+     "5y": 0.0831,
+     "10y": 0.091
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1112,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0294,
-      "6m": 0.0597,
+      "3m": 0.0292,
+      "6m": 0.059,
       "1y": 0.1203,
-      "3y": 0.1085,
-      "5y": 0.1037,
-      "10y": 0.1136
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -3110,11 +3110,11 @@
     }
    },
    "time": {
-    "stocks": 0.6738,
-    "mixed": 0.2545,
-    "cash": 0.0717
+    "stocks": 0.6715,
+    "mixed": 0.2563,
+    "cash": 0.0722
    },
-   "switches_per_year": 2.1075,
+   "switches_per_year": 2.1227,
    "forward": {
     "1": {
      "months": 271,
@@ -3141,34 +3141,34 @@
    "name": "Seasonality and election cycle",
    "family": "calendar",
    "stats": {
-    "start": "2003-02",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 285,
-    "cagr": 0.0978,
-    "volatility": 0.1188,
+    "months": 277,
+    "cagr": 0.0931,
+    "volatility": 0.1189,
     "max_drawdown": -0.4426,
     "worst_12m": -0.3592,
-    "sharpe": 0.6977,
+    "sharpe": 0.6595,
     "horizons": {
-     "3m": 0.0256,
-     "6m": 0.0511,
-     "1y": 0.1024,
-     "3y": 0.0929,
-     "5y": 0.0883,
-     "10y": 0.0932
+     "3m": 0.024,
+     "6m": 0.048,
+     "1y": 0.0983,
+     "3y": 0.0917,
+     "5y": 0.0886,
+     "10y": 0.0942
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1159,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0307,
-      "6m": 0.0618,
-      "1y": 0.1238,
-      "3y": 0.1094,
-      "5y": 0.1037,
-      "10y": 0.1123
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -3185,11 +3185,11 @@
     }
    },
    "time": {
-    "stocks": 0.5368,
-    "mixed": 0.3368,
-    "cash": 0.1263
+    "stocks": 0.5235,
+    "mixed": 0.3466,
+    "cash": 0.13
    },
-   "switches_per_year": 1.7263,
+   "switches_per_year": 1.7762,
    "forward": {
     "1": {
      "months": 235,
@@ -3441,34 +3441,34 @@
    "name": "Shiller CAPE and excess CAPE yield",
    "family": "valuation",
    "stats": {
-    "start": "1992-01",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 418,
-    "cagr": 0.0337,
-    "volatility": 0.0406,
+    "months": 277,
+    "cagr": 0.0294,
+    "volatility": 0.0498,
     "max_drawdown": -0.2164,
     "worst_12m": -0.2086,
-    "sharpe": 0.1998,
+    "sharpe": 0.2468,
     "horizons": {
-     "3m": 0.0086,
-     "6m": 0.0173,
-     "1y": 0.0347,
-     "3y": 0.0336,
-     "5y": 0.0326,
-     "10y": 0.0317
+     "3m": 0.0076,
+     "6m": 0.0155,
+     "1y": 0.0312,
+     "3y": 0.0297,
+     "5y": 0.028,
+     "10y": 0.0255
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1159,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0307,
-      "6m": 0.0618,
-      "1y": 0.1238,
-      "3y": 0.1094,
-      "5y": 0.1037,
-      "10y": 0.1123
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -3485,11 +3485,11 @@
     }
    },
    "time": {
-    "stocks": 0.0024,
-    "mixed": 0.0694,
-    "cash": 0.9282
+    "stocks": 0.0036,
+    "mixed": 0.1047,
+    "cash": 0.8917
    },
-   "switches_per_year": 0.3445,
+   "switches_per_year": 0.5199,
    "forward": {
     "1": {
      "months": 1,
@@ -3516,34 +3516,34 @@
    "name": "Fed model (equity risk premium)",
    "family": "valuation",
    "stats": {
-    "start": "2003-08",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 279,
-    "cagr": 0.0858,
-    "volatility": 0.1097,
+    "months": 277,
+    "cagr": 0.0865,
+    "volatility": 0.1101,
     "max_drawdown": -0.2143,
     "worst_12m": -0.1729,
-    "sharpe": 0.6441,
+    "sharpe": 0.6469,
     "horizons": {
-     "3m": 0.0221,
+     "3m": 0.0223,
      "6m": 0.0447,
-     "1y": 0.0914,
-     "3y": 0.0904,
-     "5y": 0.0929,
-     "10y": 0.1047
+     "1y": 0.0917,
+     "3y": 0.0906,
+     "5y": 0.0932,
+     "10y": 0.1051
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1112,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0294,
-      "6m": 0.0597,
+      "3m": 0.0292,
+      "6m": 0.059,
       "1y": 0.1203,
-      "3y": 0.1085,
-      "5y": 0.1037,
-      "10y": 0.1136
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -3560,11 +3560,11 @@
     }
    },
    "time": {
-    "stocks": 0.4086,
-    "mixed": 0.4194,
-    "cash": 0.172
+    "stocks": 0.4116,
+    "mixed": 0.4224,
+    "cash": 0.1661
    },
-   "switches_per_year": 1.2043,
+   "switches_per_year": 1.213,
    "forward": {
     "1": {
      "months": 114,
@@ -3591,34 +3591,34 @@
    "name": "Rule of 20",
    "family": "valuation",
    "stats": {
-    "start": "1997-06",
+    "start": "2003-10",
     "end": "2026-10",
-    "months": 353,
-    "cagr": 0.0552,
-    "volatility": 0.0476,
+    "months": 277,
+    "cagr": 0.0595,
+    "volatility": 0.0536,
     "max_drawdown": -0.1119,
     "worst_12m": -0.0229,
-    "sharpe": 0.6803,
+    "sharpe": 0.7704,
     "horizons": {
-     "3m": 0.0138,
-     "6m": 0.0279,
-     "1y": 0.0569,
-     "3y": 0.0569,
-     "5y": 0.0573,
-     "10y": 0.0633
+     "3m": 0.0149,
+     "6m": 0.0304,
+     "1y": 0.0625,
+     "3y": 0.0631,
+     "5y": 0.0628,
+     "10y": 0.067
     }
    },
    "benchmarks": {
     "stocks": {
-     "cagr": 0.1159,
+     "cagr": 0.1116,
      "max_drawdown": -0.5078,
      "horizons": {
-      "3m": 0.0307,
-      "6m": 0.0618,
-      "1y": 0.1238,
-      "3y": 0.1094,
-      "5y": 0.1037,
-      "10y": 0.1123
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
      }
     },
     "sixty_forty": {
@@ -3635,11 +3635,11 @@
     }
    },
    "time": {
-    "stocks": 0.0482,
-    "mixed": 0.221,
-    "cash": 0.7309
+    "stocks": 0.0614,
+    "mixed": 0.2816,
+    "cash": 0.657
    },
-   "switches_per_year": 0.6119,
+   "switches_per_year": 0.7798,
    "forward": {
     "1": {
      "months": 20,
@@ -3798,10 +3798,10 @@
      "1y": 0.1402
     },
     "0": {
-     "months": 36,
-     "3m": 0.0433,
-     "6m": 0.0756,
-     "1y": 0.1378
+     "months": 37,
+     "3m": 0.0429,
+     "6m": 0.0778,
+     "1y": 0.1395
     },
     "-1": {
      "months": 57,
@@ -4037,5 +4037,5 @@
    }
   }
  ],
- "generated_at": "2026-11-27 23:27 UTC"
+ "generated_at": "2026-11-27 23:30 UTC"
 }
