@@ -249,6 +249,38 @@ def test_fed_model_and_rule_of_20():
     assert fw.v_rule20(frame(rule20=25.0)).iloc[-1] == -1
 
 
+def test_stale_valuation_history_is_estimated_forward(raw, monthly):
+    # the published CAPE stops in 2023; recent months must be estimated, flagged, and joined without a jump
+    published = raw["SHILLER:CAPE"]
+    assert published.index[-1] < pd.Timestamp("2024-01-01")
+    last = monthly.iloc[-1]
+    assert bool(last["valuation_estimated"]) and 15 < last["cape"] < 60 and 10 < last["pe"] < 45
+    join = published.index[-1] + pd.offsets.MonthEnd(0)
+    assert monthly.loc[join, "cape"] == pytest.approx(published.iloc[-1])
+    step = monthly["cape"].loc[join:].pct_change().abs().iloc[1]
+    assert step < 0.10                                   # chain-linked: no break at the join
+    assert not monthly.loc[join, "valuation_estimated"]
+    # the estimated P/E matches price over interpolated earnings at the latest month
+    assert last["pe"] == pytest.approx(monthly["sp500"].iloc[-1] / 292.0, rel=0.08)
+
+
+def test_fresh_valuation_history_is_used_as_published(raw):
+    fresh = dict(raw)
+    idx = pd.date_range("1900-01-31", "2026-11-30", freq="ME")
+    fresh["SHILLER:CAPE"] = pd.Series(np.linspace(15, 38, len(idx)), index=idx)
+    fresh["SHILLER:PE"] = pd.Series(np.linspace(14, 25, len(idx)), index=idx)
+    m = fw.build_monthly(fresh, asof=ASOF)
+    assert m["cape"].iloc[-1] == pytest.approx(38.0) and m["pe"].iloc[-1] == pytest.approx(25.0)
+    assert not m["valuation_estimated"].any()
+
+
+def test_valuation_without_a_current_earnings_point_reports_no_data(raw):
+    stale = {k: v for k, v in raw.items() if k != "VAL:EPS_TTM"}
+    m = fw.build_monthly(stale, asof=ASOF)
+    assert np.isnan(m["cape"].iloc[-1]) and np.isnan(m["pe"].iloc[-1])   # three years old is not a reading
+    assert np.isnan(fw.v_cape(m).iloc[-1])
+
+
 def test_sentiment_is_contrarian():
     assert fw.v_sentiment(frame(aaii_spread=-30.0)).iloc[-1] == 1     # deep pessimism
     assert fw.v_sentiment(frame(aaii_spread=5.0)).iloc[-1] == 0

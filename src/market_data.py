@@ -8,6 +8,8 @@ Keys in the returned dict:
     PX:<TICKER>     daily adjusted close
     SHILLER:CAPE    monthly cyclically adjusted P/E
     SHILLER:PE      monthly trailing P/E
+    SHILLER:EPS, SHILLER:CPI, SHILLER:PRICE   Shiller's monthly earnings, CPI and price history
+    VAL:PE_NOW      today's trailing P/E for an S&P 500 fund (one observation)
     AAII:SPREAD     weekly bulls minus bears, in percentage points
 """
 from __future__ import annotations
@@ -35,7 +37,8 @@ TICKERS = {**ASSET_ETFS, **OTHER, **SECTORS}
 
 SOURCES = [
     {"id": "ETF prices", "name": f"Adjusted closes for {len(TICKERS)} ETFs (Yahoo Finance, Stooq as fallback)", "rights": "third_party", "prefix": "PX:"},
-    {"id": "Shiller CAPE and P/E", "name": "S&P 500 valuation history (multpl.com, Yale as fallback)", "rights": "third_party", "prefix": "SHILLER:"},
+    {"id": "Shiller CAPE and P/E", "name": "S&P 500 valuation history (Shiller's dataset; multpl.com when reachable)", "rights": "third_party", "prefix": "SHILLER:"},
+    {"id": "Current P/E", "name": "Trailing P/E of an S&P 500 index fund (Yahoo Finance)", "rights": "third_party", "prefix": "VAL:"},
     {"id": "AAII survey", "name": "AAII investor sentiment survey", "rights": "third_party", "prefix": "AAII:"},
 ]
 
@@ -137,25 +140,73 @@ def _yale() -> tuple[pd.Series, pd.Series]:
     return cape, pe
 
 
+MIRROR = "https://raw.githubusercontent.com/datasets/s-and-p-500/main/data/data.csv"
+
+
+def _shiller_mirror() -> dict[str, pd.Series]:
+    """Shiller's monthly dataset as republished on GitHub. Reliable to reach, but it
+    stops where Shiller's own file stops (2023), so it supplies history, not today."""
+    df = pd.read_csv(io.StringIO(_get(MIRROR, timeout=60).text), parse_dates=["Date"])
+    idx = pd.DatetimeIndex(df["Date"]) + pd.offsets.MonthEnd(0)
+
+    def col(name):
+        s = pd.Series(pd.to_numeric(df[name], errors="coerce").values, index=idx, dtype="float64")
+        return s[s > 0].sort_index()      # the file pads recent months with zeros
+
+    price, eps = col("SP500"), col("Earnings")
+    return {"SHILLER:CAPE": col("PE10"), "SHILLER:EPS": eps, "SHILLER:CPI": col("Consumer Price Index"),
+            "SHILLER:PRICE": price, "SHILLER:PE": (price / eps).dropna()}
+
+
+def _current_pe() -> pd.Series:
+    """Trailing P/E of an S&P 500 index fund, as reported by Yahoo right now."""
+    try:
+        import yfinance as yf
+    except Exception as e:
+        _log(f"yfinance unavailable: {type(e).__name__}: {e}")
+        return EMPTY
+    for ticker in ("SPY", "IVV", "VOO"):
+        try:
+            pe = yf.Ticker(ticker).info.get("trailingPE")
+            if pe is not None and 8 < float(pe) < 60:
+                _log(f"current trailing P/E from {ticker}: {float(pe):.2f}")
+                return pd.Series([float(pe)], index=[pd.Timestamp.today().normalize()])
+        except Exception as e:
+            _log(f"P/E lookup for {ticker} failed: {type(e).__name__}: {e}")
+    return EMPTY
+
+
+def _is_fresh(s: pd.Series, months: int = 3) -> bool:
+    return (not s.empty) and s.index[-1] >= pd.Timestamp.today().normalize() - pd.DateOffset(months=months)
+
+
 def fetch_shiller() -> dict[str, pd.Series]:
-    out = {"SHILLER:CAPE": EMPTY, "SHILLER:PE": EMPTY}
+    """Valuation history, in order of preference:
+    1. multpl.com, which is current but refuses connections from some cloud hosts.
+    2. The GitHub mirror of Shiller's file (Yale as a fallback) for history, plus
+       today's P/E from Yahoo so the frameworks can estimate current values.
+    """
+    out = {k: EMPTY for k in ("SHILLER:CAPE", "SHILLER:PE", "SHILLER:EPS", "SHILLER:CPI", "SHILLER:PRICE", "VAL:PE_NOW")}
+    try:
+        out.update(_shiller_mirror())
+    except Exception as e:
+        _log(f"Shiller mirror failed: {type(e).__name__}: {e}")
+        try:
+            out["SHILLER:CAPE"], out["SHILLER:PE"] = _yale()
+        except Exception as e2:
+            _log(f"Yale file failed: {type(e2).__name__}: {e2}")
     for key, path in (("SHILLER:CAPE", "shiller-pe"), ("SHILLER:PE", "s-p-500-pe-ratio")):
         try:
             s = _multpl(path)
-            if len(s) > 240:
+            if len(s) > 240 and _is_fresh(s):
                 out[key] = s
         except Exception as e:
-            _log(f"multpl {path} failed: {type(e).__name__}: {e}")
-    if out["SHILLER:CAPE"].empty or out["SHILLER:PE"].empty:
-        try:
-            cape, pe = _yale()
-            if out["SHILLER:CAPE"].empty:
-                out["SHILLER:CAPE"] = cape
-            if out["SHILLER:PE"].empty:
-                out["SHILLER:PE"] = pe
-        except Exception as e:
-            _log(f"Yale file failed: {type(e).__name__}: {e}")
-    _log(f"valuation: CAPE {len(out['SHILLER:CAPE'])} months, P/E {len(out['SHILLER:PE'])} months")
+            _log(f"multpl {path} failed: {type(e).__name__}: {str(e)[:120]}")
+    if not (_is_fresh(out["SHILLER:CAPE"]) and _is_fresh(out["SHILLER:PE"])):
+        out["VAL:PE_NOW"] = _current_pe()
+    for k in ("SHILLER:CAPE", "SHILLER:PE", "SHILLER:EPS"):
+        s = out[k]
+        _log(f"{k}: {len(s)} months, latest {s.index[-1].date() if len(s) else 'none'}")
     return out
 
 

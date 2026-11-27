@@ -110,6 +110,68 @@ def _to_billions(s: pd.Series) -> pd.Series:
     return s / 1000.0 if pd.notna(med) and med > 50_000 else s
 
 
+def _month_end(raw, key) -> pd.Series:
+    s = raw.get(key, pd.Series(dtype="float64")).dropna().sort_index()
+    if s.empty:
+        return s
+    return s.groupby(s.index.to_period("M")).last().to_timestamp("M")
+
+
+def valuation_series(raw: dict, idx: pd.DatetimeIndex, sp500: pd.Series) -> pd.DataFrame:
+    """CAPE, its percentile, and trailing P/E for each month in idx.
+
+    If the published series are current, they are used as they are. Shiller's own file
+    stopped updating in 2023, so otherwise recent months are estimated: earnings are
+    interpolated between Shiller's last figure and the trailing earnings implied by
+    today's fund P/E, CAPE and P/E are recomputed from those, and the estimates are
+    chain-linked to Shiller's last published values so there is no jump at the join.
+    """
+    out = pd.DataFrame({"cape": np.nan, "cape_pctile": np.nan, "pe": np.nan, "valuation_estimated": False}, index=idx)
+    cape, pe = _month_end(raw, "SHILLER:CAPE"), _month_end(raw, "SHILLER:PE")
+    if cape.empty:
+        return out
+    asof = idx[-1]
+    estimated = pd.Series(False, index=idx)
+    if cape.index[-1] < asof - pd.offsets.MonthEnd(3):
+        eps_hist, cpi_hist, px_hist = (_month_end(raw, k) for k in ("SHILLER:EPS", "SHILLER:CPI", "SHILLER:PRICE"))
+        points = _month_end(raw, "VAL:EPS_TTM")
+        if not (points.empty or eps_hist.empty):
+            points = points[points.index > eps_hist.index[-1]]
+        if not (eps_hist.empty or cpi_hist.empty or px_hist.empty or points.empty):
+            full = pd.date_range(eps_hist.index[0], asof, freq="ME")
+            eps = pd.concat([eps_hist, points]).reindex(full).interpolate(limit_area="inside").ffill(limit=2)
+            price = sp500.reindex(full).combine_first(px_hist.reindex(full))
+            cpi_new = _month_end(raw, "CPIAUCSL").reindex(full).ffill()
+            link = cpi_hist.index[-1]
+            if pd.notna(cpi_new.get(link, np.nan)):
+                cpi = cpi_hist.reindex(full).combine_first(cpi_new * (cpi_hist.iloc[-1] / cpi_new[link]))
+            else:
+                cpi = cpi_hist.reindex(full).ffill()
+            cpi = cpi.ffill()
+            real_e = eps / cpi
+            cape_est = (price / cpi) / real_e.rolling(120, min_periods=120).mean()
+            pe_est = price / eps
+
+            def chain(published, est):
+                at = published.index[-1]
+                if pd.isna(est.get(at, np.nan)) or est[at] == 0:
+                    return published
+                tail = est[est.index > at] * (published.iloc[-1] / est[at])
+                return pd.concat([published, tail.dropna()])
+
+            n_before = len(cape)
+            cape, pe = chain(cape, cape_est), (chain(pe, pe_est) if not pe.empty else pe_est.dropna())
+            if len(cape) > n_before:
+                estimated = pd.Series(idx > _month_end(raw, "SHILLER:CAPE").index[-1], index=idx)
+    pct = cape.expanding(min_periods=120).apply(lambda w: (w <= w.iloc[-1]).mean() * 100, raw=False)
+    out["cape"] = cape.reindex(idx).ffill(limit=2)
+    out["cape_pctile"] = pct.reindex(idx).ffill(limit=2)
+    if not pe.empty:
+        out["pe"] = pe.reindex(idx).ffill(limit=2)
+    out["valuation_estimated"] = estimated & out["cape"].notna()
+    return out
+
+
 def build_monthly(raw: dict[str, pd.Series], asof: pd.Timestamp | None = None,
                   start: str = "1990-01-31") -> pd.DataFrame:
     """One row per month-end, one column per indicator the frameworks read."""
@@ -221,20 +283,9 @@ def build_monthly(raw: dict[str, pd.Series], asof: pd.Timestamp | None = None,
         m[f"ratio_{name}_sma"] = r.rolling(10, min_periods=10).mean()
 
     # long-run valuation
-    cape = raw.get("SHILLER:CAPE", pd.Series(dtype="float64")).dropna().sort_index()
-    if cape.empty:
-        m["cape"] = np.nan
-        m["cape_pctile"] = np.nan
-    else:
-        cape = cape.groupby(cape.index.to_period("M")).last().to_timestamp("M")
-        pct = cape.expanding(min_periods=120).apply(lambda w: (w <= w.iloc[-1]).mean() * 100, raw=False)
-        m["cape"] = cape.reindex(idx).ffill(limit=2)
-        m["cape_pctile"] = pct.reindex(idx).ffill(limit=2)
-    pe = raw.get("SHILLER:PE", pd.Series(dtype="float64")).dropna().sort_index()
-    if pe.empty:
-        m["pe"] = np.nan
-    else:
-        m["pe"] = pe.groupby(pe.index.to_period("M")).last().to_timestamp("M").reindex(idx).ffill(limit=2)
+    val = valuation_series(raw, idx, m["sp500"])
+    for k in ("cape", "cape_pctile", "pe", "valuation_estimated"):
+        m[k] = val[k]
     m["real_y10"] = _daily(raw, "DFII10", idx, "mean")
     m["excess_cape_yield"] = 100.0 / m["cape"] - m["real_y10"]
     m["earnings_yield"] = 100.0 / m["pe"]
@@ -662,7 +713,7 @@ FRAMEWORKS: list[Framework] = [
     Framework("cape", "Shiller CAPE and excess CAPE yield", "valuation", 0.75,
               "CAPE ranked against its own history. Below the 40th percentile: +1. Above the 80th: -1.",
               v_cape,
-              lambda r, m: f"CAPE {r.cape:.1f}, {r.cape_pctile:.0f}th percentile of history",
+              lambda r, m: f"CAPE {'about ' if r.valuation_estimated else ''}{r.cape:.1f}{' (estimated)' if r.valuation_estimated else ''}, {r.cape_pctile:.0f}th percentile of history",
               lambda r: [_inp("CAPE", r.cape, 1), _inp("Percentile of own history", r.cape_pctile, 0),
                          _inp("Real 10-year Treasury yield", r.real_y10, 2, "%"), _inp("Excess CAPE yield", r.excess_cape_yield, 2, "%")]),
     Framework("fed_model", "Fed model (equity risk premium)", "valuation", 0.75,

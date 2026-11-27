@@ -23,6 +23,7 @@ import frameworks as fw  # noqa: E402
 
 OUT_JSON = "docs/data/signals.json"
 OUT_HISTORY = "data/consensus_history.csv"
+EPS_POINTS = "data/sp500_earnings_points.csv"
 VOTE_WORD = {1.0: "Positive", 0.0: "Neutral", -1.0: "Negative"}
 ALARM_WORD = {1.0: "Clear", 0.0: "Watch", -1.0: "Triggered"}
 
@@ -78,6 +79,25 @@ def _clean(x):
     if isinstance(x, float):
         return None if (math.isnan(x) or math.isinf(x)) else round(x, 4)
     return x
+
+
+def earnings_points(raw: dict, path: str = EPS_POINTS, save: bool = True) -> pd.Series:
+    """Trailing S&P 500 earnings implied by today's fund P/E, kept in a small file so each
+    monthly run adds one observed point and the estimates need less interpolation over time."""
+    stored = pd.Series(dtype="float64")
+    if os.path.exists(path):
+        df = pd.read_csv(path, parse_dates=["date"])
+        stored = pd.Series(df["eps_ttm"].values, index=df["date"], dtype="float64")
+    pe_now = raw.get("VAL:PE_NOW", pd.Series(dtype="float64")).dropna()
+    spx = raw.get("SP500", pd.Series(dtype="float64")).dropna()
+    if not pe_now.empty and not spx.empty:
+        day = pe_now.index[-1]
+        stored[day] = float(spx.iloc[-1]) / float(pe_now.iloc[-1])
+        stored = stored[~stored.index.duplicated(keep="last")].sort_index()
+        if save:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            pd.DataFrame({"date": stored.index.strftime("%Y-%m-%d"), "eps_ttm": stored.round(3).values}).to_csv(path, index=False)
+    return stored
 
 
 def _table(f, row, m):
@@ -222,6 +242,7 @@ def main():
     else:
         raw = fred_data.fetch_all()
         raw.update(market_data.fetch_all())
+        raw["VAL:EPS_TTM"] = earnings_points(raw)
     payload, full = build_payload(raw, asof=args.asof)
     if args.fixture:
         payload["sample"] = True

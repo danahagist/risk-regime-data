@@ -86,7 +86,34 @@ def test_fetch_all_survives_every_source_failing(monkeypatch):
     monkeypatch.setattr(md, "_get", down)
     monkeypatch.setattr(md, "_prices_yahoo", down)
     out = md.fetch_all()
-    assert out["SHILLER:CAPE"].empty and out["AAII:SPREAD"].empty and out["PX:SPY"].empty
+    assert out["SHILLER:CAPE"].empty and out["AAII:SPREAD"].empty and out["PX:SPY"].empty and out["VAL:PE_NOW"].empty
+
+
+def test_shiller_mirror_drops_zero_padding(monkeypatch):
+    csv = ("Date,SP500,Dividend,Earnings,Consumer Price Index,Long Interest Rate,Real Price,Real Dividend,Real Earnings,PE10\n"
+           "2023-05-01,4146.2,68.7,180.0,304.1,3.6,0,0,0,29.5\n"
+           "2023-06-01,4345.4,68.7,181.17,305.1,3.7,0,0,0,30.2\n"
+           "2023-09-01,4409.1,0.0,0.0,307.8,4.4,0,0,0,30.81\n"
+           "2026-09-01,7669.41,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0\n")
+    monkeypatch.setattr(md, "_get", lambda url, timeout=30: Resp(text=csv))
+    out = md._shiller_mirror()
+    assert out["SHILLER:CAPE"].index[-1] == pd.Timestamp("2023-09-30") and out["SHILLER:CAPE"].iloc[-1] == pytest.approx(30.81)
+    assert out["SHILLER:EPS"].index[-1] == pd.Timestamp("2023-06-30")          # zeros are padding, not data
+    assert out["SHILLER:PRICE"].index[-1] == pd.Timestamp("2026-09-30")
+    assert out["SHILLER:PE"].iloc[-1] == pytest.approx(4345.4 / 181.17)
+
+
+def test_earnings_points_file_accumulates(tmp_path):
+    import compute_signals
+    path = str(tmp_path / "eps.csv")
+    spx = pd.Series([7000.0, 7300.0], index=pd.to_datetime(["2026-11-25", "2026-11-27"]))
+    first = compute_signals.earnings_points({"VAL:PE_NOW": pd.Series([25.0], index=[pd.Timestamp("2026-11-27")]), "SP500": spx}, path)
+    assert first.iloc[-1] == pytest.approx(292.0)
+    spx2 = pd.Series([7500.0], index=pd.to_datetime(["2026-12-31"]))
+    second = compute_signals.earnings_points({"VAL:PE_NOW": pd.Series([24.0], index=[pd.Timestamp("2027-01-02")]), "SP500": spx2}, path)
+    assert len(second) == 2 and second.iloc[0] == pytest.approx(292.0) and second.iloc[-1] == pytest.approx(312.5)
+    none = compute_signals.earnings_points({"SP500": spx2}, path)
+    assert len(none) == 2                                   # no new P/E: keep what is stored
 
 
 def test_fixture_file_names_map_back_to_keys(tmp_path):

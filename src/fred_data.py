@@ -90,7 +90,7 @@ def load_fixture(directory: str) -> dict[str, pd.Series]:
         if not name.endswith(".csv"):
             continue
         key = name[:-4]
-        for prefix in ("PX", "SHILLER", "AAII"):
+        for prefix in ("PX", "SHILLER", "AAII", "VAL"):
             if key.startswith(prefix + "_"):
                 key = prefix + ":" + key[len(prefix) + 1:]
         df = pd.read_csv(os.path.join(directory, name), parse_dates=["date"])
