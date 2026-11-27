@@ -1,12 +1,12 @@
 {
- "generated_at": "2026-11-27 23:12 UTC",
+ "generated_at": "2026-11-27 23:18 UTC",
  "as_of": "2026-10-31",
  "as_of_label": "October 2026",
  "stance": {
   "label": "Neutral",
   "raw_label": "Neutral",
-  "composite": 0.4405,
-  "driver_score": 0.5833,
+  "composite": 0.3571,
+  "driver_score": 0.5,
   "alarm_penalty": -0.1429,
   "agreement": 0.75,
   "equity_offset": 0.0,
@@ -39,7 +39,8 @@
    "members": [
     "fed_direction",
     "taylor_gap",
-    "fin_conditions"
+    "fin_conditions",
+    "net_liquidity"
    ]
   },
   {
@@ -51,7 +52,10 @@
    "members": [
     "trend_10m",
     "golden_cross",
-    "abs_momentum"
+    "abs_momentum",
+    "dual_momentum",
+    "breadth",
+    "dow_theory"
    ]
   },
   {
@@ -59,9 +63,10 @@
    "name": "Sentiment and calendar",
    "weight": 0.5,
    "role": "driver",
-   "score": 1.0,
+   "score": 0.5,
    "members": [
-    "seasonality"
+    "seasonality",
+    "sentiment"
    ]
   },
   {
@@ -95,7 +100,22 @@
    "role": "sizing",
    "score": -1.0,
    "members": [
-    "buffett"
+    "buffett",
+    "cape",
+    "fed_model",
+    "rule_of_20"
+   ]
+  },
+  {
+   "id": "where",
+   "name": "Where to look",
+   "weight": 0.0,
+   "role": "info",
+   "score": 0.375,
+   "members": [
+    "gtaa",
+    "sector_rotation",
+    "intermarket"
    ]
   }
  ],
@@ -122,7 +142,8 @@
      "label": "Change in inflation over 6 months",
      "value": "0.04 pts"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "investment_clock",
@@ -142,7 +163,8 @@
      "label": "Change in inflation over 6 months",
      "value": "0.04 pts"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "business_cycle",
@@ -170,7 +192,8 @@
      "label": "CFNAI 3-mo avg",
      "value": "0.02"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "yield_curve",
@@ -194,7 +217,8 @@
      "label": "Spread",
      "value": "0.90 pts"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "sahm",
@@ -214,7 +238,8 @@
      "label": "Unemployment rate",
      "value": "4.2%"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "cfnai_ma3",
@@ -234,7 +259,8 @@
      "label": "Industrial production, yearly change",
      "value": "1.7%"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "claims",
@@ -254,7 +280,8 @@
      "label": "Change from a year ago",
      "value": "-13.9%"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "fed_direction",
@@ -274,7 +301,8 @@
      "label": "Change over 6 months",
      "value": "0.25 pts"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "taylor_gap",
@@ -302,7 +330,8 @@
      "label": "Unemployment gap",
      "value": "0.2 pts"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "fin_conditions",
@@ -322,7 +351,8 @@
      "label": "Change over 3 months",
      "value": "0.07"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "buffett",
@@ -342,7 +372,8 @@
      "label": "Percentile of own history",
      "value": "100"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "trend_10m",
@@ -362,7 +393,8 @@
      "label": "10-month average",
      "value": "7,304"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "golden_cross",
@@ -382,7 +414,8 @@
      "label": "200-day average",
      "value": "7,310"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "abs_momentum",
@@ -402,7 +435,8 @@
      "label": "3-month T-bill yield a year ago",
      "value": "3.98%"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "hy_spread",
@@ -426,7 +460,8 @@
      "label": "Chicago Fed credit subindex",
      "value": "-0.01"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "vix",
@@ -450,7 +485,8 @@
      "label": "VIX / 3-month VIX",
      "value": "0.93"
     }
-   ]
+   ],
+   "table": null
   },
   {
    "id": "seasonality",
@@ -461,13 +497,337 @@
    "vote_label": "Positive",
    "reading": "November 2026: inside the November to April window, post-midterm window",
    "rule": "Next month in November to April adds 1. Post-midterm window adds 1; midterm year before November subtracts 1. Total of 1 or more: +1. Below zero: -1.",
-   "inputs": []
+   "inputs": [],
+   "table": null
+  },
+  {
+   "id": "dual_momentum",
+   "name": "Dual momentum",
+   "family": "trend",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Holds Foreign stocks",
+   "rule": "If US stocks beat T-bills over 12 months, hold US or foreign stocks, whichever is stronger: +1. Otherwise hold bonds: -1.",
+   "inputs": [
+    {
+     "label": "US stocks, 12-month return",
+     "value": "12.0%"
+    },
+    {
+     "label": "Foreign stocks, 12-month return",
+     "value": "13.7%"
+    },
+    {
+     "label": "T-bills, 12-month return",
+     "value": "3.7%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "breadth",
+   "name": "Market breadth",
+   "family": "trend",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "64% of sectors are above their 10-month average",
+   "rule": "Share of the 11 sectors above their 10-month average. 60% or more: +1. 40% or less: -1.",
+   "inputs": [
+    {
+     "label": "Sectors above their 10-month average",
+     "value": "64%"
+    },
+    {
+     "label": "Sectors counted",
+     "value": "11"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "dow_theory",
+   "name": "Dow Theory",
+   "family": "trend",
+   "weight": 0.5,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Industrials and transports both in uptrends",
+   "rule": "Dow industrials and transports both above their 10-month averages: +1. Both below: -1. Split: 0.",
+   "inputs": [
+    {
+     "label": "Industrials vs 10-month average",
+     "value": "2.8%"
+    },
+    {
+     "label": "Transports vs 10-month average",
+     "value": "0.5%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "cape",
+   "name": "Shiller CAPE and excess CAPE yield",
+   "family": "valuation",
+   "weight": 0.75,
+   "vote": null,
+   "vote_label": "No data",
+   "reading": "No data this month",
+   "rule": "CAPE ranked against its own history. Below the 40th percentile: +1. Above the 80th: -1.",
+   "inputs": [],
+   "table": null
+  },
+  {
+   "id": "fed_model",
+   "name": "Fed model (equity risk premium)",
+   "family": "valuation",
+   "weight": 0.75,
+   "vote": null,
+   "vote_label": "No data",
+   "reading": "No data this month",
+   "rule": "Trailing earnings yield minus the 10-year Treasury yield. Above 2 points: +1. Below zero: -1.",
+   "inputs": [],
+   "table": null
+  },
+  {
+   "id": "rule_of_20",
+   "name": "Rule of 20",
+   "family": "valuation",
+   "weight": 0.5,
+   "vote": null,
+   "vote_label": "No data",
+   "reading": "No data this month",
+   "rule": "Trailing P/E plus CPI inflation. Below 18: +1. Above 22: -1.",
+   "inputs": [],
+   "table": null
+  },
+  {
+   "id": "sentiment",
+   "name": "Contrarian sentiment",
+   "family": "calendar",
+   "weight": 0.5,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "Bulls minus bears: -4 points",
+   "rule": "AAII bulls minus bears, 4-week average. At -20 or lower: +1. At +30 or higher: -1.",
+   "inputs": [
+    {
+     "label": "AAII bull-bear spread, 4-week average",
+     "value": "-3.5 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "net_liquidity",
+   "name": "Liquidity",
+   "family": "policy",
+   "weight": 0.75,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "Net liquidity +0.6% over 6 months",
+   "rule": "Fed balance sheet minus Treasury cash minus reverse repo, change over 6 months. Up more than 2%: +1. Down more than 2%: -1.",
+   "inputs": [
+    {
+     "label": "Net liquidity ($ billions)",
+     "value": "5,742"
+    },
+    {
+     "label": "Change over 6 months",
+     "value": "0.6%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "gtaa",
+   "name": "Multi-asset trend",
+   "family": "where",
+   "weight": 0.75,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "In uptrends: US stocks, Commodities",
+   "rule": "Each asset class against its own 10-month average. Three or more of five in uptrends: +1. One or none: -1.",
+   "inputs": [],
+   "table": {
+    "columns": [
+     "Asset class",
+     "vs 10-month average",
+     "12-month return"
+    ],
+    "rows": [
+     [
+      "US stocks",
+      "Above",
+      "12.0%"
+     ],
+     [
+      "Foreign stocks",
+      "Below",
+      "13.7%"
+     ],
+     [
+      "US bonds",
+      "Below",
+      "-0.2%"
+     ],
+     [
+      "Gold",
+      "Below",
+      "-3.4%"
+     ],
+     [
+      "Commodities",
+      "Above",
+      "51.8%"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "sector_rotation",
+   "name": "Sector momentum rotation",
+   "family": "where",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Leading: Energy, Health care, Technology. Lagging: Consumer discretionary, Utilities, Communication",
+   "rule": "Sectors ranked by their average 6 and 12-month return. Two or more cyclical sectors in the top three: +1. One or none: -1.",
+   "inputs": [],
+   "table": {
+    "columns": [
+     "Rank",
+     "Sector",
+     "Type",
+     "6 and 12-month return, averaged",
+     "vs 10-month average"
+    ],
+    "rows": [
+     [
+      1,
+      "Energy",
+      "Cyclical",
+      "41.2%",
+      "Above"
+     ],
+     [
+      2,
+      "Health care",
+      "Defensive",
+      "29.0%",
+      "Above"
+     ],
+     [
+      3,
+      "Technology",
+      "Cyclical",
+      "16.4%",
+      "Above"
+     ],
+     [
+      4,
+      "Materials",
+      "Cyclical",
+      "14.3%",
+      "Above"
+     ],
+     [
+      5,
+      "Consumer staples",
+      "Defensive",
+      "14.0%",
+      "Above"
+     ],
+     [
+      6,
+      "Financials",
+      "Cyclical",
+      "9.4%",
+      "Above"
+     ],
+     [
+      7,
+      "Real estate",
+      "Defensive",
+      "4.1%",
+      "Above"
+     ],
+     [
+      8,
+      "Industrials",
+      "Cyclical",
+      "2.8%",
+      "Below"
+     ],
+     [
+      9,
+      "Consumer discretionary",
+      "Cyclical",
+      "-2.6%",
+      "Below"
+     ],
+     [
+      10,
+      "Utilities",
+      "Defensive",
+      "-2.9%",
+      "Below"
+     ],
+     [
+      11,
+      "Communication",
+      "Cyclical",
+      "-12.8%",
+      "Below"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "intermarket",
+   "name": "Intermarket ratios",
+   "family": "where",
+   "weight": 0.5,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "1 of 3 growth ratios are rising",
+   "rule": "Copper/gold, discretionary/staples and small/large against their 10-month averages. Two or more rising: +1. None rising: -1.",
+   "inputs": [],
+   "table": {
+    "columns": [
+     "Ratio",
+     "vs its 10-month average",
+     "Says"
+    ],
+    "rows": [
+     [
+      "Copper / gold",
+      "Above",
+      "Growth improving"
+     ],
+     [
+      "Discretionary / staples",
+      "Below",
+      "Growth weakening"
+     ],
+     [
+      "Small caps / large caps",
+      "Below",
+      "Growth weakening"
+     ]
+    ]
+   }
   }
  ],
  "changes": [
   "Growth and inflation quadrants moved from Positive to Neutral",
   "High-yield spread regime moved from Clear to Watch",
-  "Seasonality and election cycle moved from Negative to Positive"
+  "Seasonality and election cycle moved from Negative to Positive",
+  "Market breadth moved from Negative to Positive",
+  "Dow Theory moved from Neutral to Positive",
+  "Multi-asset trend moved from Positive to Neutral"
  ],
  "allocation": {
   "neutral": {
@@ -484,6 +844,7 @@
   },
   "equity_offset": 0.0,
   "alt_tilt": 5.0,
+  "alt_note": "inflation is accelerating.",
   "defensive": "cash",
   "cash_share": {
    "cash": 0.5,
@@ -536,6 +897,22 @@
     "note": "Stocks have beaten T-bills over 12 months: hold stocks."
    },
    {
+    "id": "dual_momentum",
+    "favors": [
+     "stocks"
+    ],
+    "note": "Dual momentum currently holds foreign stocks."
+   },
+   {
+    "id": "gtaa",
+    "favors": [
+     "stocks",
+     "alternatives",
+     "cash"
+    ],
+    "note": "In uptrends: US stocks, Commodities."
+   },
+   {
     "id": "buffett",
     "favors": [
      "bonds",
@@ -545,10 +922,10 @@
    }
   ],
   "tally": {
-   "stocks": 2.5,
+   "stocks": 4.0,
    "bonds": 0.75,
-   "cash": 2.25,
-   "alternatives": 1.5
+   "cash": 3.0,
+   "alternatives": 2.25
   }
  },
  "metrics": [
@@ -721,126 +1098,158 @@
    "vs_avg": "below"
   },
   {
+   "key": "breadth",
+   "group": "Markets",
+   "label": "Sectors above their 10-month average",
+   "value": "64%",
+   "avg12": "77%",
+   "vs_avg": "below"
+  },
+  {
    "key": "buffett",
    "group": "Valuation",
    "label": "Stock market value / GDP",
    "value": "255%",
    "avg12": "225%",
    "vs_avg": "above"
+  },
+  {
+   "key": "real_y10",
+   "group": "Policy and rates",
+   "label": "10-year real yield (TIPS)",
+   "value": "2.78%",
+   "avg12": "2.06%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "net_liquidity_chg6",
+   "group": "Policy and rates",
+   "label": "Net liquidity, 6-month change",
+   "value": "0.6%",
+   "avg12": "-0.8%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "aaii_spread",
+   "group": "Sentiment",
+   "label": "AAII bulls minus bears",
+   "value": "-4 pts",
+   "avg12": "-2 pts",
+   "vs_avg": "below"
   }
  ],
  "history": [
   {
    "date": "2016-11-30",
-   "composite": 0.2905,
+   "composite": 0.2696,
    "stance": "Neutral",
    "sp500": 2198.81
   },
   {
    "date": "2016-12-31",
-   "composite": 0.1655,
+   "composite": 0.2071,
    "stance": "Neutral",
    "sp500": 2238.83
   },
   {
    "date": "2017-01-31",
-   "composite": 0.625,
+   "composite": 0.5833,
    "stance": "Neutral",
    "sp500": 2278.87
   },
   {
    "date": "2017-02-28",
-   "composite": 0.625,
+   "composite": 0.6458,
    "stance": "Overweight",
    "sp500": 2363.64
   },
   {
    "date": "2017-03-31",
-   "composite": 0.5,
+   "composite": 0.625,
    "stance": "Overweight",
    "sp500": 2362.72
   },
   {
    "date": "2017-04-30",
-   "composite": -0.0667,
+   "composite": 0.3083,
    "stance": "Overweight",
    "sp500": 2384.2
   },
   {
    "date": "2017-05-31",
-   "composite": 0.375,
-   "stance": "Neutral",
+   "composite": 0.625,
+   "stance": "Overweight",
    "sp500": 2411.8
   },
   {
    "date": "2017-06-30",
-   "composite": 0.375,
-   "stance": "Neutral",
+   "composite": 0.625,
+   "stance": "Overweight",
    "sp500": 2423.41
   },
   {
    "date": "2017-07-31",
-   "composite": 0.375,
-   "stance": "Neutral",
+   "composite": 0.625,
+   "stance": "Overweight",
    "sp500": 2470.3
   },
   {
    "date": "2017-08-31",
-   "composite": 0.4167,
-   "stance": "Neutral",
+   "composite": 0.4583,
+   "stance": "Overweight",
    "sp500": 2471.65
   },
   {
    "date": "2017-09-30",
-   "composite": 0.4167,
+   "composite": 0.3333,
    "stance": "Neutral",
    "sp500": 2519.36
   },
   {
    "date": "2017-10-31",
-   "composite": 0.5833,
+   "composite": 0.4792,
    "stance": "Neutral",
    "sp500": 2575.26
   },
   {
    "date": "2017-11-30",
-   "composite": 0.75,
-   "stance": "Overweight",
+   "composite": 0.7083,
+   "stance": "Neutral",
    "sp500": 2647.58
   },
   {
    "date": "2017-12-31",
-   "composite": 0.5833,
+   "composite": 0.625,
    "stance": "Overweight",
    "sp500": 2673.61
   },
   {
    "date": "2018-01-31",
-   "composite": 0.5,
+   "composite": 0.3958,
    "stance": "Overweight",
    "sp500": 2823.81
   },
   {
    "date": "2018-02-28",
-   "composite": 0.3095,
-   "stance": "Overweight",
+   "composite": 0.2887,
+   "stance": "Neutral",
    "sp500": 2713.83
   },
   {
    "date": "2018-03-31",
-   "composite": 0.3333,
+   "composite": 0.337,
    "stance": "Neutral",
    "sp500": 2640.87
   },
   {
    "date": "2018-04-30",
-   "composite": 0.25,
+   "composite": 0.1912,
    "stance": "Neutral",
    "sp500": 2648.05
   },
   {
    "date": "2018-05-31",
-   "composite": 0.3333,
+   "composite": 0.2157,
    "stance": "Neutral",
    "sp500": 2705.27
   },
@@ -870,109 +1279,109 @@
   },
   {
    "date": "2018-10-31",
-   "composite": 0.1799,
+   "composite": -0.0042,
    "stance": "Neutral",
    "sp500": 2711.74
   },
   {
    "date": "2018-11-30",
-   "composite": 0.3571,
+   "composite": 0.1525,
    "stance": "Neutral",
    "sp500": 2760.17
   },
   {
    "date": "2018-12-31",
-   "composite": -0.6333,
+   "composite": -0.7792,
    "stance": "Neutral",
    "sp500": 2506.85
   },
   {
    "date": "2019-01-31",
-   "composite": -0.4429,
-   "stance": "Neutral",
+   "composite": -0.5115,
+   "stance": "Underweight",
    "sp500": 2704.1
   },
   {
    "date": "2019-02-28",
-   "composite": 0.1352,
-   "stance": "Neutral",
+   "composite": 0.0199,
+   "stance": "Underweight",
    "sp500": 2784.49
   },
   {
    "date": "2019-03-31",
-   "composite": 0.1352,
+   "composite": 0.0199,
    "stance": "Neutral",
    "sp500": 2834.4
   },
   {
    "date": "2019-04-30",
-   "composite": 0.2833,
+   "composite": 0.1375,
    "stance": "Neutral",
    "sp500": 2945.83
   },
   {
    "date": "2019-05-31",
-   "composite": -0.2352,
+   "composite": -0.2743,
    "stance": "Neutral",
    "sp500": 2752.06
   },
   {
    "date": "2019-06-30",
-   "composite": 0.5333,
+   "composite": 0.3667,
    "stance": "Neutral",
    "sp500": 2941.76
   },
   {
    "date": "2019-07-31",
-   "composite": 0.5333,
-   "stance": "Overweight",
+   "composite": 0.4292,
+   "stance": "Neutral",
    "sp500": 2980.38
   },
   {
    "date": "2019-08-31",
-   "composite": 0.2516,
-   "stance": "Overweight",
+   "composite": 0.1919,
+   "stance": "Neutral",
    "sp500": 2926.46
   },
   {
    "date": "2019-09-30",
-   "composite": 0.2516,
+   "composite": 0.1478,
    "stance": "Neutral",
    "sp500": 2976.74
   },
   {
    "date": "2019-10-31",
-   "composite": 0.5333,
+   "composite": 0.45,
    "stance": "Neutral",
    "sp500": 3037.56
   },
   {
    "date": "2019-11-30",
-   "composite": 0.5333,
-   "stance": "Overweight",
+   "composite": 0.45,
+   "stance": "Neutral",
    "sp500": 3140.98
   },
   {
    "date": "2019-12-31",
-   "composite": 0.5333,
-   "stance": "Overweight",
+   "composite": 0.45,
+   "stance": "Neutral",
    "sp500": 3230.78
   },
   {
    "date": "2020-01-31",
-   "composite": 0.4262,
-   "stance": "Overweight",
+   "composite": 0.3429,
+   "stance": "Neutral",
    "sp500": 3225.52
   },
   {
    "date": "2020-02-29",
-   "composite": 0.0704,
+   "composite": -0.0488,
    "stance": "Neutral",
    "sp500": 2954.22
   },
   {
    "date": "2020-03-31",
-   "composite": -0.5833,
+   "composite": -0.625,
    "stance": "Neutral",
    "sp500": 2584.59
   },
@@ -984,469 +1393,469 @@
   },
   {
    "date": "2020-05-31",
-   "composite": -0.7648,
+   "composite": -0.7074,
    "stance": "Underweight",
    "sp500": 3044.31
   },
   {
    "date": "2020-06-30",
-   "composite": -0.622,
+   "composite": -0.6478,
    "stance": "Underweight",
    "sp500": 3100.29
   },
   {
    "date": "2020-07-31",
-   "composite": -0.3667,
+   "composite": -0.325,
    "stance": "Underweight",
    "sp500": 3271.12
   },
   {
    "date": "2020-08-31",
-   "composite": 0.1595,
+   "composite": 0.2012,
    "stance": "Neutral",
    "sp500": 3500.31
   },
   {
    "date": "2020-09-30",
-   "composite": 0.0762,
+   "composite": 0.1387,
    "stance": "Neutral",
    "sp500": 3363.0
   },
   {
    "date": "2020-10-31",
-   "composite": 0.2429,
+   "composite": 0.097,
    "stance": "Neutral",
    "sp500": 3269.96
   },
   {
    "date": "2020-11-30",
-   "composite": 0.1595,
+   "composite": 0.0554,
    "stance": "Neutral",
    "sp500": 3621.63
   },
   {
    "date": "2020-12-31",
-   "composite": 0.1595,
+   "composite": 0.1179,
    "stance": "Neutral",
    "sp500": 3756.07
   },
   {
    "date": "2021-01-31",
-   "composite": 0.1595,
+   "composite": 0.1179,
    "stance": "Neutral",
    "sp500": 3714.24
   },
   {
    "date": "2021-02-28",
-   "composite": 0.1595,
+   "composite": 0.1179,
    "stance": "Neutral",
    "sp500": 3811.15
   },
   {
    "date": "2021-03-31",
-   "composite": 0.1095,
+   "composite": 0.0679,
    "stance": "Neutral",
    "sp500": 3972.89
   },
   {
    "date": "2021-04-30",
-   "composite": 0.2833,
+   "composite": 0.3042,
    "stance": "Neutral",
    "sp500": 4181.17
   },
   {
    "date": "2021-05-31",
-   "composite": 0.5,
+   "composite": 0.5417,
    "stance": "Neutral",
    "sp500": 4204.11
   },
   {
    "date": "2021-06-30",
-   "composite": 0.5833,
+   "composite": 0.625,
    "stance": "Overweight",
    "sp500": 4297.5
   },
   {
    "date": "2021-07-31",
-   "composite": 0.5,
+   "composite": 0.5417,
    "stance": "Overweight",
    "sp500": 4395.26
   },
   {
    "date": "2021-08-31",
-   "composite": 0.5833,
+   "composite": 0.625,
    "stance": "Overweight",
    "sp500": 4522.68
   },
   {
    "date": "2021-09-30",
-   "composite": 0.5,
+   "composite": 0.44,
    "stance": "Overweight",
    "sp500": 4307.54
   },
   {
    "date": "2021-10-31",
-   "composite": 0.6667,
+   "composite": 0.625,
    "stance": "Overweight",
    "sp500": 4605.38
   },
   {
    "date": "2021-11-30",
-   "composite": 0.6667,
+   "composite": 0.625,
    "stance": "Overweight",
    "sp500": 4567.0
   },
   {
    "date": "2021-12-31",
-   "composite": 0.4762,
+   "composite": 0.5179,
    "stance": "Overweight",
    "sp500": 4766.18
   },
   {
    "date": "2022-01-31",
-   "composite": 0.4762,
-   "stance": "Neutral",
+   "composite": 0.4161,
+   "stance": "Overweight",
    "sp500": 4515.55
   },
   {
    "date": "2022-02-28",
-   "composite": -0.0463,
+   "composite": -0.0821,
    "stance": "Neutral",
    "sp500": 4373.94
   },
   {
    "date": "2022-03-31",
-   "composite": -0.0648,
+   "composite": -0.0368,
    "stance": "Neutral",
    "sp500": 4530.41
   },
   {
    "date": "2022-04-30",
-   "composite": -0.75,
+   "composite": -0.5074,
    "stance": "Neutral",
    "sp500": 4131.93
   },
   {
    "date": "2022-05-31",
-   "composite": -0.75,
+   "composite": -0.5662,
    "stance": "Underweight",
    "sp500": 4132.15
   },
   {
    "date": "2022-06-30",
-   "composite": -0.8333,
+   "composite": -0.7083,
    "stance": "Underweight",
    "sp500": 3785.38
   },
   {
    "date": "2022-07-31",
-   "composite": -0.9833,
+   "composite": -0.9417,
    "stance": "Underweight",
    "sp500": 4130.29
   },
   {
    "date": "2022-08-31",
-   "composite": -0.9667,
+   "composite": -0.9458,
    "stance": "Underweight",
    "sp500": 3955.0
   },
   {
    "date": "2022-09-30",
-   "composite": -0.9667,
+   "composite": -0.8625,
    "stance": "Underweight",
    "sp500": 3585.62
   },
   {
    "date": "2022-10-31",
-   "composite": -0.5071,
+   "composite": -0.5304,
    "stance": "Underweight",
    "sp500": 3871.98
   },
   {
    "date": "2022-11-30",
-   "composite": -0.1037,
+   "composite": -0.1929,
    "stance": "Underweight",
    "sp500": 4080.11
   },
   {
    "date": "2022-12-31",
-   "composite": -0.7,
+   "composite": -0.6645,
    "stance": "Underweight",
    "sp500": 3839.5
   },
   {
    "date": "2023-01-31",
-   "composite": -0.4037,
+   "composite": -0.4304,
    "stance": "Underweight",
    "sp500": 4076.6
   },
   {
    "date": "2023-02-28",
-   "composite": -0.2556,
+   "composite": -0.4733,
    "stance": "Neutral",
    "sp500": 3970.15
   },
   {
    "date": "2023-03-31",
-   "composite": -0.0889,
+   "composite": -0.0395,
    "stance": "Neutral",
    "sp500": 4109.31
   },
   {
    "date": "2023-04-30",
-   "composite": 0.1571,
+   "composite": 0.0395,
    "stance": "Neutral",
    "sp500": 4169.48
   },
   {
    "date": "2023-05-31",
-   "composite": 0.0738,
+   "composite": -0.1823,
    "stance": "Neutral",
    "sp500": 4179.83
   },
   {
    "date": "2023-06-30",
-   "composite": 0.0238,
+   "composite": 0.003,
    "stance": "Neutral",
    "sp500": 4450.38
   },
   {
    "date": "2023-07-31",
-   "composite": 0.0738,
+   "composite": -0.0095,
    "stance": "Neutral",
    "sp500": 4588.96
   },
   {
    "date": "2023-08-31",
-   "composite": 0.1905,
+   "composite": 0.1696,
    "stance": "Neutral",
    "sp500": 4507.66
   },
   {
    "date": "2023-09-30",
-   "composite": 0.2405,
+   "composite": -0.0622,
    "stance": "Neutral",
    "sp500": 4288.05
   },
   {
    "date": "2023-10-31",
-   "composite": -0.0558,
+   "composite": -0.1958,
    "stance": "Neutral",
    "sp500": 4193.8
   },
   {
    "date": "2023-11-30",
-   "composite": 0.0071,
+   "composite": -0.0762,
    "stance": "Neutral",
    "sp500": 4567.8
   },
   {
    "date": "2023-12-31",
-   "composite": 0.1738,
+   "composite": 0.0905,
    "stance": "Neutral",
    "sp500": 4769.83
   },
   {
    "date": "2024-01-31",
-   "composite": 0.1571,
+   "composite": 0.1155,
    "stance": "Neutral",
    "sp500": 4845.65
   },
   {
    "date": "2024-02-29",
-   "composite": 0.1571,
+   "composite": 0.1155,
    "stance": "Neutral",
    "sp500": 5096.27
   },
   {
    "date": "2024-03-31",
-   "composite": 0.3,
+   "composite": 0.2583,
    "stance": "Neutral",
    "sp500": 5254.35
   },
   {
    "date": "2024-04-30",
-   "composite": 0.0667,
+   "composite": 0.0458,
    "stance": "Neutral",
    "sp500": 5035.69
   },
   {
    "date": "2024-05-31",
-   "composite": 0.2333,
+   "composite": 0.2125,
    "stance": "Neutral",
    "sp500": 5277.51
   },
   {
    "date": "2024-06-30",
-   "composite": 0.2333,
+   "composite": 0.15,
    "stance": "Neutral",
    "sp500": 5460.48
   },
   {
    "date": "2024-07-31",
-   "composite": 0.0905,
+   "composite": 0.028,
    "stance": "Neutral",
    "sp500": 5522.3
   },
   {
    "date": "2024-08-31",
-   "composite": -0.1667,
+   "composite": -0.2292,
    "stance": "Neutral",
    "sp500": 5648.4
   },
   {
    "date": "2024-09-30",
-   "composite": 0.0,
+   "composite": -0.1042,
    "stance": "Neutral",
    "sp500": 5762.48
   },
   {
    "date": "2024-10-31",
-   "composite": 0.0095,
+   "composite": -0.1155,
    "stance": "Neutral",
    "sp500": 5705.45
   },
   {
    "date": "2024-11-30",
-   "composite": 0.4667,
+   "composite": 0.2792,
    "stance": "Neutral",
    "sp500": 6032.38
   },
   {
    "date": "2024-12-31",
-   "composite": 0.4667,
+   "composite": 0.2792,
    "stance": "Neutral",
    "sp500": 5881.63
   },
   {
    "date": "2025-01-31",
-   "composite": 0.55,
+   "composite": 0.3625,
    "stance": "Neutral",
    "sp500": 6040.53
   },
   {
    "date": "2025-02-28",
-   "composite": 0.55,
-   "stance": "Overweight",
+   "composite": 0.5083,
+   "stance": "Neutral",
    "sp500": 5954.5
   },
   {
    "date": "2025-03-31",
-   "composite": 0.3037,
-   "stance": "Overweight",
+   "composite": 0.3267,
+   "stance": "Neutral",
    "sp500": 5611.85
   },
   {
    "date": "2025-04-30",
-   "composite": -0.2016,
+   "composite": -0.126,
    "stance": "Neutral",
    "sp500": 5569.06
   },
   {
    "date": "2025-05-31",
-   "composite": 0.428,
+   "composite": 0.3777,
    "stance": "Neutral",
    "sp500": 5911.69
   },
   {
    "date": "2025-06-30",
-   "composite": 0.1352,
+   "composite": 0.2466,
    "stance": "Neutral",
    "sp500": 6204.95
   },
   {
    "date": "2025-07-31",
-   "composite": 0.2833,
+   "composite": 0.325,
    "stance": "Neutral",
    "sp500": 6339.39
   },
   {
    "date": "2025-08-31",
-   "composite": 0.2833,
+   "composite": 0.2625,
    "stance": "Neutral",
    "sp500": 6460.26
   },
   {
    "date": "2025-09-30",
-   "composite": 0.45,
+   "composite": 0.3458,
    "stance": "Neutral",
    "sp500": 6688.46
   },
   {
    "date": "2025-10-31",
-   "composite": 0.6167,
+   "composite": 0.4292,
    "stance": "Neutral",
    "sp500": 6840.2
   },
   {
    "date": "2025-11-30",
-   "composite": 0.5333,
-   "stance": "Overweight",
+   "composite": 0.3458,
+   "stance": "Neutral",
    "sp500": 6849.09
   },
   {
    "date": "2025-12-31",
-   "composite": 0.3,
-   "stance": "Overweight",
+   "composite": 0.1958,
+   "stance": "Neutral",
    "sp500": 6845.5
   },
   {
    "date": "2026-01-31",
-   "composite": 0.3667,
+   "composite": 0.2625,
    "stance": "Neutral",
    "sp500": 6939.03
   },
   {
    "date": "2026-02-28",
-   "composite": 0.3833,
+   "composite": 0.2792,
    "stance": "Neutral",
    "sp500": 6878.88
   },
   {
    "date": "2026-03-31",
-   "composite": 0.2632,
+   "composite": 0.263,
    "stance": "Neutral",
    "sp500": 6528.52
   },
   {
    "date": "2026-04-30",
-   "composite": 0.5,
+   "composite": 0.6042,
    "stance": "Neutral",
    "sp500": 7209.01
   },
   {
    "date": "2026-05-31",
-   "composite": 0.5,
+   "composite": 0.6042,
    "stance": "Overweight",
    "sp500": 7580.06
   },
   {
    "date": "2026-06-30",
-   "composite": 0.1833,
+   "composite": 0.2458,
    "stance": "Overweight",
    "sp500": 7499.36
   },
   {
    "date": "2026-07-31",
-   "composite": 0.3333,
+   "composite": 0.4583,
    "stance": "Neutral",
    "sp500": 7489.72
   },
   {
    "date": "2026-08-31",
-   "composite": 0.4167,
+   "composite": 0.4583,
    "stance": "Neutral",
    "sp500": 7686.14
   },
   {
    "date": "2026-09-30",
-   "composite": 0.3333,
+   "composite": 0.2598,
    "stance": "Neutral",
    "sp500": 7651.54
   },
   {
    "date": "2026-10-31",
-   "composite": 0.4405,
+   "composite": 0.3571,
    "stance": "Neutral",
    "sp500": 7580.07
   }
@@ -1555,6 +1964,30 @@
    "available": true
   },
   {
+   "id": "DFII10",
+   "name": "10-year real Treasury yield (TIPS)",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "WALCL",
+   "name": "Federal Reserve total assets",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "WTREGEN",
+   "name": "Treasury General Account",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "RRPONTSYD",
+   "name": "Overnight reverse repo balances",
+   "rights": "public",
+   "available": true
+  },
+  {
    "id": "SP500",
    "name": "S&P 500 index",
    "rights": "third_party",
@@ -1575,6 +2008,24 @@
   {
    "id": "BAMLH0A0HYM2",
    "name": "ICE BofA US high-yield spread",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "ETF prices",
+   "name": "Adjusted closes for 22 ETFs (Yahoo Finance, Stooq as fallback)",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "Shiller CAPE and P/E",
+   "name": "S&P 500 valuation history (multpl.com, Yale as fallback)",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "AAII survey",
+   "name": "AAII investor sentiment survey",
    "rights": "third_party",
    "available": true
   }
