@@ -70,9 +70,9 @@ function calc() {
   const why = [];
   why.push(a.equity_offset === 0 ? `Stocks stay at your neutral ${neutral.stocks}%: the consensus is ${s.label}.`
     : `Stocks move ${diff(a.equity_offset)} points: the consensus is ${s.label}${s.valuation_tilt === 'expensive' && a.equity_offset > 0 ? ', at half size because valuation reads expensive' : ''}.`);
-  why.push(a.alt_tilt > 0 ? `Alternatives get ${diff(a.alt_tilt)} points because inflation is accelerating.`
+  why.push(a.alt_tilt > 0 ? `Alternatives get ${diff(a.alt_tilt)} points because inflation is accelerating and gold or commodities is in an uptrend.`
     : a.alt_tilt < 0 ? `Alternatives give up ${Math.abs(a.alt_tilt)} points because growth and inflation are both slowing.`
-    : 'Alternatives stay at neutral: inflation is not accelerating.');
+    : `Alternatives stay at neutral: ${esc(a.alt_note)}`);
   why.push({ cash: 'The Fed is hiking, so half of what is left sits in cash and T-bills and half in bonds.',
     bonds: 'The Fed is cutting, so about nine-tenths of what is left sits in bonds.',
     split: 'The Fed is on hold, so bonds and cash keep your usual proportions.' }[a.defensive]);

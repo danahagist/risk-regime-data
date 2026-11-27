@@ -18,6 +18,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fred_data  # noqa: E402
+import market_data  # noqa: E402
 import frameworks as fw  # noqa: E402
 
 OUT_JSON = "docs/data/signals.json"
@@ -54,7 +55,15 @@ METRICS = [
     ("sp500", "Markets", "S&P 500", 0, ""),
     ("sp500_vs_sma", "Markets", "S&P 500 vs 10-month average", 1, "%"),
     ("sp500_ret12", "Markets", "S&P 500, 12-month return", 1, "%"),
+    ("breadth", "Markets", "Sectors above their 10-month average", 0, "%"),
     ("buffett", "Valuation", "Stock market value / GDP", 0, "%"),
+    ("cape", "Valuation", "Shiller CAPE", 1, ""),
+    ("pe", "Valuation", "Trailing P/E", 1, ""),
+    ("fed_model_gap", "Valuation", "Earnings yield minus 10-year yield", 2, " pts"),
+    ("excess_cape_yield", "Valuation", "Excess CAPE yield", 2, "%"),
+    ("real_y10", "Policy and rates", "10-year real yield (TIPS)", 2, "%"),
+    ("net_liquidity_chg6", "Policy and rates", "Net liquidity, 6-month change", 1, "%"),
+    ("aaii_spread", "Sentiment", "AAII bulls minus bears", 0, " pts"),
 ]
 
 
@@ -69,6 +78,15 @@ def _clean(x):
     if isinstance(x, float):
         return None if (math.isnan(x) or math.isinf(x)) else round(x, 4)
     return x
+
+
+def _table(f, row, m):
+    if f.table is None:
+        return None
+    try:
+        return f.table(row, m)
+    except Exception:  # a display table must never break the run
+        return None
 
 
 def build_payload(raw: dict, asof=None) -> tuple[dict, pd.DataFrame]:
@@ -94,6 +112,7 @@ def build_payload(raw: dict, asof=None) -> tuple[dict, pd.DataFrame]:
             "vote": _clean(v), "vote_label": vote_word(f, v),
             "reading": reading, "rule": f.rule,
             "inputs": [i for i in f.inputs(row) if i["value"] is not None] if has else [],
+            "table": _table(f, row, m) if has else None,
         })
 
     families = []
@@ -139,12 +158,12 @@ def build_payload(raw: dict, asof=None) -> tuple[dict, pd.DataFrame]:
     views = fw.asset_views(m, votes)
     weights = {f.id: f.weight for f in fw.FRAMEWORKS}
     tally = {a: round(sum(weights[v["id"]] for v in views if a in v["favors"]), 2) for a in fw.ASSETS}
-    tilt_pts = fw.alt_tilt(m)
+    tilt_pts, tilt_note = fw.alt_tilt(m)
     offset = 0.0 if pd.isna(c["equity_offset"]) else float(c["equity_offset"])
     allocation = {
         "neutral": fw.NEUTRAL_MIX,
         "model": fw.model_allocation(fw.NEUTRAL_MIX, offset, tilt_pts, c["defensive"]),
-        "equity_offset": offset, "alt_tilt": tilt_pts, "defensive": c["defensive"],
+        "equity_offset": offset, "alt_tilt": tilt_pts, "alt_note": tilt_note, "defensive": c["defensive"],
         "cash_share": fw.CASH_SHARE, "alt_step": fw.ALT_STEP,
         "views": views, "tally": tally,
     }
@@ -180,7 +199,10 @@ def build_payload(raw: dict, asof=None) -> tuple[dict, pd.DataFrame]:
         "metrics": metrics,
         "history": history,
         "sources": [{"id": k, "name": v[0], "rights": v[1], "available": not raw.get(k, pd.Series(dtype=float)).empty}
-                    for k, v in fred_data.SERIES.items()],
+                    for k, v in fred_data.SERIES.items()] +
+                   [{"id": s["id"], "name": s["name"], "rights": s["rights"],
+                     "available": any(k.startswith(s["prefix"]) and not v.empty for k, v in raw.items())}
+                    for s in market_data.SOURCES],
     }
     full = pd.concat([votes.add_prefix("vote_"), cons], axis=1)
     full["stance_label"] = full["stance"].map(fw.stance_name)
@@ -195,7 +217,11 @@ def main():
     ap.add_argument("--history-out", default=OUT_HISTORY)
     args = ap.parse_args()
 
-    raw = fred_data.load_fixture(args.fixture) if args.fixture else fred_data.fetch_all()
+    if args.fixture:
+        raw = fred_data.load_fixture(args.fixture)
+    else:
+        raw = fred_data.fetch_all()
+        raw.update(market_data.fetch_all())
     payload, full = build_payload(raw, asof=args.asof)
     if args.fixture:
         payload["sample"] = True
@@ -214,6 +240,9 @@ def main():
     print(f"As of {payload['as_of']}: {s['label']} (composite {s['composite']}, agreement {s['agreement']})")
     for f in payload["frameworks"]:
         print(f"  {f['vote_label']:9} {f['name']}: {f['reading']}")
+    no_data = [f["name"] for f in payload["frameworks"] if f["vote"] is None]
+    if no_data:
+        print("Frameworks with no data:", ", ".join(no_data), file=sys.stderr)
     missing = [x["id"] for x in payload["sources"] if not x["available"]]
     if missing:
         print("Series with no data:", ", ".join(missing), file=sys.stderr)

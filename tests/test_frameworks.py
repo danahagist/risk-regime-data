@@ -129,18 +129,23 @@ def votes_frame(rows):
 
 
 ALARM_IDS = [f.id for f in fw.FRAMEWORKS if fw.FAMILIES[f.family][2] == "alarm"]
+VALUATION_IDS = [f.id for f in fw.FRAMEWORKS if f.family == "valuation"]
+POLICY_IDS = [f.id for f in fw.FRAMEWORKS if f.family == "policy"]
+TREND_IDS = [f.id for f in fw.FRAMEWORKS if f.family == "trend"]
+CALENDAR_IDS = [f.id for f in fw.FRAMEWORKS if f.family == "calendar"]
 
 
 def all_votes(value, **overrides):
     """Every driver framework votes `value`; alarms are clear and valuation is fair unless overridden."""
     row = {f.id: float(value) for f in fw.FRAMEWORKS}
     row.update({a: 1.0 for a in ALARM_IDS})
-    row["buffett"] = 0.0
+    row.update({v: 0.0 for v in VALUATION_IDS})
     row.update(overrides)
     return [row[f.id] for f in fw.FRAMEWORKS]
 
 
 ALARMS_TRIGGERED = {a: -1.0 for a in ALARM_IDS}
+EXPENSIVE = {v: -1.0 for v in [f.id for f in fw.FRAMEWORKS if f.family == "valuation"]}
 
 
 def test_change_needs_two_consecutive_readings():
@@ -184,7 +189,7 @@ def test_recession_breaker_caps_equity():
 
 
 def test_valuation_sizes_but_does_not_time():
-    expensive = fw.consensus(votes_frame([all_votes(1, buffett=-1)] * 3)).iloc[-1]
+    expensive = fw.consensus(votes_frame([all_votes(1, **EXPENSIVE)] * 3)).iloc[-1]
     fair = fw.consensus(votes_frame([all_votes(1)] * 3)).iloc[-1]
     assert expensive["composite"] == pytest.approx(fair["composite"])   # no effect on the score
     assert fair["equity_offset"] == fw.STEP
@@ -193,17 +198,105 @@ def test_valuation_sizes_but_does_not_time():
 
 def test_low_agreement_stays_neutral():
     # two driver families strongly positive, two strongly negative: no clear direction
-    split = all_votes(1, fed_direction=-1, taylor_gap=-1, fin_conditions=-1, seasonality=-1)
+    split = all_votes(1, **{k: -1.0 for k in POLICY_IDS + CALENDAR_IDS})
     c = fw.consensus(votes_frame([split] * 3))
     assert c["stance"].map(fw.stance_name).iloc[-1] == "Neutral"
 
 
 def test_families_are_averaged_before_the_composite():
-    # the trend family has three members; it must not count three times
-    only_trend = all_votes(0, trend_10m=1, golden_cross=1, abs_momentum=1)
+    # the trend family has several members; it must count once
+    only_trend = all_votes(0, **{k: 1.0 for k in TREND_IDS})
     c = fw.consensus(votes_frame([only_trend])).iloc[-1]
     w = {k: v[1] for k, v in fw.FAMILIES.items() if v[2] == "driver"}
     assert c["composite"] == pytest.approx(w["trend"] / sum(w.values()))
+
+
+def test_info_frameworks_never_move_the_score():
+    info = {f.id: 1.0 for f in fw.FRAMEWORKS if fw.FAMILIES[f.family][2] == "info"}
+    assert info, "expected at least one info framework"
+    up = fw.consensus(votes_frame([all_votes(0, **info)])).iloc[-1]
+    down = fw.consensus(votes_frame([all_votes(0, **{k: -1.0 for k in info})])).iloc[-1]
+    assert up["composite"] == pytest.approx(down["composite"]) == pytest.approx(0.0)
+
+
+# ---------------------------------------------------------------- price, valuation and liquidity frameworks
+def test_dual_momentum_follows_antonacci():
+    def hold(us, intl, bills):
+        return fw.dual_momentum_holding(frame(ret12_SPY=us, ret12_ACWX=intl, ret12_BIL=bills)).iloc[-1]
+    assert hold(12.0, 8.0, 4.0) == "US stocks"
+    assert hold(12.0, 15.0, 4.0) == "Foreign stocks"
+    assert hold(2.0, 9.0, 4.0) == "Bonds"          # the test is US stocks against T-bills
+    assert fw.v_dual_momentum(frame(ret12_SPY=2.0, ret12_ACWX=9.0, ret12_BIL=4.0)).iloc[-1] == -1
+
+
+def test_breadth_thresholds():
+    assert fw.v_breadth(frame(breadth=64.0)).iloc[-1] == 1
+    assert fw.v_breadth(frame(breadth=50.0)).iloc[-1] == 0
+    assert fw.v_breadth(frame(breadth=36.0)).iloc[-1] == -1
+
+
+def test_breadth_counts_sectors_above_average(monthly):
+    r = monthly.iloc[-1]
+    above = sum(r[f"px_{t}"] >= r[f"sma_{t}"] for t in fw.SECTORS)
+    assert r["breadth"] == pytest.approx(above / len(fw.SECTORS) * 100)
+
+
+def test_fed_model_and_rule_of_20():
+    assert fw.v_fed_model(frame(fed_model_gap=2.5)).iloc[-1] == 1
+    assert fw.v_fed_model(frame(fed_model_gap=0.8)).iloc[-1] == 0
+    assert fw.v_fed_model(frame(fed_model_gap=-0.4)).iloc[-1] == -1
+    assert fw.v_rule20(frame(rule20=17.0)).iloc[-1] == 1
+    assert fw.v_rule20(frame(rule20=25.0)).iloc[-1] == -1
+
+
+def test_sentiment_is_contrarian():
+    assert fw.v_sentiment(frame(aaii_spread=-30.0)).iloc[-1] == 1     # deep pessimism
+    assert fw.v_sentiment(frame(aaii_spread=5.0)).iloc[-1] == 0
+    assert fw.v_sentiment(frame(aaii_spread=35.0)).iloc[-1] == -1     # euphoria
+
+
+def test_net_liquidity_handles_mixed_units(monthly, raw):
+    # WALCL arrives in millions, the other two in billions
+    assert raw["WALCL"].iloc[-1] > 1_000_000 and raw["WTREGEN"].iloc[-1] < 5_000
+    last = monthly["net_liquidity"].iloc[-1]
+    assert 3_000 < last < 9_000          # billions of dollars
+    assert fw._to_billions(pd.Series([6_500_000.0, 6_600_000.0])).iloc[-1] == pytest.approx(6_600.0)
+    assert fw._to_billions(pd.Series([800.0, 850.0])).iloc[-1] == pytest.approx(850.0)
+
+
+def test_alternatives_tilt_needs_an_uptrend():
+    rising = dict(infl_chg=0.3, growth_chg=0.1)
+    up = frame(**rising, px_GLD=110.0, sma_GLD=100.0, px_DBC=90.0, sma_DBC=100.0)
+    down = frame(**rising, px_GLD=90.0, sma_GLD=100.0, px_DBC=90.0, sma_DBC=100.0)
+    unknown = frame(**rising)
+    assert fw.alt_tilt(up)[0] == fw.ALT_STEP
+    assert fw.alt_tilt(down)[0] == 0                       # inflation up but nothing trending
+    assert fw.alt_tilt(unknown)[0] == fw.ALT_STEP          # no price data: fall back to the inflation rule
+    assert fw.alt_tilt(frame(infl_chg=-0.3, growth_chg=-0.1))[0] == -fw.ALT_STEP
+
+
+def test_fred_only_run_still_works(raw):
+    # outside sources can all fail on the same day; the FRED frameworks must carry on
+    fred_only = {k: v for k, v in raw.items() if ":" not in k}
+    payload, _ = compute_signals.build_payload(fred_only, asof=ASOF)
+    by_id = {f["id"]: f for f in payload["frameworks"]}
+    for fid in ("dual_momentum", "breadth", "dow_theory", "cape", "fed_model", "rule_of_20", "sentiment",
+                "gtaa", "sector_rotation", "intermarket"):
+        assert by_id[fid]["vote"] is None, fid
+    assert by_id["trend_10m"]["vote"] is not None and by_id["net_liquidity"]["vote"] is not None
+    assert payload["stance"]["label"] in fw.STANCES
+    assert sum(payload["allocation"]["model"].values()) == 100
+    json.dumps(payload, allow_nan=False)
+
+
+def test_tables_are_plain_json(raw):
+    payload, _ = compute_signals.build_payload(raw, asof=ASOF)
+    by_id = {f["id"]: f for f in payload["frameworks"]}
+    sectors = by_id["sector_rotation"]["table"]
+    assert len(sectors["rows"]) == len(fw.SECTORS) and len(sectors["columns"]) == len(sectors["rows"][0])
+    assert [r[0] for r in sectors["rows"]] == list(range(1, len(fw.SECTORS) + 1))
+    assert len(by_id["gtaa"]["table"]["rows"]) == len(fw.TREND_ASSETS)
+    json.dumps(payload, allow_nan=False)
 
 
 # ---------------------------------------------------------------- allocation

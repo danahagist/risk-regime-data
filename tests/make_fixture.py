@@ -86,6 +86,47 @@ def build(end: str = "2026-11-27") -> dict[str, pd.Series]:
                   "2007-07-01": 1.05, "2009-01-01": 0.57, "2021-10-01": 1.95, "2022-10-01": 1.50,
                   "2026-07-01": 2.15}, QS, end, log=True)
     s["NCBEILQ027S"] = ratio * s["GDP"] * 1000.0
+    # ---- ETF prices: the S&P path scaled by a per-fund drift, plus noise
+    spx = s["SP500"]
+    def etf(seed, drift, vol=0.004, base=None):
+        rng = np.random.default_rng(seed)
+        b = spx if base is None else base
+        days = np.arange(len(b))
+        return (b * np.exp(drift * days / 252.0 + rng.normal(0, vol, len(b)).cumsum() * 0.3)).rename(None)
+    flat = pd.Series(100.0, index=spx.index)
+    s["PX:SPY"] = spx / 10.0
+    s["PX:ACWX"] = etf(21, -0.03)
+    s["PX:IWM"] = etf(22, -0.02)
+    s["PX:RSP"] = etf(23, -0.01)
+    s["PX:DIA"] = etf(24, -0.01)
+    s["PX:IYT"] = etf(25, -0.03)
+    s["PX:AGG"] = (100 - (s["DGS10"].reindex(spx.index).ffill() - 2.0) * 6.0).rename(None)
+    s["PX:BIL"] = (90 * np.exp((s["DGS3MO"].reindex(spx.index).ffill() / 100 / 252).cumsum())).rename(None)
+    s["PX:GLD"] = path({"2012-01-02": 160, "2015-12-01": 102, "2020-08-06": 194, "2022-10-03": 155, "2025-12-31": 400,
+                        "2026-06-01": 440, "2026-11-27": 338}, B, end, 0.004, log=True, seed=26)
+    s["PX:DBC"] = path({"2012-01-02": 28, "2016-01-20": 12, "2018-10-03": 18, "2020-04-21": 10.5, "2022-06-08": 30,
+                        "2025-12-31": 23, "2026-10-30": 29, "2026-11-27": 25}, B, end, 0.005, log=True, seed=27)
+    s["PX:CPER"] = path({"2012-01-02": 25, "2016-01-15": 13, "2021-05-10": 29, "2025-12-31": 30, "2026-11-27": 31}, B, end, 0.006, log=True, seed=28)
+    for i, (t, drift) in enumerate({"XLK": 0.05, "XLC": 0.01, "XLY": 0.0, "XLF": -0.01, "XLI": -0.01, "XLB": -0.03,
+                                     "XLE": -0.04, "XLV": -0.02, "XLP": -0.04, "XLU": -0.04, "XLRE": -0.05}.items()):
+        s[f"PX:{t}"] = etf(40 + i, drift, 0.006)
+    # ---- valuation history
+    s["SHILLER:CAPE"] = path({"1900-01-01": 18, "1921-01-01": 5.5, "1929-09-01": 32, "1932-06-01": 6, "1966-01-01": 24,
+                              "1982-07-01": 6.6, "1999-12-01": 44, "2009-03-01": 13.3, "2021-11-01": 38.6, "2022-10-01": 27,
+                              "2026-10-01": 40.5, "2026-11-01": 38.0}, MS, end, log=True)
+    s["SHILLER:PE"] = path({"1900-01-01": 13, "1949-06-01": 6, "1999-12-01": 30, "2011-09-01": 13.5, "2021-01-01": 36,
+                            "2022-10-01": 19, "2026-01-01": 28, "2026-11-01": 21.5}, MS, end, log=True)
+    s["DFII10"] = path({"2012-01-02": -0.1, "2013-12-31": 0.8, "2021-08-03": -1.15, "2023-10-25": 2.5, "2025-12-31": 2.0,
+                        "2026-11-27": 2.9}, B, end, 0.01, seed=29)
+    # ---- sentiment and liquidity
+    s["AAII:SPREAD"] = path({"2012-01-05": 10, "2020-03-19": -17, "2021-04-08": 34, "2022-09-22": -43, "2024-07-18": 30,
+                             "2025-04-03": -40, "2026-09-24": 5, "2026-11-25": -8.3}, "W-THU", end, 6.0, seed=30)
+    s["WALCL"] = path({"2012-01-04": 2.9e6, "2015-01-07": 4.5e6, "2019-09-04": 3.76e6, "2020-06-10": 7.17e6,
+                       "2022-04-13": 8.96e6, "2025-12-31": 6.6e6, "2026-11-25": 6.45e6}, "W-WED", end)   # millions
+    s["WTREGEN"] = path({"2012-01-04": 60, "2020-07-22": 1800, "2021-12-29": 400, "2023-06-07": 50, "2025-12-31": 800,
+                         "2026-11-25": 850}, "W-WED", end)                                                 # billions
+    s["RRPONTSYD"] = path({"2013-09-23": 5, "2021-03-17": 1, "2022-12-30": 2550, "2024-12-31": 470, "2025-12-31": 60,
+                           "2026-11-27": 40}, B, end).clip(lower=0)                                        # billions
     return {k: v.dropna() for k, v in s.items()}
 
 
@@ -93,7 +134,7 @@ def write(directory: str, end: str = "2026-11-27") -> None:
     os.makedirs(directory, exist_ok=True)
     for code, series in build(end).items():
         pd.DataFrame({"date": series.index, "value": series.values}).to_csv(
-            os.path.join(directory, f"{code}.csv"), index=False)
+            os.path.join(directory, f"{code.replace(':', '_')}.csv"), index=False)
 
 
 if __name__ == "__main__":

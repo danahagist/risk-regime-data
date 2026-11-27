@@ -25,6 +25,7 @@ const ROLE = {
   driver: ['Drivers', 'These four families vote on direction, from -1 to +1.'],
   alarm: ['Alarms', 'These can only subtract. A quiet alarm is the absence of bad news, not good news.'],
   sizing: ['Sizing', 'Valuation never moves the stance. It sets how large a move is allowed to be.'],
+  info: ['Where to look', 'These do not move the stance. They show which asset classes and sectors are leading.'],
 };
 
 function verdict(d) {
@@ -88,19 +89,20 @@ function familyCard(f, d) {
     bar = `<i style="background:${color};${f.score >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`}"></i>`;
   }
   return `<div class="card family">
-    <h3><span>${esc(f.name)}</span><span class="score muted">${f.score == null ? 'no data' : signed(f.score)}</span></h3>
-    <div class="bar"><span class="mid"></span>${bar}</div>
+    <h3><span>${esc(f.name)}</span><span class="score muted">${f.role === 'info' ? 'not scored' : f.score == null ? 'no data' : signed(f.score)}</span></h3>
+    ${f.role === 'info' ? '' : `<div class="bar"><span class="mid"></span>${bar}</div>`}
     <ul class="votes">${f.members.map((id) => { const x = byId[id]; return `<li>
       <span class="dot ${voteClass(x.vote)}"></span>
       <span><a href="learn.html#${x.id}">${esc(x.name)}</a><span class="reading">${esc(x.reading)}</span></span>
-      <span class="tag ${voteClass(x.vote)}">${esc(x.vote_label)}</span></li>`; }).join('')}</ul>
+      <span class="tag ${voteClass(x.vote)}">${esc(x.vote_label)}</span>${x.table ? `<div style="grid-column:1/-1">${miniTable(x.table)}</div>` : ''}</li>`; }).join('')}</ul>
   </div>`;
 }
 
 function families(d) {
   return Object.entries(ROLE).map(([role, [title, hint]]) => {
     const fams = d.families.filter((f) => f.role === role);
-    return `<h2>${title}</h2><p class="hint">${hint}</p><div class="grid two">${fams.map((f) => familyCard(f, d)).join('')}</div>`;
+    if (!fams.length) return '';
+    return `<h2>${title}</h2><p class="hint">${hint}</p><div class="grid ${role === 'info' ? '' : 'two'}">${fams.map((f) => familyCard(f, d)).join('')}</div>`;
   }).join('');
 }
 

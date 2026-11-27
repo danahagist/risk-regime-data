@@ -34,7 +34,8 @@
     <li>Everything is evaluated at month-end, on the last complete month. The job runs on the 2nd, so a run on December 2 reports November.</li>
     <li>Market series use the month-end close. Monthly economic series are shifted by their publication delay (one month; one quarter for quarterly data), so each month only uses what had been published by then.</li>
     <li>If a series is missing, the frameworks that need it show "No data" and are left out of the average. Nothing is backfilled.</li>
-    <li>Data comes from FRED. Series owned by third parties (the S&amp;P 500, the VIX and the ICE high-yield spread) are fine for personal use and would need a licensed source before a public launch. The sources table below marks them.</li>
+    <li>Economic data comes from FRED. ETF prices come from Yahoo Finance (Stooq as a fallback), long-run valuation series from multpl.com (Yale as a fallback), and the sentiment survey from AAII. Outside sources can fail or block automated requests; when one does, its frameworks show "No data" and the rest carry on.</li>
+    <li>Series owned by third parties (index levels, the VIX, the ICE high-yield spread, ETF prices, valuation history and the AAII survey) are fine for personal use and would need a licensed source before a public launch. The sources table below marks them.</li>
   </ul>
 </div>
 
@@ -48,14 +49,15 @@
   <p><b>Stance.</b> Overweight needs a score of +0.5 or more and Underweight -0.5 or less, each with at least half the opinionated families agreeing. Otherwise Neutral.</p>
   <p><b>Breakers.</b> If the recession family is at -0.75 or worse, or the credit signal is triggered, the stance cannot be Overweight. This applies at once.</p>
   <p><b>Confirmation.</b> Any other change needs the same reading two months in a row and moves one step at a time.</p>
-  <p><b>Sizing.</b> A step is 10 points of stocks. When valuation reads expensive, an Overweight is 5 points. When it reads cheap, an Underweight is 5 points.</p>
+  <p><b>Sizing.</b> A step is 10 points of stocks. When the valuation family reads expensive (a score of -0.5 or lower), an Overweight is 5 points. When it reads cheap, an Underweight is 5 points.</p>
+  <p><b>Where to look.</b> Multi-asset trend, sector rotation and intermarket ratios are shown for context. They are not part of the score.</p>
 </div>
 
 <h2>Model allocation</h2>
 <div class="card">
   <ol>
     <li><b>Stocks</b> = neutral stocks plus the stance step.</li>
-    <li><b>Alternatives</b> (commodities and gold) = neutral plus 5 points when core inflation is higher than six months ago, minus 5 when growth and inflation are both slowing.</li>
+    <li><b>Alternatives</b> (commodities and gold) = neutral plus 5 points when core inflation is higher than six months ago and at least one of gold or commodities is above its 10-month average, minus 5 when growth and inflation are both slowing.</li>
     <li><b>Bonds and cash</b> share what is left: half in cash while the Fed is hiking, about a tenth once it is cutting, and the neutral split when it is on hold.</li>
   </ol>
   <p class="hint">These parameters were set once, from the logic of each framework. They have not been tuned to a backtest, which is the main way combined-signal models fool their authors.</p>
@@ -86,7 +88,7 @@ loadJSON('data/signals.json').then((d) => {
   const fam = Object.fromEntries(d.families.map((f) => [f.id, f]));
   $('#frameworks').innerHTML = `<table><tr><th>Framework</th><th>Family</th><th>Weight</th><th>Rule</th></tr>${d.frameworks.map((f) =>
     `<tr><td><a href="learn.html#${f.id}">${esc(f.name)}</a></td><td>${esc(fam[f.family].name)} <span class="muted">(${fam[f.family].role})</span></td><td>${f.weight}</td><td>${esc(f.rule)}</td></tr>`).join('')}</table>`;
-  $('#sources').innerHTML = `<table><tr><th>FRED series</th><th>Description</th><th>Owner</th><th>This run</th></tr>${d.sources.map((s) =>
+  $('#sources').innerHTML = `<table><tr><th>Series</th><th>Description</th><th>Owner</th><th>This run</th></tr>${d.sources.map((s) =>
     `<tr><td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${s.rights === 'public' ? 'Public (government or Fed)' : 'Third party'}</td><td>${s.available ? 'Loaded' : 'Missing'}</td></tr>`).join('')}</table>`;
   renderFooter(d);
 }).catch(() => { $('#frameworks').innerHTML = $('#sources').innerHTML = '<span class="hint">Run the monthly workflow to load this table.</span>'; renderFooter(null); });

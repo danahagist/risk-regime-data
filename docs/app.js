@@ -56,3 +56,9 @@ function mixBar(mix) {
     `<div class="a-${a}" style="width:${mix[a]}%" title="${ASSET_NAME[a]} ${mix[a]}%">${mix[a] >= 8 ? mix[a] + '%' : ''}</div>`).join('')}</div>
     <div class="legend">${ASSETS.map((a) => `<span><i class="a-${a}"></i>${ASSET_NAME[a]} ${mix[a]}%</span>`).join('')}</div>`;
 }
+
+function miniTable(tb) {
+  if (!tb || !tb.rows || !tb.rows.length) return '';
+  return `<div class="scroll"><table class="mini"><tr>${tb.columns.map((c) => `<th>${esc(c)}</th>`).join('')}</tr>${
+    tb.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+}

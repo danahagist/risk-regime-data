@@ -36,6 +36,11 @@ SERIES = {
     # valuation
     "NCBEILQ027S": ("Corporate equities, market value (Fed Z.1)", "public"),
     "GDP": ("Nominal GDP", "public"),
+    "DFII10": ("10-year real Treasury yield (TIPS)", "public"),
+    # liquidity
+    "WALCL": ("Federal Reserve total assets", "public"),
+    "WTREGEN": ("Treasury General Account", "public"),
+    "RRPONTSYD": ("Overnight reverse repo balances", "public"),
     # markets (third-party owners)
     "SP500": ("S&P 500 index", "third_party"),
     "VIXCLS": ("CBOE VIX", "third_party"),
@@ -78,14 +83,16 @@ def _fetch_one(fred, code: str, start: str) -> pd.Series:
 
 
 def load_fixture(directory: str) -> dict[str, pd.Series]:
-    """Load series from <directory>/<CODE>.csv (columns: date,value). Used by tests
-    and for offline previews."""
-    out: dict[str, pd.Series] = {}
-    for code in SERIES:
-        path = os.path.join(directory, f"{code}.csv")
-        if os.path.exists(path):
-            df = pd.read_csv(path, parse_dates=["date"])
-            out[code] = pd.Series(df["value"].values, index=df["date"], dtype="float64").dropna().sort_index()
-        else:
-            out[code] = pd.Series(dtype="float64")
+    """Load series from <directory>/<KEY>.csv (columns: date,value). Used by tests and
+    offline previews. A key such as PX:SPY is stored as PX_SPY.csv."""
+    out: dict[str, pd.Series] = {code: pd.Series(dtype="float64") for code in SERIES}
+    for name in sorted(os.listdir(directory)):
+        if not name.endswith(".csv"):
+            continue
+        key = name[:-4]
+        for prefix in ("PX", "SHILLER", "AAII"):
+            if key.startswith(prefix + "_"):
+                key = prefix + ":" + key[len(prefix) + 1:]
+        df = pd.read_csv(os.path.join(directory, name), parse_dates=["date"])
+        out[key] = pd.Series(df["value"].values, index=df["date"], dtype="float64").dropna().sort_index()
     return out

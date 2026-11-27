@@ -30,6 +30,7 @@ VALUATION_STEP = 5           # reduced step when valuation argues against the mo
 #   alarm   can only subtract. An alarm that is not ringing is the absence of bad
 #           news, not good news, so its score runs from -1 (triggered) to 0 (clear)
 #   sizing  never moves the stance; it sets how large a move is allowed to be
+#   info    shows which parts of the market are leading; not part of the score
 FAMILIES = {
     # id: (name, weight, role)
     "macro": ("Macro regime", 0.75, "driver"),
@@ -39,6 +40,7 @@ FAMILIES = {
     "recession": ("Recession risk", 1.0, "alarm"),
     "credit_vol": ("Credit and volatility", 1.0, "alarm"),
     "valuation": ("Valuation", 0.75, "sizing"),
+    "where": ("Where to look", 0.0, "info"),   # shown for context; never moves the stance
 }
 MIN_DRIVERS = 2              # driver families needed to say anything
 BREAKER_LEVEL = -0.75        # alarm family score that caps equity at Neutral
@@ -84,6 +86,28 @@ def _quarterly(raw, code, idx, lag=3, ffill=6):
     s.index = s.index.to_period("Q").to_timestamp("Q") + pd.offsets.MonthEnd(lag)
     s = s[~s.index.duplicated(keep="last")]
     return s.reindex(idx).ffill(limit=ffill)
+
+
+SECTORS = {
+    "XLK": "Technology", "XLC": "Communication", "XLY": "Consumer discretionary", "XLF": "Financials",
+    "XLI": "Industrials", "XLB": "Materials", "XLE": "Energy", "XLV": "Health care",
+    "XLP": "Consumer staples", "XLU": "Utilities", "XLRE": "Real estate",
+}
+CYCLICAL = {"XLK", "XLC", "XLY", "XLF", "XLI", "XLB", "XLE"}
+TREND_ASSETS = {"SPY": "US stocks", "ACWX": "Foreign stocks", "AGG": "US bonds", "GLD": "Gold", "DBC": "Commodities"}
+PRICE_TICKERS = list(TREND_ASSETS) + ["BIL", "IWM", "RSP", "DIA", "IYT", "CPER"] + list(SECTORS)
+RATIOS = {   # name: (numerator, denominator). Rising means markets expect stronger growth.
+    "copper_gold": ("CPER", "GLD"),
+    "discretionary_staples": ("XLY", "XLP"),
+    "small_large": ("IWM", "SPY"),
+}
+RATIO_NAME = {"copper_gold": "Copper / gold", "discretionary_staples": "Discretionary / staples", "small_large": "Small caps / large caps"}
+
+
+def _to_billions(s: pd.Series) -> pd.Series:
+    """FRED mixes units across these series (millions for some, billions for others)."""
+    med = s.abs().median()
+    return s / 1000.0 if pd.notna(med) and med > 50_000 else s
 
 
 def build_monthly(raw: dict[str, pd.Series], asof: pd.Timestamp | None = None,
@@ -178,7 +202,57 @@ def build_monthly(raw: dict[str, pd.Series], asof: pd.Timestamp | None = None,
     m["vix"] = _daily(raw, "VIXCLS", idx, "last")
     m["vix_3m"] = _daily(raw, "VXVCLS", idx, "last")
     m["vix_ratio"] = m["vix"] / m["vix_3m"]
-    return m
+
+    # ETF prices (adjusted closes, so returns include dividends)
+    cols = {}
+    for t in PRICE_TICKERS:
+        px = _daily(raw, f"PX:{t}", idx, "last")
+        cols[f"px_{t}"] = px
+        cols[f"sma_{t}"] = px.rolling(10, min_periods=10).mean()
+        cols[f"ret6_{t}"] = px.pct_change(6, fill_method=None) * 100
+        cols[f"ret12_{t}"] = px.pct_change(12, fill_method=None) * 100
+    m = pd.concat([m, pd.DataFrame(cols, index=idx)], axis=1)
+    sector_up = pd.DataFrame({t: (m[f"px_{t}"] >= m[f"sma_{t}"]).where(_ok(m[f"px_{t}"], m[f"sma_{t}"])) for t in SECTORS})
+    m["sectors_counted"] = sector_up.notna().sum(axis=1)
+    m["breadth"] = (sector_up.astype("float64").mean(axis=1) * 100).where(m["sectors_counted"] >= 8)
+    for name, (a, b) in RATIOS.items():
+        r = m[f"px_{a}"] / m[f"px_{b}"]
+        m[f"ratio_{name}"] = r
+        m[f"ratio_{name}_sma"] = r.rolling(10, min_periods=10).mean()
+
+    # long-run valuation
+    cape = raw.get("SHILLER:CAPE", pd.Series(dtype="float64")).dropna().sort_index()
+    if cape.empty:
+        m["cape"] = np.nan
+        m["cape_pctile"] = np.nan
+    else:
+        cape = cape.groupby(cape.index.to_period("M")).last().to_timestamp("M")
+        pct = cape.expanding(min_periods=120).apply(lambda w: (w <= w.iloc[-1]).mean() * 100, raw=False)
+        m["cape"] = cape.reindex(idx).ffill(limit=2)
+        m["cape_pctile"] = pct.reindex(idx).ffill(limit=2)
+    pe = raw.get("SHILLER:PE", pd.Series(dtype="float64")).dropna().sort_index()
+    if pe.empty:
+        m["pe"] = np.nan
+    else:
+        m["pe"] = pe.groupby(pe.index.to_period("M")).last().to_timestamp("M").reindex(idx).ffill(limit=2)
+    m["real_y10"] = _daily(raw, "DFII10", idx, "mean")
+    m["excess_cape_yield"] = 100.0 / m["cape"] - m["real_y10"]
+    m["earnings_yield"] = 100.0 / m["pe"]
+    m["fed_model_gap"] = m["earnings_yield"] - m["y10"]
+    m["rule20"] = m["pe"] + m["cpi_yoy"]
+
+    # sentiment: AAII bulls minus bears, 4-week average
+    aaii = raw.get("AAII:SPREAD", pd.Series(dtype="float64")).dropna().sort_index()
+    if aaii.empty:
+        m["aaii_spread"] = np.nan
+    else:
+        m["aaii_spread"] = aaii.rolling(4, min_periods=2).mean().resample("ME").last().reindex(idx)
+
+    # liquidity: Fed balance sheet minus the Treasury's cash account minus reverse repo
+    parts = [_to_billions(_daily(raw, c, idx, "last")) for c in ("WALCL", "WTREGEN", "RRPONTSYD")]
+    m["net_liquidity"] = parts[0] - parts[1] - parts[2]
+    m["net_liquidity_chg6"] = m["net_liquidity"].pct_change(6, fill_method=None) * 100
+    return m.copy()
 
 
 # ----------------------------------------------------------------------------
@@ -333,6 +407,117 @@ def v_season(m):
     return _tri(total >= 1, total < 0, pd.Series(True, index=m.index))
 
 
+# ---- price-based frameworks -------------------------------------------------
+def dual_momentum_holding(m):
+    """Antonacci's rule: if US stocks beat T-bills over 12 months, hold US or foreign
+    stocks, whichever returned more. Otherwise hold bonds."""
+    us, intl, bills = m["ret12_SPY"], m["ret12_ACWX"], m["ret12_BIL"]
+    lab = np.select([(us > bills) & (us >= intl), (us > bills) & (intl > us)], ["US stocks", "Foreign stocks"], default="Bonds")
+    return pd.Series(lab, index=m.index).where(_ok(us, intl, bills))
+
+
+def v_dual_momentum(m):
+    h = dual_momentum_holding(m)
+    return _tri(h.isin(["US stocks", "Foreign stocks"]), h == "Bonds", h.notna())
+
+
+def v_breadth(m):
+    return _tri(m["breadth"] >= 60, m["breadth"] <= 40, m["breadth"].notna())
+
+
+def v_dow(m):
+    ind = m["px_DIA"] >= m["sma_DIA"]
+    tra = m["px_IYT"] >= m["sma_IYT"]
+    return _tri(ind & tra, ~ind & ~tra, _ok(m["px_DIA"], m["sma_DIA"], m["px_IYT"], m["sma_IYT"]))
+
+
+def assets_in_uptrend(m):
+    up = pd.DataFrame({t: (m[f"px_{t}"] >= m[f"sma_{t}"]).where(_ok(m[f"px_{t}"], m[f"sma_{t}"])) for t in TREND_ASSETS})
+    return up
+
+
+def v_gtaa(m):
+    up = assets_in_uptrend(m)
+    n = up.astype("float64").sum(axis=1)
+    return _tri(n >= 3, n <= 1, up.notna().all(axis=1))
+
+
+def sector_scores(m) -> pd.DataFrame:
+    """Average of 6 and 12-month total return for each sector."""
+    return pd.DataFrame({t: (m[f"ret6_{t}"] + m[f"ret12_{t}"]) / 2 for t in SECTORS})
+
+
+def v_sectors(m):
+    s = sector_scores(m)
+    valid = s.notna().sum(axis=1) >= 8
+    top3_cyc = s.rank(axis=1, ascending=False).le(3)[[t for t in SECTORS if t in CYCLICAL]].sum(axis=1)
+    return _tri(top3_cyc >= 2, top3_cyc <= 1, valid)
+
+
+def ratios_rising(m):
+    return pd.DataFrame({k: (m[f"ratio_{k}"] >= m[f"ratio_{k}_sma"]).where(_ok(m[f"ratio_{k}"], m[f"ratio_{k}_sma"])) for k in RATIOS})
+
+
+def v_intermarket(m):
+    up = ratios_rising(m)
+    n = up.astype("float64").sum(axis=1)
+    return _tri(n >= 2, n == 0, up.notna().all(axis=1))
+
+
+# ---- valuation, sentiment, liquidity ----------------------------------------
+def v_cape(m):
+    return _tri(m["cape_pctile"] < 40, m["cape_pctile"] > 80, m["cape_pctile"].notna())
+
+
+def v_fed_model(m):
+    return _tri(m["fed_model_gap"] > 2.0, m["fed_model_gap"] < 0.0, m["fed_model_gap"].notna())
+
+
+def v_rule20(m):
+    return _tri(m["rule20"] < 18, m["rule20"] > 22, m["rule20"].notna())
+
+
+def v_sentiment(m):
+    # contrarian: deep pessimism is a positive, euphoria a negative
+    return _tri(m["aaii_spread"] <= -20, m["aaii_spread"] >= 30, m["aaii_spread"].notna())
+
+
+def v_liquidity(m):
+    return _tri(m["net_liquidity_chg6"] > 2.0, m["net_liquidity_chg6"] < -2.0, m["net_liquidity_chg6"].notna())
+
+
+# ---- tables shown with a framework's reading --------------------------------
+def _updown(flag):
+    return "n/a" if pd.isna(flag) else ("Above" if flag else "Below")
+
+
+def t_gtaa(r, m):
+    return {"columns": ["Asset class", "vs 10-month average", "12-month return"],
+            "rows": [[TREND_ASSETS[t], _updown(None if pd.isna(r[f"px_{t}"]) or pd.isna(r[f"sma_{t}"]) else r[f"px_{t}"] >= r[f"sma_{t}"]),
+                      _f(r[f"ret12_{t}"], 1, "%") or "n/a"] for t in TREND_ASSETS]}
+
+
+def t_sectors(r, m):
+    s = sector_scores(m).iloc[-1].dropna().sort_values(ascending=False)
+    return {"columns": ["Rank", "Sector", "Type", "6 and 12-month return, averaged", "vs 10-month average"],
+            "rows": [[i + 1, SECTORS[t], "Cyclical" if t in CYCLICAL else "Defensive", _f(v, 1, "%"),
+                      _updown(None if pd.isna(r[f"px_{t}"]) or pd.isna(r[f"sma_{t}"]) else r[f"px_{t}"] >= r[f"sma_{t}"])]
+                     for i, (t, v) in enumerate(s.items())]}
+
+
+def t_intermarket(r, m):
+    return {"columns": ["Ratio", "vs its 10-month average", "Says"],
+            "rows": [[RATIO_NAME[k], _updown(None if pd.isna(r[f"ratio_{k}"]) or pd.isna(r[f"ratio_{k}_sma"]) else r[f"ratio_{k}"] >= r[f"ratio_{k}_sma"]),
+                      "n/a" if pd.isna(r[f"ratio_{k}_sma"]) else ("Growth improving" if r[f"ratio_{k}"] >= r[f"ratio_{k}_sma"] else "Growth weakening")]
+                     for k in RATIOS]}
+
+
+def _sector_reading(m):
+    s = sector_scores(m).iloc[-1].dropna().sort_values(ascending=False)
+    names = [SECTORS[t] for t in s.index]
+    return f"Leading: {', '.join(names[:3])}. Lagging: {', '.join(names[-3:])}"
+
+
 # ----------------------------------------------------------------------------
 # Registry
 # ----------------------------------------------------------------------------
@@ -350,6 +535,7 @@ class Framework:
     vote: Callable[[pd.DataFrame], pd.Series]
     reading: Callable[[pd.Series, pd.DataFrame], str]
     inputs: Callable[[pd.Series], list] = field(default=lambda r: [])
+    table: Callable[[pd.Series, pd.DataFrame], dict] | None = None
 
 
 def _inp(label, value, digits=2, unit=""):
@@ -453,6 +639,70 @@ FRAMEWORKS: list[Framework] = [
               v_season,
               lambda r, m: _season_reading(m.index[-1]),
               lambda r: []),
+    # ---- price data
+    Framework("dual_momentum", "Dual momentum", "trend", 0.75,
+              "If US stocks beat T-bills over 12 months, hold US or foreign stocks, whichever is stronger: +1. Otherwise hold bonds: -1.",
+              v_dual_momentum,
+              lambda r, m: f"Holds {dual_momentum_holding(m).iloc[-1]}",
+              lambda r: [_inp("US stocks, 12-month return", r.ret12_SPY, 1, "%"), _inp("Foreign stocks, 12-month return", r.ret12_ACWX, 1, "%"),
+                         _inp("T-bills, 12-month return", r.ret12_BIL, 1, "%")]),
+    Framework("breadth", "Market breadth", "trend", 0.75,
+              "Share of the 11 sectors above their 10-month average. 60% or more: +1. 40% or less: -1.",
+              v_breadth,
+              lambda r, m: f"{r.breadth:.0f}% of sectors are above their 10-month average",
+              lambda r: [_inp("Sectors above their 10-month average", r.breadth, 0, "%"), _inp("Sectors counted", r.sectors_counted, 0)]),
+    Framework("dow_theory", "Dow Theory", "trend", 0.5,
+              "Dow industrials and transports both above their 10-month averages: +1. Both below: -1. Split: 0.",
+              v_dow,
+              lambda r, m: {(True, True): "Industrials and transports both in uptrends", (False, False): "Industrials and transports both in downtrends"}.get(
+                  (bool(r.px_DIA >= r.sma_DIA), bool(r.px_IYT >= r.sma_IYT)), "Industrials and transports disagree"),
+              lambda r: [_inp("Industrials vs 10-month average", (r.px_DIA / r.sma_DIA - 1) * 100, 1, "%"),
+                         _inp("Transports vs 10-month average", (r.px_IYT / r.sma_IYT - 1) * 100, 1, "%")]),
+    # ---- valuation
+    Framework("cape", "Shiller CAPE and excess CAPE yield", "valuation", 0.75,
+              "CAPE ranked against its own history. Below the 40th percentile: +1. Above the 80th: -1.",
+              v_cape,
+              lambda r, m: f"CAPE {r.cape:.1f}, {r.cape_pctile:.0f}th percentile of history",
+              lambda r: [_inp("CAPE", r.cape, 1), _inp("Percentile of own history", r.cape_pctile, 0),
+                         _inp("Real 10-year Treasury yield", r.real_y10, 2, "%"), _inp("Excess CAPE yield", r.excess_cape_yield, 2, "%")]),
+    Framework("fed_model", "Fed model (equity risk premium)", "valuation", 0.75,
+              "Trailing earnings yield minus the 10-year Treasury yield. Above 2 points: +1. Below zero: -1.",
+              v_fed_model,
+              lambda r, m: f"Stocks yield {abs(r.fed_model_gap):.1f} pts {'more' if r.fed_model_gap >= 0 else 'less'} than the 10-year Treasury",
+              lambda r: [_inp("Trailing P/E", r.pe, 1), _inp("Earnings yield", r.earnings_yield, 2, "%"),
+                         _inp("10-year Treasury yield", r.y10, 2, "%"), _inp("Gap", r.fed_model_gap, 2, " pts")]),
+    Framework("rule_of_20", "Rule of 20", "valuation", 0.5,
+              "Trailing P/E plus CPI inflation. Below 18: +1. Above 22: -1.",
+              v_rule20,
+              lambda r, m: f"P/E plus inflation is {r.rule20:.1f}",
+              lambda r: [_inp("Trailing P/E", r.pe, 1), _inp("CPI inflation", r.cpi_yoy, 1, "%"), _inp("Sum", r.rule20, 1)]),
+    # ---- sentiment and liquidity
+    Framework("sentiment", "Contrarian sentiment", "calendar", 0.5,
+              "AAII bulls minus bears, 4-week average. At -20 or lower: +1. At +30 or higher: -1.",
+              v_sentiment,
+              lambda r, m: f"Bulls minus bears: {r.aaii_spread:+.0f} points",
+              lambda r: [_inp("AAII bull-bear spread, 4-week average", r.aaii_spread, 1, " pts")]),
+    Framework("net_liquidity", "Liquidity", "policy", 0.75,
+              "Fed balance sheet minus Treasury cash minus reverse repo, change over 6 months. Up more than 2%: +1. Down more than 2%: -1.",
+              v_liquidity,
+              lambda r, m: f"Net liquidity {r.net_liquidity_chg6:+.1f}% over 6 months",
+              lambda r: [_inp("Net liquidity ($ billions)", r.net_liquidity, 0), _inp("Change over 6 months", r.net_liquidity_chg6, 1, "%")]),
+    # ---- where to look (not part of the score)
+    Framework("gtaa", "Multi-asset trend", "where", 0.75,
+              "Each asset class against its own 10-month average. Three or more of five in uptrends: +1. One or none: -1.",
+              v_gtaa,
+              lambda r, m: "In uptrends: " + (", ".join(TREND_ASSETS[t] for t in TREND_ASSETS if r[f"px_{t}"] >= r[f"sma_{t}"]) or "none"),
+              lambda r: [], t_gtaa),
+    Framework("sector_rotation", "Sector momentum rotation", "where", 0.75,
+              "Sectors ranked by their average 6 and 12-month return. Two or more cyclical sectors in the top three: +1. One or none: -1.",
+              v_sectors,
+              lambda r, m: _sector_reading(m),
+              lambda r: [], t_sectors),
+    Framework("intermarket", "Intermarket ratios", "where", 0.5,
+              "Copper/gold, discretionary/staples and small/large against their 10-month averages. Two or more rising: +1. None rising: -1.",
+              v_intermarket,
+              lambda r, m: f"{int(ratios_rising(m).iloc[-1].astype('float64').sum())} of 3 growth ratios are rising",
+              lambda r: [], t_intermarket),
 ]
 
 
@@ -617,6 +867,28 @@ def asset_views(m: pd.DataFrame, votes: pd.DataFrame) -> list[dict]:
             1.0: (["stocks"], "Stocks have beaten T-bills over 12 months: hold stocks."),
             -1.0: (["bonds"], "Stocks have lagged T-bills over 12 months: the rule holds bonds instead."),
         }[v["abs_momentum"]])
+    dm = dual_momentum_holding(m).iloc[-1]
+    if isinstance(dm, str):
+        add("dual_momentum", ["stocks"] if dm != "Bonds" else ["bonds"],
+            f"Dual momentum currently holds {'US stocks' if dm == 'US stocks' else dm.lower()}.")
+    up = assets_in_uptrend(m).iloc[-1]
+    if up.notna().all():
+        favors = []
+        if up["SPY"] or up["ACWX"]:
+            favors.append("stocks")
+        if up["AGG"]:
+            favors.append("bonds")
+        if up["GLD"] or up["DBC"]:
+            favors.append("alternatives")
+        if int(up.astype("float64").sum()) <= 2:
+            favors.append("cash")
+        names = [TREND_ASSETS[t] for t in TREND_ASSETS if up[t]]
+        add("gtaa", favors, ("In uptrends: " + ", ".join(names) + ".") if names else "No asset class is in an uptrend: the rule holds cash.")
+    if not pd.isna(v["fed_model"]) and v["fed_model"] != 0:
+        add("fed_model", *{
+            -1.0: (["bonds"], "The 10-year Treasury yields more than stocks earn: bonds are the better deal on this measure."),
+            1.0: (["stocks"], "Stocks earn well above the Treasury yield: the premium for owning them is wide."),
+        }[v["fed_model"]])
     rec = [v[k] for k in ("yield_curve", "sahm", "cfnai_ma3", "claims") if not pd.isna(v[k])]
     if rec and min(rec) == -1:
         add("sahm" if v["sahm"] == -1 else "yield_curve", ["bonds", "cash"],
@@ -631,17 +903,21 @@ def asset_views(m: pd.DataFrame, votes: pd.DataFrame) -> list[dict]:
     return out
 
 
-def alt_tilt(m: pd.DataFrame) -> float:
-    """Alternatives (commodities, gold) get more room when inflation is accelerating
-    and less when both growth and inflation are falling."""
+def alt_tilt(m: pd.DataFrame) -> tuple[float, str]:
+    """Alternatives (commodities, gold) get more room when inflation is accelerating and
+    at least one of them is in an uptrend, and less when growth and inflation are both
+    falling. Returns the tilt in points and a one-line reason."""
     r = m.iloc[-1]
     if pd.isna(r["infl_chg"]):
-        return 0.0
+        return 0.0, "there is no inflation reading this month."
     if r["infl_chg"] > 0:
-        return float(ALT_STEP)
+        trend_known = _ok(m["px_GLD"], m["sma_GLD"], m["px_DBC"], m["sma_DBC"]).iloc[-1]
+        if trend_known and not (r["px_GLD"] >= r["sma_GLD"] or r["px_DBC"] >= r["sma_DBC"]):
+            return 0.0, "inflation is accelerating, but neither gold nor commodities is in an uptrend."
+        return float(ALT_STEP), "inflation is accelerating."
     if not pd.isna(r["growth_chg"]) and r["growth_chg"] <= 0:
-        return float(-ALT_STEP)
-    return 0.0
+        return float(-ALT_STEP), "growth and inflation are both slowing."
+    return 0.0, "inflation is not accelerating."
 
 
 def model_allocation(neutral: dict, equity_offset: float, alt_tilt_pts: float, defensive: str) -> dict:
