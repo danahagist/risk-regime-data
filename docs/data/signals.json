@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27 23:23 UTC",
+ "generated_at": "2026-11-27 23:27 UTC",
  "as_of": "2026-10-31",
  "as_of_label": "October 2026",
  "stance": {
@@ -572,11 +572,28 @@
    "name": "Shiller CAPE and excess CAPE yield",
    "family": "valuation",
    "weight": 0.75,
-   "vote": null,
-   "vote_label": "No data",
-   "reading": "No data this month",
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "CAPE about 40.0 (estimated), 98th percentile of history",
    "rule": "CAPE ranked against its own history. Below the 40th percentile: +1. Above the 80th: -1.",
-   "inputs": [],
+   "inputs": [
+    {
+     "label": "CAPE",
+     "value": "40.0"
+    },
+    {
+     "label": "Percentile of own history",
+     "value": "98"
+    },
+    {
+     "label": "Real 10-year Treasury yield",
+     "value": "2.78%"
+    },
+    {
+     "label": "Excess CAPE yield",
+     "value": "-0.28%"
+    }
+   ],
    "table": null
   },
   {
@@ -584,11 +601,28 @@
    "name": "Fed model (equity risk premium)",
    "family": "valuation",
    "weight": 0.75,
-   "vote": null,
-   "vote_label": "No data",
-   "reading": "No data this month",
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "Stocks yield 1.0 pts less than the 10-year Treasury",
    "rule": "Trailing earnings yield minus the 10-year Treasury yield. Above 2 points: +1. Below zero: -1.",
-   "inputs": [],
+   "inputs": [
+    {
+     "label": "Trailing P/E",
+     "value": "24.1"
+    },
+    {
+     "label": "Earnings yield",
+     "value": "4.15%"
+    },
+    {
+     "label": "10-year Treasury yield",
+     "value": "5.13%"
+    },
+    {
+     "label": "Gap",
+     "value": "-0.99 pts"
+    }
+   ],
    "table": null
   },
   {
@@ -596,11 +630,24 @@
    "name": "Rule of 20",
    "family": "valuation",
    "weight": 0.5,
-   "vote": null,
-   "vote_label": "No data",
-   "reading": "No data this month",
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "P/E plus inflation is 27.8",
    "rule": "Trailing P/E plus CPI inflation. Below 18: +1. Above 22: -1.",
-   "inputs": [],
+   "inputs": [
+    {
+     "label": "Trailing P/E",
+     "value": "24.1"
+    },
+    {
+     "label": "CPI inflation",
+     "value": "3.7%"
+    },
+    {
+     "label": "Sum",
+     "value": "27.8"
+    }
+   ],
    "table": null
   },
   {
@@ -913,6 +960,13 @@
     "note": "In uptrends: US stocks, Commodities."
    },
    {
+    "id": "fed_model",
+    "favors": [
+     "bonds"
+    ],
+    "note": "The 10-year Treasury yields more than stocks earn: bonds are the better deal on this measure."
+   },
+   {
     "id": "buffett",
     "favors": [
      "bonds",
@@ -923,7 +977,7 @@
   ],
   "tally": {
    "stocks": 4.0,
-   "bonds": 0.75,
+   "bonds": 1.5,
    "cash": 3.0,
    "alternatives": 2.25
   }
@@ -1112,6 +1166,38 @@
    "value": "255%",
    "avg12": "225%",
    "vs_avg": "above"
+  },
+  {
+   "key": "cape",
+   "group": "Valuation",
+   "label": "Shiller CAPE",
+   "value": "40.0",
+   "avg12": "40.5",
+   "vs_avg": "below"
+  },
+  {
+   "key": "pe",
+   "group": "Valuation",
+   "label": "Trailing P/E",
+   "value": "24.1",
+   "avg12": "24.4",
+   "vs_avg": "below"
+  },
+  {
+   "key": "fed_model_gap",
+   "group": "Valuation",
+   "label": "Earnings yield minus 10-year yield",
+   "value": "-0.99 pts",
+   "avg12": "-0.27 pts",
+   "vs_avg": "below"
+  },
+  {
+   "key": "excess_cape_yield",
+   "group": "Valuation",
+   "label": "Excess CAPE yield",
+   "value": "-0.28%",
+   "avg12": "0.42%",
+   "vs_avg": "below"
   },
   {
    "key": "real_y10",
