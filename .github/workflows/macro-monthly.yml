@@ -6,10 +6,8 @@ on:
   schedule:
     - cron: "0 6 2 * *"  # 06:00 UTC on the 2nd of each month (adjust as you like)
   push:
-    # consensus-frameworks is listed only while that pull request is being built,
-    # so each push is tested against real data. Remove it once the PR merges.
-    branches: [main, consensus-frameworks]
-    paths: ["src/**", "requirements.txt", ".github/workflows/macro-monthly.yml"]
+    branches: [main]
+    paths: ["src/**", "requirements.txt"]    # refresh the data when the scoring code changes
 
 permissions:
   contents: write  # <-- needed to push with GITHUB_TOKEN
