@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Allocation calculator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div id="app"><div class="loading">Loading signals...</div></div>
+<footer></footer>
+
+<script src="app.js"></script>
+<script>
+renderNav('calculator.html');
+
+const PRESETS = { 'Balanced 60/30/5/5': [60, 30, 5, 5], 'Classic 60/40': [60, 40, 0, 0], 'Growth 80/15/0/5': [80, 15, 0, 5], 'Conservative 40/45/10/5': [40, 45, 10, 5] };
+const money = (x) => '$' + Math.round(x).toLocaleString('en-US');
+const num = (id) => { const v = parseFloat($('#' + id).value); return Number.isFinite(v) ? v : null; };
+let D = null;
+
+function inputs(prefix, label, values) {
+  return ASSETS.map((a, i) => `<label>${label} ${ASSET_NAME[a].toLowerCase()} %<input id="${prefix}_${a}" type="number" inputmode="decimal" min="0" max="100" step="1" value="${values ? values[i] : ''}" ${values ? '' : 'placeholder="optional"'}></label>`).join('');
+}
+
+function shell(d) {
+  const n = d.allocation.neutral;
+  $('#app').innerHTML = sampleBanner(d) + `
+    <div class="card">
+      <p>Enter your portfolio and your neutral mix, the split you would hold if you had no view. The calculator applies this month's consensus to it and shows percentages and dollars.</p>
+      <p class="hint" style="margin-top:6px">Consensus for ${esc(d.as_of_label)}: <b>${esc(d.stance.label)}</b>. "Alternatives" means commodities and gold.</p>
+    </div>
+    <h2>Your portfolio</h2>
+    <div class="card">
+      <div class="chips" style="margin-top:0">${Object.keys(PRESETS).map((p) => `<button class="chip" data-preset="${p}">${p}</button>`).join('')}</div>
+      <div class="form">
+        <label>Portfolio value ($)<input id="value" type="number" inputmode="decimal" min="0" step="1000" value="100000"></label>
+        ${inputs('n', 'Neutral', ASSETS.map((a) => n[a]))}
+      </div>
+      <div class="label" style="margin:16px 0 8px">What you hold now (optional, to see the trades)</div>
+      <div class="form">${inputs('c', 'Current', null)}</div>
+      <div class="err" id="err"></div>
+    </div>
+    <div id="out"></div>`;
+  document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+    PRESETS[b.dataset.preset].forEach((v, i) => { $('#n_' + ASSETS[i]).value = v; });
+    calc();
+  }));
+  document.querySelectorAll('input').forEach((i) => i.addEventListener('input', calc));
+}
+
+function calc() {
+  const a = D.allocation, s = D.stance;
+  const value = num('value') || 0;
+  const neutral = Object.fromEntries(ASSETS.map((k) => [k, num('n_' + k) ?? 0]));
+  const nSum = ASSETS.reduce((t, k) => t + neutral[k], 0);
+  const cur = Object.fromEntries(ASSETS.map((k) => [k, num('c_' + k)]));
+  const hasCur = ASSETS.some((k) => cur[k] != null);
+  const cSum = ASSETS.reduce((t, k) => t + (cur[k] || 0), 0);
+  let err = '';
+  if (ASSETS.some((k) => neutral[k] < 0 || neutral[k] > 100)) err = 'Each percentage must be between 0 and 100.';
+  else if (Math.abs(nSum - 100) > 0.01) err = `Your neutral mix adds up to ${nSum}%. It needs to total 100%.`;
+  else if (hasCur && Math.abs(cSum - 100) > 0.01) err = `Your current mix adds up to ${cSum}%. It needs to total 100%, or leave all four blank.`;
+  $('#err').textContent = err;
+  if (err) { $('#out').innerHTML = ''; return; }
+
+  const target = modelAllocation(neutral, a.equity_offset, a.alt_tilt, a.defensive, a.cash_share);
+  const diff = (x) => (x === 0 ? '0' : (x > 0 ? '+' : '') + x);
+  const why = [];
+  why.push(a.equity_offset === 0 ? `Stocks stay at your neutral ${neutral.stocks}%: the consensus is ${s.label}.`
+    : `Stocks move ${diff(a.equity_offset)} points: the consensus is ${s.label}${s.valuation_tilt === 'expensive' && a.equity_offset > 0 ? ', at half size because valuation reads expensive' : ''}.`);
+  why.push(a.alt_tilt > 0 ? `Alternatives get ${diff(a.alt_tilt)} points because inflation is accelerating.`
+    : a.alt_tilt < 0 ? `Alternatives give up ${Math.abs(a.alt_tilt)} points because growth and inflation are both slowing.`
+    : 'Alternatives stay at neutral: inflation is not accelerating.');
+  why.push({ cash: 'The Fed is hiking, so half of what is left sits in cash and T-bills and half in bonds.',
+    bonds: 'The Fed is cutting, so about nine-tenths of what is left sits in bonds.',
+    split: 'The Fed is on hold, so bonds and cash keep your usual proportions.' }[a.defensive]);
+
+  const scen = [['Underweight', -s.step_down], ['Neutral', 0], ['Overweight', s.step_up]].map(([name, off]) =>
+    [name, modelAllocation(neutral, off, a.alt_tilt, a.defensive, a.cash_share)]);
+
+  $('#out').innerHTML = `
+    <h2>Suggested mix this month</h2>
+    <div class="card calc">
+      ${mixBar(target)}
+      <table style="margin-top:14px">
+        <tr><th>Asset class</th><th class="n">Neutral</th><th class="n">Target</th><th class="n">Change</th><th class="n">Dollars</th>${hasCur ? '<th class="n">Trade</th>' : ''}</tr>
+        ${ASSETS.map((k) => `<tr><td>${ASSET_NAME[k]}</td><td class="n">${neutral[k]}%</td><td class="n"><b>${target[k]}%</b></td><td class="n">${diff(Math.round((target[k] - neutral[k]) * 10) / 10)}</td><td class="n">${money(value * target[k] / 100)}</td>
+          ${hasCur ? `<td class="n">${(() => { const t = value * (target[k] - (cur[k] || 0)) / 100; return Math.abs(t) < 1 ? 'none' : (t > 0 ? 'Buy ' : 'Sell ') + money(Math.abs(t)); })()}</td>` : ''}</tr>`).join('')}
+      </table>
+      <ul class="notes" style="margin-top:12px">${why.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>
+    </div>
+    <h2>If the consensus changes</h2>
+    <p class="hint">The same mix under each possible stance, holding this month's Fed and inflation readings fixed.</p>
+    <div class="card calc"><table>
+      <tr><th>Stance</th>${ASSETS.map((k) => `<th class="n">${ASSET_NAME[k]}</th>`).join('')}</tr>
+      ${scen.map(([name, m]) => `<tr><td>${name === s.label ? `<b>${name}</b> (now)` : name}</td>${ASSETS.map((k) => `<td class="n">${m[k]}%</td>`).join('')}</tr>`).join('')}
+    </table></div>
+    <h2>Before you act on this</h2>
+    <div class="card"><ul class="notes">
+      <li>This is a model output that is the same for everyone. It does not know your taxes, income needs or time horizon.</li>
+      <li>Moves are small on purpose: at most ${Math.max(s.step_up, s.step_down)} points of stocks in either direction. Most of your result still comes from the neutral mix you choose.</li>
+      <li>In a taxable account, selling winners to rebalance can cost more in tax than the move is worth. Retirement accounts are the easier place to make changes.</li>
+      <li>The stance is checked once a month and needs two readings in a row to change. Acting on it more often defeats the design.</li>
+    </ul></div>`;
+}
+
+loadJSON('data/signals.json').then((d) => { D = d; shell(d); calc(); renderFooter(d); }).catch(showError);
+</script>
+</body>
+</html>

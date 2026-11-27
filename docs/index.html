@@ -3,387 +3,150 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Risk Regime Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<title>Market Regime Consensus</title>
+<link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<style>
-  :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --border: #2a2d3a;
-    --text: #e1e4ed;
-    --muted: #8b8fa3;
-    --green: #22c55e;
-    --red: #ef4444;
-    --yellow: #eab308;
-    --blue: #3b82f6;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 16px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  h1 { font-size: 1.4rem; margin-bottom: 4px; }
-  .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
-  .loading { text-align: center; padding: 60px; color: var(--muted); }
-
-  /* Regime header cards */
-  .regime-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .regime-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  .regime-card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-  .regime-card .value { font-size: 1.8rem; font-weight: 700; margin: 6px 0 2px; }
-  .regime-card .detail { font-size: 0.75rem; color: var(--muted); }
-
-  /* Signal pills */
-  .signals-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .signal-pill {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-  }
-  .signal-pill .dot {
-    width: 10px; height: 10px; border-radius: 50%;
-  }
-  .dot-on { background: var(--green); }
-  .dot-off { background: var(--red); }
-
-  .signal-group-label {
-    font-size: 0.7rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .signal-group-label:not(:first-child) { margin-top: 8px; }
-  .signal-group-label a {
-    color: var(--blue);
-    text-decoration: none;
-    font-size: 0.7rem;
-    text-transform: none;
-    letter-spacing: 0;
-  }
-  .signal-group-label a:hover { text-decoration: underline; }
-
-  /* Charts */
-  .chart-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  @media (min-width: 768px) {
-    .chart-grid { grid-template-columns: 1fr 1fr; }
-    .chart-grid .full-width { grid-column: 1 / -1; }
-  }
-  .chart-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-  }
-  .chart-card h3 { font-size: 0.85rem; margin-bottom: 12px; color: var(--muted); }
-  .chart-card canvas { width: 100% !important; }
-
-  /* History table */
-  .table-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    overflow-x: auto;
-    margin-bottom: 20px;
-  }
-  .table-card h3 { font-size: 0.85rem; margin-bottom: 12px; color: var(--muted); }
-  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-  th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 500; white-space: nowrap; }
-  td { padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-weight: 600;
-  }
-  .tag-expansion { background: rgba(34,197,94,0.15); color: var(--green); }
-  .tag-contraction { background: rgba(239,68,68,0.15); color: var(--red); }
-  .tag-on { background: rgba(34,197,94,0.15); color: var(--green); }
-  .tag-off { background: rgba(239,68,68,0.15); color: var(--red); }
-  .tag-mixed { background: rgba(234,179,8,0.15); color: var(--yellow); }
-
-  footer { text-align: center; color: var(--muted); font-size: 0.72rem; padding: 12px 0; }
-</style>
 </head>
 <body>
+<div class="topbar" id="topbar"></div>
+<div id="app"><div class="loading">Loading signals...</div></div>
+<footer></footer>
 
-<h1>Risk Regime Dashboard</h1>
-<p class="subtitle">Macro & risk regime signals from FRED data — updated monthly</p>
-
-<div id="app"><div class="loading">Loading data...</div></div>
-
+<script src="app.js"></script>
 <script>
-const CSV_URL = 'https://raw.githubusercontent.com/danahagist/risk-regime-data/main/data/macro_monthly_history.csv';
+renderNav('index.html');
 
-const CHART_DEFAULTS = {
-  responsive: true,
-  maintainAspectRatio: true,
-  aspectRatio: 2,
-  plugins: {
-    legend: { display: true, labels: { color: '#8b8fa3', boxWidth: 12, font: { size: 11 } } },
-    tooltip: { mode: 'index', intersect: false }
-  },
-  scales: {
-    x: { ticks: { color: '#8b8fa3', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#2a2d3a' } },
-    y: { ticks: { color: '#8b8fa3', font: { size: 10 } }, grid: { color: '#2a2d3a' } }
-  }
+const ACTION = {
+  Overweight: (s) => `Hold ${s.equity_offset} points more in stocks than your neutral mix.`,
+  Underweight: (s) => `Hold ${Math.abs(s.equity_offset)} points less in stocks than your neutral mix.`,
+  Neutral: () => 'Hold your neutral mix. The frameworks do not agree strongly enough to lean either way.',
+};
+const ROLE = {
+  driver: ['Drivers', 'These four families vote on direction, from -1 to +1.'],
+  alarm: ['Alarms', 'These can only subtract. A quiet alarm is the absence of bad news, not good news.'],
+  sizing: ['Sizing', 'Valuation never moves the stance. It sets how large a move is allowed to be.'],
 };
 
-function regimeColor(val) {
-  const v = (val || '').toLowerCase();
-  if (v === 'expansion' || v === 'on') return '#22c55e';
-  if (v === 'contraction' || v === 'off') return '#ef4444';
-  return '#eab308';
-}
-
-function tagClass(val) {
-  const v = (val || '').toLowerCase();
-  if (v === 'expansion') return 'tag-expansion';
-  if (v === 'contraction') return 'tag-contraction';
-  if (v === 'on') return 'tag-on';
-  if (v === 'off') return 'tag-off';
-  return 'tag-mixed';
-}
-
-function formatDate(d) {
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-}
-
-function fmt(v, decimals = 1) {
-  const n = parseFloat(v);
-  return isNaN(n) ? '—' : n.toFixed(decimals);
-}
-
-async function loadData() {
-  const resp = await fetch(CSV_URL);
-  const text = await resp.text();
-  const { data } = Papa.parse(text, { header: true, skipEmptyLines: true });
-  return data;
-}
-
-function buildDashboard(rows) {
-  const latest = rows[rows.length - 1];
-  const labels = rows.map(r => formatDate(r.date));
-
-  // Macro signal descriptions
-  const macroSignals = [
-    { name: 'Ind. Production YoY', key: 'indpro_signal' },
-    { name: 'CFNAI', key: 'cfnai_signal' },
-    { name: 'Yield Curve', key: 'yield_curve_signal' },
-  ];
-  const riskSignals = [
-    { name: 'S&P Trend', key: 'trend_on', invert: false },
-    { name: 'Credit Stress', key: 'credit_off', invert: true },
-    { name: 'VIX Stress', key: 'vix_off', invert: true },
-  ];
-
-  const macroOn = parseInt(latest.macro_score) || 0;
-  const riskOk = (parseInt(latest.trend_on) || 0) + (1 - (parseInt(latest.credit_off) || 0)) + (1 - (parseInt(latest.vix_off) || 0));
-
-  const app = document.getElementById('app');
-  app.innerHTML = `
-    <!-- Regime cards -->
-    <div class="regime-row">
-      <div class="regime-card">
-        <div class="label">Macro Regime</div>
-        <div class="value" style="color:${regimeColor(latest.macro_regime)}">${latest.macro_regime}</div>
-        <div class="detail">Score: ${latest.macro_score} / 3</div>
-      </div>
-      <div class="regime-card">
-        <div class="label">Risk Regime</div>
-        <div class="value" style="color:${regimeColor(latest.risk_regime)}">${latest.risk_regime}</div>
-        <div class="detail">Off votes: ${latest.off_votes} / 2</div>
-      </div>
+function verdict(d) {
+  const s = d.stance, pct = (x) => ((x + 1) / 2) * 100;
+  const act = (ACTION[s.label] || (() => 'Not enough data to take a stance this month.'))(s);
+  const notes = [];
+  if (s.raw_label && s.raw_label !== s.label) notes.push(['', `This month's reading is ${s.raw_label}. A change needs two months in a row before the stance moves.`]);
+  s.breakers.forEach((b) => notes.push(['warn', b]));
+  notes.push(['', { expensive: `Valuation reads expensive, so an Overweight is limited to +${s.step_up} points.`,
+    cheap: `Valuation reads cheap, so an Underweight is limited to -${s.step_down} points.`,
+    neutral: 'Valuation is in its normal range, so moves are full size.', unknown: 'No valuation reading this month.' }[s.valuation_tilt]]);
+  notes.push(['', { cash: 'The Fed is hiking: keep half of the bond-and-cash sleeve in cash and T-bills.',
+    bonds: 'The Fed is cutting: keep most of the bond-and-cash sleeve in bonds.',
+    split: 'The Fed is on hold: keep your usual split between bonds and cash.' }[s.defensive]]);
+  return `<div class="card verdict">
+    <div>
+      <div class="label">Consensus for ${esc(d.as_of_label)}</div>
+      <div class="stance ${esc(s.label)}">${esc(s.label)}</div>
+      <div class="action">${esc(act)}</div>
+      <ul class="notes">${notes.map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join('')}</ul>
     </div>
-
-    <!-- Signal pills -->
-    <div class="signals-row">
-      <div class="signal-group-label">
-        <span>Macro Signals (${macroOn}/3 = ${latest.macro_regime})</span>
-        <a href="methodology.html">Learn more &rarr;</a>
+    <div>
+      <div class="gauge">
+        ${s.composite == null ? '' : `<div class="marker" style="left:${pct(s.composite)}%"><span>${signed(s.composite)}</span></div>`}
+        <span class="tick" style="left:12.5%">Underweight</span><span class="tick" style="left:50%">Neutral</span><span class="tick" style="left:87.5%">Overweight</span>
       </div>
-      ${macroSignals.map(s => `
-        <div class="signal-pill">
-          <span>${s.name}</span>
-          <span class="dot ${parseInt(latest[s.key]) === 1 ? 'dot-on' : 'dot-off'}"></span>
-        </div>
-      `).join('')}
-      <div class="signal-group-label">
-        <span>Risk Signals (${riskOk}/3 favorable = ${latest.risk_regime})</span>
-        <a href="methodology.html">Learn more &rarr;</a>
+      <div class="stats">
+        <div class="stat"><span class="label">Drivers</span><b>${signed(s.driver_score)}</b></div>
+        <div class="stat"><span class="label">Alarms</span><b>${signed(s.alarm_penalty)}</b></div>
+        <div class="stat"><span class="label">Agreement</span><b>${s.agreement == null ? 'n/a' : Math.round(s.agreement * 100) + '%'}</b></div>
       </div>
-      ${riskSignals.map(s => {
-        const on = s.invert ? parseInt(latest[s.key]) === 0 : parseInt(latest[s.key]) === 1;
-        return `
-          <div class="signal-pill">
-            <span>${s.name}</span>
-            <span class="dot ${on ? 'dot-on' : 'dot-off'}"></span>
-          </div>`;
-      }).join('')}
+      <p class="hint" style="margin-top:10px">Score = drivers + alarms. It takes ${signed(s.threshold, 1)} or more to go Overweight and ${signed(-s.threshold, 1)} or less to go Underweight. <a href="methodology.html">How this works</a></p>
     </div>
+  </div>`;
+}
 
-    <!-- Charts -->
-    <div class="chart-grid">
-      <div class="chart-card full-width">
-        <h3>S&P 500 vs 10-Month SMA</h3>
-        <canvas id="chartSP500"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>VIX (threshold: 25)</h3>
-        <canvas id="chartVIX"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>HY Credit OAS vs 12-Month SMA</h3>
-        <canvas id="chartHYOAS"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Yield Curve Spread (10Y − 3M, bps)</h3>
-        <canvas id="chartYield"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Unemployment Rate (%)</h3>
-        <canvas id="chartUnrate"></canvas>
-      </div>
+function allocation(d) {
+  const a = d.allocation, max = Math.max(...Object.values(a.tally), 1);
+  const names = Object.fromEntries(d.frameworks.map((f) => [f.id, f.name]));
+  return `<h2>Model allocation</h2>
+  <p class="hint">What the consensus implies for a ${ASSETS.map((k) => a.neutral[k]).join('/')} neutral mix of stocks, bonds, cash and alternatives. <a href="calculator.html">Use your own mix and dollar amounts</a></p>
+  <div class="grid two">
+    <div class="card">
+      <div class="label">This month</div>${mixBar(a.model)}
+      <div class="label" style="margin-top:14px">Neutral</div>${mixBar(a.neutral)}
     </div>
-
-    <!-- History table -->
-    <div class="table-card">
-      <h3>Recent History (last 12 months)</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th><th>Macro</th><th>Score</th><th>Risk</th><th>S&P 500</th><th>VIX</th><th>HY OAS</th><th>Yield Spread</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.slice(-12).reverse().map(r => `
-            <tr>
-              <td>${formatDate(r.date)}</td>
-              <td><span class="tag ${tagClass(r.macro_regime)}">${r.macro_regime}</span></td>
-              <td>${r.macro_score}/3</td>
-              <td><span class="tag ${tagClass(r.risk_regime)}">${r.risk_regime}</span></td>
-              <td>${fmt(r.sp500, 0)}</td>
-              <td>${fmt(r.vix)}</td>
-              <td>${fmt(r.hy_oas)}</td>
-              <td>${fmt(r.yield_curve_spread, 0)} bps</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+    <div class="card">
+      <div class="label">What the playbooks favor</div>
+      <div class="tally">${ASSETS.map((k) => `<span>${ASSET_NAME[k]}</span><div class="track"><i class="a-${k}" style="width:${(a.tally[k] / max) * 100}%"></i></div><span class="muted">${a.views.filter((v) => v.favors.includes(k)).length}</span>`).join('')}</div>
+      <ul class="notes" style="margin-top:12px">${a.views.map((v) => `<li><a href="learn.html#${v.id}">${esc(names[v.id])}</a>: ${esc(v.note)}</li>`).join('')}</ul>
     </div>
+  </div>`;
+}
 
-    <footer>Data sourced from FRED via GitHub Actions &middot; Last data point: ${formatDate(latest.date)}</footer>
-  `;
+function familyCard(f, d) {
+  const byId = Object.fromEntries(d.frameworks.map((x) => [x.id, x]));
+  let bar = '';
+  if (f.score != null) {
+    const color = f.score > 0.05 ? 'var(--green)' : f.score < -0.05 ? 'var(--red)' : 'var(--yellow)';
+    const w = Math.abs(f.score) * 50;
+    bar = `<i style="background:${color};${f.score >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`}"></i>`;
+  }
+  return `<div class="card family">
+    <h3><span>${esc(f.name)}</span><span class="score muted">${f.score == null ? 'no data' : signed(f.score)}</span></h3>
+    <div class="bar"><span class="mid"></span>${bar}</div>
+    <ul class="votes">${f.members.map((id) => { const x = byId[id]; return `<li>
+      <span class="dot ${voteClass(x.vote)}"></span>
+      <span><a href="learn.html#${x.id}">${esc(x.name)}</a><span class="reading">${esc(x.reading)}</span></span>
+      <span class="tag ${voteClass(x.vote)}">${esc(x.vote_label)}</span></li>`; }).join('')}</ul>
+  </div>`;
+}
 
-  // --- Charts ---
-  const col = (key) => rows.map(r => parseFloat(r[key]) || null);
+function families(d) {
+  return Object.entries(ROLE).map(([role, [title, hint]]) => {
+    const fams = d.families.filter((f) => f.role === role);
+    return `<h2>${title}</h2><p class="hint">${hint}</p><div class="grid two">${fams.map((f) => familyCard(f, d)).join('')}</div>`;
+  }).join('');
+}
 
-  // S&P 500
-  new Chart(document.getElementById('chartSP500'), {
+function changes(d) {
+  return `<h2>What changed this month</h2><div class="card"><ul class="notes">${
+    d.changes.length ? d.changes.map((c) => `<li>${esc(c)}</li>`).join('') : '<li>No votes changed from last month.</li>'}</ul></div>`;
+}
+
+function metrics(d, lessons) {
+  const groups = [...new Set(d.metrics.map((m) => m.group))];
+  return `<h2>Key metrics</h2><p class="hint">Tap any metric for what it is, why it matters and how to read it. Each is compared with its own average over the prior 12 months.</p>` +
+    groups.map((g) => `<div class="label" style="margin:14px 0 6px">${esc(g)}</div><div class="grid three">${
+      d.metrics.filter((m) => m.group === g).map((m) => {
+        const ex = lessons.metrics[m.key];
+        const cmp = m.vs_avg ? `<span class="${m.vs_avg === 'above' ? 'up' : m.vs_avg === 'below' ? 'down' : ''}">${m.vs_avg === 'above' ? '&#9650;' : m.vs_avg === 'below' ? '&#9660;' : '='} ${m.vs_avg}</span> its 12-month average (${esc(m.avg12)})` : '';
+        return `<details class="metric"><summary><span class="label">${esc(m.label)}</span><span class="v">${esc(m.value)}</span><span class="cmp">${cmp}</span></summary>
+          ${ex ? `<div class="explain"><p><b>What it is.</b> ${esc(ex.what)}</p><p><b>Why it matters.</b> ${esc(ex.why)}</p><p><b>How to read it.</b> ${esc(ex.read)}</p></div>` : ''}</details>`;
+      }).join('')}</div>`).join('');
+}
+
+function drawHistory(d) {
+  const h = d.history;
+  new Chart($('#history'), {
     type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'S&P 500', data: col('sp500'), borderColor: '#3b82f6', borderWidth: 1.5, pointRadius: 0, fill: false },
-        { label: '10M SMA', data: col('sp500_sma_10m'), borderColor: '#8b8fa3', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, fill: false },
-      ]
-    },
-    options: CHART_DEFAULTS
-  });
-
-  // VIX
-  new Chart(document.getElementById('chartVIX'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'VIX', data: col('vix'), borderColor: '#eab308', borderWidth: 1.5, pointRadius: 0, fill: false },
-        { label: 'Threshold (25)', data: rows.map(() => 25), borderColor: '#ef4444', borderWidth: 1, borderDash: [4,3], pointRadius: 0, fill: false },
-      ]
-    },
-    options: CHART_DEFAULTS
-  });
-
-  // HY OAS
-  new Chart(document.getElementById('chartHYOAS'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'HY OAS', data: col('hy_oas'), borderColor: '#f97316', borderWidth: 1.5, pointRadius: 0, fill: false },
-        { label: '12M SMA', data: col('hy_oas_sma_12m'), borderColor: '#8b8fa3', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, fill: false },
-      ]
-    },
-    options: CHART_DEFAULTS
-  });
-
-  // Yield curve
-  new Chart(document.getElementById('chartYield'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Spread (bps)', data: col('yield_curve_spread'), borderColor: '#8b5cf6', borderWidth: 1.5, pointRadius: 0, fill: false },
-        { label: 'Zero line', data: rows.map(() => 0), borderColor: '#ef4444', borderWidth: 1, borderDash: [4,3], pointRadius: 0, fill: false },
-      ]
-    },
-    options: CHART_DEFAULTS
-  });
-
-  // Unemployment
-  new Chart(document.getElementById('chartUnrate'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Unemployment %', data: col('unrate'), borderColor: '#14b8a6', borderWidth: 1.5, pointRadius: 0, fill: false },
-      ]
-    },
-    options: CHART_DEFAULTS
+    data: { labels: h.map((x) => x.date.slice(0, 7)), datasets: [
+      { label: 'Consensus score', data: h.map((x) => x.composite), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.12)', fill: true, pointRadius: 0, borderWidth: 2, tension: 0.2, yAxisID: 'y' },
+      { label: 'S&P 500', data: h.map((x) => x.sp500), borderColor: '#8b8fa3', pointRadius: 0, borderWidth: 1.5, yAxisID: 'y2' },
+    ] },
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#8b8fa3', boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { color: '#8b8fa3', maxTicksLimit: 8 }, grid: { color: '#2a2d3a' } },
+        y: { min: -1, max: 1, ticks: { color: '#8b8fa3' }, grid: { color: '#2a2d3a' }, title: { display: true, text: 'Score', color: '#8b8fa3' } },
+        y2: { position: 'right', ticks: { color: '#8b8fa3' }, grid: { drawOnChartArea: false } },
+      } },
   });
 }
 
-loadData().then(buildDashboard).catch(err => {
-  document.getElementById('app').innerHTML = `<div class="loading">Error loading data: ${err.message}</div>`;
-});
+Promise.all([loadJSON('data/signals.json'), loadJSON('data/lessons.json')]).then(([d, lessons]) => {
+  $('#app').innerHTML = sampleBanner(d) + verdict(d) + allocation(d) + families(d) + changes(d) +
+    `<h2>Score history</h2><p class="hint">The consensus score against the S&P 500, monthly.</p><div class="card chart-card"><div style="position:relative;height:300px"><canvas id="history"></canvas></div></div>` +
+    metrics(d, lessons);
+  renderFooter(d);
+  if (window.Chart) drawHistory(d);
+  else $('#history').parentElement.outerHTML = '<span class="hint">The chart library did not load. The rest of the page is unaffected.</span>';
+}).catch(showError);
 </script>
 </body>
 </html>

@@ -5,3 +5,4 @@ pandas-datareader==0.10.0
 fredapi==0.5.1
 requests==2.31.0
 python-dateutil>=2.8.2
+scipy>=1.11
