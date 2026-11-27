@@ -8,6 +8,7 @@ NaN means the framework has no data for that month.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Callable
 
@@ -1012,6 +1013,9 @@ def model_allocation(neutral: dict, equity_offset: float, alt_tilt_pts: float, d
     3. What is left is split between bonds and cash: half in cash while the Fed is
        hiking, about a tenth once it is cutting, the neutral split otherwise.
     """
+    def half_up(x):          # match JavaScript's Math.round so the calculator page agrees exactly
+        return int(math.floor(x + 0.5))
+
     stocks = min(max(neutral["stocks"] + (equity_offset or 0), 0), 100)
     alts = min(max(neutral["alternatives"] + alt_tilt_pts, 0), 100 - stocks)
     rest = 100 - stocks - alts
@@ -1019,6 +1023,6 @@ def model_allocation(neutral: dict, equity_offset: float, alt_tilt_pts: float, d
     if share is None:
         base = neutral["bonds"] + neutral["cash"]
         share = neutral["cash"] / base if base else 0.0
-    cash = round(rest * share)
-    return {"stocks": round(stocks), "bonds": round(rest - cash), "cash": cash, "alternatives": round(alts)}
+    cash = half_up(rest * share)
+    return {"stocks": half_up(stocks), "bonds": half_up(rest - cash), "cash": cash, "alternatives": half_up(alts)}
 

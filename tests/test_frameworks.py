@@ -362,6 +362,12 @@ def test_model_allocation_rules():
     assert fw.model_allocation(n, 0, 5, "split")["alternatives"] == 10
 
 
+def test_halves_round_up_like_the_calculator_page():
+    # Overweight at half size while the Fed is hiking: 25 points left to split in two
+    mix = fw.model_allocation(fw.NEUTRAL_MIX, 5, 5, "cash")
+    assert mix == {"stocks": 65, "bonds": 12, "cash": 13, "alternatives": 10}
+
+
 def test_asset_views_reference_real_frameworks(raw):
     payload, _ = compute_signals.build_payload(raw, asof=ASOF)
     ids = {f["id"] for f in payload["frameworks"]}
