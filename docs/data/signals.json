@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-27 23:18 UTC",
+ "generated_at": "2026-11-27 23:23 UTC",
  "as_of": "2026-10-31",
  "as_of_label": "October 2026",
  "stance": {
@@ -2019,7 +2019,13 @@
   },
   {
    "id": "Shiller CAPE and P/E",
-   "name": "S&P 500 valuation history (multpl.com, Yale as fallback)",
+   "name": "S&P 500 valuation history (Shiller's dataset; multpl.com when reachable)",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "Current P/E",
+   "name": "Trailing P/E of an S&P 500 index fund (Yahoo Finance)",
    "rights": "third_party",
    "available": true
   },
