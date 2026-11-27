@@ -320,7 +320,10 @@ def build_monthly(raw: dict[str, pd.Series], asof: pd.Timestamp | None = None,
 
     # liquidity: Fed balance sheet minus the Treasury's cash account minus reverse repo
     parts = [_to_billions(_daily(raw, c, idx, "last")) for c in ("WALCL", "WTREGEN", "RRPONTSYD")]
-    m["net_liquidity"] = parts[0] - parts[1] - parts[2]
+    rrp = parts[2]
+    if rrp.notna().any():          # the reverse repo facility began in 2013; before that the balance was zero
+        rrp = rrp.where(rrp.notna() | (rrp.index >= rrp.first_valid_index()), 0.0)
+    m["net_liquidity"] = parts[0] - parts[1] - rrp
     m["net_liquidity_chg6"] = m["net_liquidity"].pct_change(6, fill_method=None) * 100
     return m.copy()
 

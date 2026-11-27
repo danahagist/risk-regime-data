@@ -51,6 +51,15 @@ def test_missing_votes_are_not_traded():
     assert out.index[0] == IDX[25] and len(out) == 35              # first held month follows the first vote
 
 
+def test_cash_only_strategy_cannot_predate_the_funds():
+    # cash has decades of history; stocks and bonds here start two years in
+    r = rets(0.01, bonds=0.002, cash=0.001)
+    r.loc[IDX[:24], ["stocks", "bonds"]] = np.nan
+    always_cash = bt.run(bt.follow_weights(pd.Series(-1.0, index=IDX)), r, cost=0.0)
+    always_stocks = bt.run(bt.follow_weights(pd.Series(1.0, index=IDX)), r, cost=0.0)
+    assert always_cash.index[0] == always_stocks.index[0] == IDX[24]
+
+
 def test_stats_on_a_known_series():
     r = pd.Series(0.01, index=IDX)
     s = bt.stats(r, pd.Series(0.0, index=IDX))

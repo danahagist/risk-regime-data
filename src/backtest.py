@@ -48,7 +48,10 @@ def run(weights: pd.DataFrame, rets: pd.DataFrame, cost: float = COST) -> pd.Ser
     gross = (held * rets[fw.ASSETS].fillna(0.0)).sum(axis=1, min_count=1)
     moved = (weights - weights.shift(1)).abs().sum(axis=1, min_count=1) / 2.0
     net = gross - moved.shift(1).fillna(0.0) * cost
-    net[held.isna().any(axis=1) | needed.any(axis=1)] = np.nan
+    # Only count months where stocks, bonds and cash all have returns. Otherwise a strategy
+    # sitting in cash could "start" years before the funds it is compared with existed.
+    core = rets[["stocks", "bonds", "cash"]].notna().all(axis=1)
+    net[held.isna().any(axis=1) | needed.any(axis=1) | ~core] = np.nan
     return net.dropna()
 
 
