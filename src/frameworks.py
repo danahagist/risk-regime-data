@@ -110,6 +110,20 @@ def _to_billions(s: pd.Series) -> pd.Series:
     return s / 1000.0 if pd.notna(med) and med > 50_000 else s
 
 
+def splice_sp500(raw: dict) -> pd.Series:
+    """FRED carries about ten years of the S&P 500. For earlier history, use an S&P 500
+    fund's price scaled to meet the index where FRED's series begins. The fund's history
+    includes dividends, which is fine for trend and momentum rules."""
+    spx = raw.get("SP500", pd.Series(dtype="float64")).dropna().sort_index()
+    spy = raw.get("PX:SPY", pd.Series(dtype="float64")).dropna().sort_index()
+    if spx.empty or spy.empty or spy.index[0] >= spx.index[0]:
+        return spx
+    at = spy.asof(spx.index[0])
+    if pd.isna(at) or at <= 0:
+        return spx
+    return pd.concat([spy[spy.index < spx.index[0]] * (spx.iloc[0] / at), spx])
+
+
 def _month_end(raw, key) -> pd.Series:
     s = raw.get(key, pd.Series(dtype="float64")).dropna().sort_index()
     if s.empty:
@@ -138,8 +152,13 @@ def valuation_series(raw: dict, idx: pd.DatetimeIndex, sp500: pd.Series) -> pd.D
         if not (points.empty or eps_hist.empty):
             points = points[points.index > eps_hist.index[-1]]
         if not (eps_hist.empty or cpi_hist.empty or px_hist.empty or points.empty):
+            # Trailing earnings move slowly, and a run on the 2nd observes them a few days
+            # after the month it reports on, so let the latest point anchor the interpolation
+            # even when it is dated just past the as-of month.
+            span = pd.date_range(eps_hist.index[0], max(asof, points.index[-1]), freq="ME")
+            eps = pd.concat([eps_hist, points]).reindex(span).interpolate(limit_area="inside").ffill(limit=2)
             full = pd.date_range(eps_hist.index[0], asof, freq="ME")
-            eps = pd.concat([eps_hist, points]).reindex(full).interpolate(limit_area="inside").ffill(limit=2)
+            eps = eps.reindex(full)
             price = sp500.reindex(full).combine_first(px_hist.reindex(full))
             cpi_new = _month_end(raw, "CPIAUCSL").reindex(full).ffill()
             link = cpi_hist.index[-1]
@@ -241,8 +260,8 @@ def build_monthly(raw: dict[str, pd.Series], asof: pd.Timestamp | None = None,
         m["buffett_pctile"] = _quarterly({"x": pct}, "x", idx)
 
     # stocks: month-end close, the convention the 10-month rule is defined on
-    spx_d = raw.get("SP500", pd.Series(dtype="float64")).dropna().sort_index()
-    m["sp500"] = _daily(raw, "SP500", idx, "last")
+    spx_d = splice_sp500(raw)
+    m["sp500"] = _daily({"SP500": spx_d}, "SP500", idx, "last")
     m["sp500_sma10"] = m["sp500"].rolling(10, min_periods=10).mean()
     m["sp500_ret12"] = m["sp500"].pct_change(12, fill_method=None) * 100
     m["bill_12m_ago"] = m["y3m"].shift(12)
@@ -951,6 +970,17 @@ def asset_views(m: pd.DataFrame, votes: pd.DataFrame) -> list[dict]:
             -1.0: (["bonds", "cash"], "Stocks are expensive against the economy: expect lower long-run stock returns and keep stock bets small."),
             1.0: (["stocks"], "Stocks are cheap against the economy: long-run stock returns should be above average."),
         }[v["buffett"]])
+    return out
+
+
+def alt_tilt_series(m: pd.DataFrame) -> pd.Series:
+    """The alternatives tilt for every month, in points. Same rule as alt_tilt()."""
+    infl_up = m["infl_chg"] > 0
+    known = _ok(m["px_GLD"], m["sma_GLD"], m["px_DBC"], m["sma_DBC"])
+    trending = (m["px_GLD"] >= m["sma_GLD"]) | (m["px_DBC"] >= m["sma_DBC"])
+    out = pd.Series(0.0, index=m.index)
+    out[infl_up & (~known | trending)] = float(ALT_STEP)
+    out[m["infl_chg"].notna() & ~infl_up & (m["growth_chg"] <= 0)] = float(-ALT_STEP)
     return out
 
 

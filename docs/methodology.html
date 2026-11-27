@@ -63,6 +63,19 @@
   <p class="hint">These parameters were set once, from the logic of each framework. They have not been tuned to a backtest, which is the main way combined-signal models fool their authors.</p>
 </div>
 
+<h2>Estimated values</h2>
+<div class="card">
+  <ul>
+    <li><b>CAPE and P/E.</b> Shiller's published dataset stopped updating in September 2023. Later months are estimated: earnings are interpolated between Shiller's last figure and the trailing earnings implied by the current P/E of an S&amp;P 500 index fund, CAPE and P/E are recomputed from those, and the results are joined to the last published values. Readings built this way are labeled "estimated". When a current published series is reachable, it is used as it is.</li>
+    <li><b>Older S&amp;P 500 history.</b> FRED carries about ten years of the index. Earlier months use an S&amp;P 500 fund's price history scaled to meet the index, which affects the backtest only.</li>
+  </ul>
+</div>
+
+<h2>Backtest</h2>
+<div class="card">
+  <p>The <a href="backtest.html">backtest page</a> shows what following each framework alone, and the consensus allocation, would have returned. A decision made at one month-end is held for the following month, a 0.10% cost is charged on money moved, and taxes are left out. Its caveats matter more than its numbers.</p>
+</div>
+
 <h2>Frameworks and weights</h2>
 <div class="card" id="frameworks"><span class="hint">Loading...</span></div>
 

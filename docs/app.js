@@ -15,7 +15,7 @@ const ASSET_NAME = { stocks: 'Stocks', bonds: 'Bonds', cash: 'Cash', alternative
 
 function renderNav(active) {
   const pages = [['index.html', 'Dashboard'], ['learn.html', 'Learn'], ['calculator.html', 'Calculator'],
-    ['methodology.html', 'Methodology'], ['classic.html', 'Classic view']];
+    ['backtest.html', 'Backtest'], ['methodology.html', 'Methodology'], ['classic.html', 'Classic view']];
   $('#topbar').innerHTML = `<h1>Market Regime Consensus</h1><nav>${pages.map(([href, name]) =>
     `<a href="${href}" class="${href === active ? 'active' : ''}">${name}</a>`).join('')}</nav>`;
 }

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtest</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div id="app"><div class="loading">Loading backtest...</div></div>
+<footer></footer>
+
+<script src="app.js"></script>
+<script>
+renderNav('backtest.html');
+
+const FAMILY_NAME = { macro: 'Macro regime', policy: 'Policy and liquidity', trend: 'Trend and momentum', calendar: 'Sentiment and calendar',
+  recession: 'Recession risk', credit_vol: 'Credit and volatility', valuation: 'Valuation', where: 'Where to look' };
+const pct = (x, d = 1) => (x == null ? '<span class="muted">n/a</span>' : (x * 100).toFixed(d) + '%');
+const cmp = (a, b) => (a == null || b == null ? '' : a > b ? 'pos' : a < b ? 'neg' : '');
+const cell = (x, ref) => `<td class="n"><span class="${ref === undefined ? '' : 'txt-' + cmp(x, ref)}">${pct(x)}</span></td>`;
+
+function caveats(d) {
+  return `<div class="card"><div class="label">Read this first</div><ul class="notes">
+    <li><b>Short history.</b> Fund data limits this to roughly the last 20 years, which holds three large declines (2008, 2020 and 2022). Long-horizon averages come from heavily overlapping windows and deserve little weight.</li>
+    <li><b>Hindsight.</b> These frameworks are well known because they worked in the past, and the thresholds here were written in 2026 with that past already known. Expect live results to be worse.</li>
+    <li><b>Revised data.</b> Economic series are today's revised figures, not what was published at the time.</li>
+    <li><b>Costs.</b> A ${d.cost_bps / 100}% trading cost is charged on the amount moved at each change. Taxes are not included, and they would hurt the strategies that switch often.</li>
+    <li><b>Not for tuning.</b> Picking whichever framework or weight did best here is the standard way to build a model that fails. The consensus weights were set from each framework's logic and have not been adjusted to these results.</li>
+  </ul></div>`;
+}
+
+function portfolios(d) {
+  if (!d.portfolios.length) return '<p class="hint">Not enough history yet to compare portfolios.</p>';
+  const base = d.portfolios.find((p) => p.id === 'neutral') || d.portfolios[0];
+  return `<h2>The consensus allocation against simple alternatives</h2>
+  <p class="hint">${esc(d.portfolios[0].start)} to ${esc(d.portfolios[0].end)}. Average return over every rolling window of each length; three years and longer are annualized.</p>
+  <div class="card chart-card"><div style="position:relative;height:280px"><canvas id="curve"></canvas></div></div>
+  <div class="card calc" style="margin-top:12px"><table>
+    <tr><th>Portfolio</th>${d.horizons.map((h) => `<th class="n">${h}</th>`).join('')}<th class="n">Per year</th><th class="n">Volatility</th><th class="n">Worst drawdown</th><th class="n">Worst 12 months</th></tr>
+    ${d.portfolios.map((p) => `<tr><td>${p.id === 'consensus' ? `<b>${esc(p.name)}</b>` : esc(p.name)}</td>
+      ${d.horizons.map((h) => `<td class="n">${pct(p.horizons[h])}</td>`).join('')}
+      <td class="n">${pct(p.cagr)}</td><td class="n">${pct(p.volatility)}</td><td class="n">${pct(p.max_drawdown, 0)}</td><td class="n">${pct(p.worst_12m, 0)}</td></tr>`).join('')}
+  </table></div>
+  <p class="hint" style="margin-top:8px">The consensus allocation moves at most 10 points of stocks away from the neutral mix, so the two will always be close. The honest question is whether it lost less in the bad stretches without giving up much return.</p>`;
+}
+
+function followTable(d) {
+  const fams = [...new Set(d.frameworks.map((f) => f.family))];
+  const rows = fams.map((fam) => {
+    const items = d.frameworks.filter((f) => f.family === fam);
+    return `<tr><td colspan="${d.horizons.length + 6}" class="label" style="padding-top:14px">${esc(FAMILY_NAME[fam] || fam)}</td></tr>` + items.map((f) => {
+      if (!f.stats) return `<tr><td><a href="learn.html#${f.id}">${esc(f.name)}</a></td><td colspan="${d.horizons.length + 5}" class="muted">Not enough history</td></tr>`;
+      const s = f.stats, b = f.benchmarks.stocks;
+      return `<tr><td><a href="learn.html#${f.id}">${esc(f.name)}</a><br><span class="muted">${s.start} to ${s.end}</span></td>
+        ${d.horizons.map((h) => cell(s.horizons[h], b ? b.horizons[h] : null)).join('')}
+        <td class="n">${pct(s.cagr)}<br><span class="muted">${b ? pct(b.cagr) : ''}</span></td>
+        <td class="n">${pct(s.max_drawdown, 0)}<br><span class="muted">${b ? pct(b.max_drawdown, 0) : ''}</span></td>
+        <td class="n">${pct(f.time.stocks, 0)}</td><td class="n">${pct(f.time.cash, 0)}</td><td class="n">${f.switches_per_year.toFixed(1)}</td></tr>`;
+    }).join('');
+  }).join('');
+  return `<h2>Following each framework alone</h2>
+  <p class="hint">${esc(d.follow_rule)} Horizon cells are green when the framework beat stocks-only over the same period and red when it lagged. Grey numbers under "Per year" and "Worst drawdown" are stocks-only over the same period.</p>
+  <div class="card calc"><table style="min-width:860px">
+    <tr><th>Framework</th>${d.horizons.map((h) => `<th class="n">${h}</th>`).join('')}<th class="n">Per year</th><th class="n">Worst drawdown</th><th class="n">Time in stocks</th><th class="n">Time in cash</th><th class="n">Switches / yr</th></tr>
+    ${rows}</table></div>
+  <p class="hint" style="margin-top:8px">Most timing rules trail stocks-only on return, because stocks rise most of the time and any time out of them costs. What they can offer is a smaller worst drawdown. Judge each row on both columns.</p>`;
+}
+
+function forwardTable(d) {
+  const rows = d.frameworks.filter((f) => f.forward).map((f) => {
+    const p = f.forward['1'], z = f.forward['0'], n = f.forward['-1'];
+    const spread = p['1y'] != null && n['1y'] != null ? p['1y'] - n['1y'] : null;
+    const c = (e) => `<td class="n">${pct(e['1y'])}<br><span class="muted">${e.months} mo</span></td>`;
+    return `<tr><td><a href="learn.html#${f.id}">${esc(f.name)}</a></td>${c(p)}${c(z)}${c(n)}
+      <td class="n"><span class="txt-${spread == null ? '' : spread > 0 ? 'pos' : 'neg'}">${spread == null ? '<span class="muted">n/a</span>' : (spread > 0 ? '+' : '') + (spread * 100).toFixed(1) + ' pts'}</span></td>
+      <td class="n">${pct(p['3m'])} / ${pct(n['3m'])}</td></tr>`;
+  }).join('');
+  return `<h2>Does the vote carry information?</h2>
+  <p class="hint">The average stock return over the 12 months after each kind of vote, with the number of months behind it. If a framework works, stocks should do better after a positive vote than after a negative one.</p>
+  <div class="card calc"><table style="min-width:680px">
+    <tr><th>Framework</th><th class="n">After positive</th><th class="n">After neutral</th><th class="n">After negative</th><th class="n">Positive minus negative</th><th class="n">Next 3 months (pos / neg)</th></tr>
+    ${rows}</table></div>
+  <p class="hint" style="margin-top:8px">A negative spread means stocks did better after the framework said to avoid them. Alarms often show this: they ring near the bottom, and the year after a bottom is strong. Small month counts make any row unreliable.</p>`;
+}
+
+function drawCurve(d) {
+  const c = d.curve, colors = { consensus: '#3b82f6', neutral: '#a78bfa', sixty_forty: '#8b8fa3', stocks: '#fb923c' };
+  const names = Object.fromEntries(d.portfolios.map((p) => [p.id, p.name]));
+  new Chart($('#curve'), {
+    type: 'line',
+    data: { labels: c.map((x) => x.date), datasets: Object.keys(colors).filter((k) => names[k]).map((k) => (
+      { label: names[k], data: c.map((x) => x[k]), borderColor: colors[k], pointRadius: 0, borderWidth: k === 'consensus' ? 2.5 : 1.5, tension: 0.1 })) },
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#8b8fa3', boxWidth: 12 } }, title: { display: true, text: 'Growth of $1', color: '#8b8fa3' } },
+      scales: { x: { ticks: { color: '#8b8fa3', maxTicksLimit: 8 }, grid: { color: '#2a2d3a' } },
+        y: { type: 'logarithmic', ticks: { color: '#8b8fa3' }, grid: { color: '#2a2d3a' } } } },
+  });
+}
+
+loadJSON('data/backtest.json').then((d) => {
+  $('#app').innerHTML = sampleBanner(d) + caveats(d) + portfolios(d) + followTable(d) + forwardTable(d);
+  renderFooter({ as_of_label: d.as_of.slice(0, 7), generated_at: d.generated_at });
+  if (d.curve.length && window.Chart) drawCurve(d);
+}).catch(showError);
+</script>
+</body>
+</html>

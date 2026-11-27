@@ -13,7 +13,8 @@ Educational model output. Not personal investment advice.
 | `src/frameworks.py` | Framework votes, family scoring, the consensus rules and the model allocation. Pure functions, no network |
 | `src/compute_signals.py` | Fetches data, runs the frameworks, writes `docs/data/signals.json` and `data/consensus_history.csv` |
 | `src/compute_macro_monthly.py` | The original macro and risk regime script, feeding the classic view |
-| `docs/` | The site (GitHub Pages): dashboard, lessons, calculator, methodology, classic view |
+| `src/backtest.py` | What following each framework, and the consensus allocation, would have returned |
+| `docs/` | The site (GitHub Pages): dashboard, lessons, calculator, backtest, methodology, classic view |
 | `docs/data/lessons.json` | Lesson text for every framework and metric. Edit this to change the wording |
 | `tests/` | Tests for the scoring rules, run on synthetic series |
 
@@ -57,7 +58,8 @@ The thresholds and weights at the top of `src/frameworks.py` were set once from 
 |---|---|---|
 | Economic series, yields, spreads, VIX, S&P 500 | FRED API | none needed |
 | ETF prices (22 funds) | Yahoo Finance via `yfinance` | Stooq |
-| Shiller CAPE and trailing P/E | multpl.com | Yale's `ie_data.xls` |
+| Shiller CAPE and P/E history | GitHub mirror of Shiller's dataset (ends 2023) | Yale's `ie_data.xls` |
+| Current P/E | Yahoo Finance fund data, used to estimate months after 2023 | multpl.com when it is reachable |
 | Investor sentiment | AAII survey file | none |
 
 Outside sources sometimes block automated requests. When one fails, the run still succeeds: the frameworks that needed it show "No data" and are left out of the averages. The workflow log lists which sources and frameworks came back empty.

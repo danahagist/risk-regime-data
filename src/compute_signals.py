@@ -20,9 +20,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import fred_data  # noqa: E402
 import market_data  # noqa: E402
 import frameworks as fw  # noqa: E402
+import backtest  # noqa: E402
 
 OUT_JSON = "docs/data/signals.json"
 OUT_HISTORY = "data/consensus_history.csv"
+OUT_BACKTEST = "docs/data/backtest.json"
 EPS_POINTS = "data/sp500_earnings_points.csv"
 VOTE_WORD = {1.0: "Positive", 0.0: "Neutral", -1.0: "Negative"}
 ALARM_WORD = {1.0: "Clear", 0.0: "Watch", -1.0: "Triggered"}
@@ -107,6 +109,23 @@ def _table(f, row, m):
         return f.table(row, m)
     except Exception:  # a display table must never break the run
         return None
+
+
+def _deep_clean(x, digits=4):
+    """Recursively make a structure JSON-safe (no NaN, no numpy types)."""
+    if isinstance(x, dict):
+        return {str(k): _deep_clean(v, digits) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [_deep_clean(v, digits) for v in x]
+    return _clean(x)
+
+
+def build_backtest(raw: dict, asof=None) -> dict:
+    m = fw.build_monthly(raw, asof=asof)
+    votes = fw.compute_votes(m)
+    out = backtest.build(m, votes, fw.consensus(votes))
+    out["generated_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    return _deep_clean(out)
 
 
 def build_payload(raw: dict, asof=None) -> tuple[dict, pd.DataFrame]:
@@ -235,6 +254,7 @@ def main():
     ap.add_argument("--asof", help="evaluate as of this month (YYYY-MM-DD)")
     ap.add_argument("--out", default=OUT_JSON)
     ap.add_argument("--history-out", default=OUT_HISTORY)
+    ap.add_argument("--backtest-out", default=OUT_BACKTEST)
     args = ap.parse_args()
 
     if args.fixture:
@@ -256,6 +276,19 @@ def main():
     out = full.dropna(subset=["composite"]).copy()
     out.insert(0, "date", out.index.strftime("%Y-%m-%d"))
     out.to_csv(args.history_out, index=False)
+
+    try:   # the backtest is a report; it must never block the monthly signals
+        bt = build_backtest(raw, asof=args.asof)
+        if args.fixture:
+            bt["sample"] = True
+        with open(args.backtest_out, "w") as fh:
+            json.dump(bt, fh, indent=1, allow_nan=False)
+        tested = sum(1 for f in bt["frameworks"] if f["stats"])
+        print(f"Backtest: {len(bt['portfolios'])} portfolios, {tested} of {len(bt['frameworks'])} frameworks with enough history")
+        for p in bt["portfolios"]:
+            print(f"  {p['name']}: {p['start']} to {p['end']}, {p['cagr'] * 100:.1f}% a year, worst drawdown {p['max_drawdown'] * 100:.0f}%")
+    except Exception as e:
+        print(f"Backtest failed: {type(e).__name__}: {e}", file=sys.stderr)
 
     s = payload["stance"]
     print(f"As of {payload['as_of']}: {s['label']} (composite {s['composite']}, agreement {s['agreement']})")

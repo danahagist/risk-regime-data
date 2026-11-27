@@ -264,6 +264,14 @@ def test_stale_valuation_history_is_estimated_forward(raw, monthly):
     assert last["pe"] == pytest.approx(monthly["sp500"].iloc[-1] / 292.0, rel=0.08)
 
 
+def test_earnings_point_observed_after_the_month_still_anchors_it(raw):
+    # the job runs on the 2nd, so the P/E it observes is dated in the month after the one reported
+    m = fw.build_monthly(raw, asof="2026-10-31")       # the fixture's point is dated 2026-11-27
+    last = m.iloc[-1]
+    assert bool(last["valuation_estimated"]) and 15 < last["cape"] < 60 and 10 < last["pe"] < 45
+    assert fw.v_cape(m).iloc[-1] in (-1, 0, 1)
+
+
 def test_fresh_valuation_history_is_used_as_published(raw):
     fresh = dict(raw)
     idx = pd.date_range("1900-01-31", "2026-11-30", freq="ME")
