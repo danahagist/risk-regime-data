@@ -1,0 +1,4041 @@
+{
+ "as_of": "2026-10-31",
+ "cost_bps": 10.0,
+ "horizons": [
+  "3m",
+  "6m",
+  "1y",
+  "3y",
+  "5y",
+  "10y"
+ ],
+ "follow_rule": "All stocks when the framework is positive (or its alarm is clear), 60/40 when neutral (watch), T-bills when negative (triggered).",
+ "portfolios": [
+  {
+   "id": "consensus",
+   "name": "Consensus model allocation",
+   "start": "2004-12",
+   "end": "2026-10",
+   "months": 263,
+   "cagr": 0.0817,
+   "volatility": 0.0913,
+   "max_drawdown": -0.2807,
+   "worst_12m": -0.2403,
+   "sharpe": 0.7074,
+   "horizons": {
+    "3m": 0.0209,
+    "6m": 0.0426,
+    "1y": 0.0869,
+    "3y": 0.0801,
+    "5y": 0.0814,
+    "10y": 0.0832
+   }
+  },
+  {
+   "id": "neutral",
+   "name": "Neutral mix 60/30/5/5, held steady",
+   "start": "2004-12",
+   "end": "2026-10",
+   "months": 263,
+   "cagr": 0.0811,
+   "volatility": 0.0953,
+   "max_drawdown": -0.3296,
+   "worst_12m": -0.2884,
+   "sharpe": 0.6765,
+   "horizons": {
+    "3m": 0.0208,
+    "6m": 0.0427,
+    "1y": 0.0869,
+    "3y": 0.0793,
+    "5y": 0.081,
+    "10y": 0.0832
+   }
+  },
+  {
+   "id": "sixty_forty",
+   "name": "Classic 60/40",
+   "start": "2004-12",
+   "end": "2026-10",
+   "months": 263,
+   "cagr": 0.0791,
+   "volatility": 0.0944,
+   "max_drawdown": -0.3232,
+   "worst_12m": -0.2765,
+   "sharpe": 0.6621,
+   "horizons": {
+    "3m": 0.0203,
+    "6m": 0.0416,
+    "1y": 0.0846,
+    "3y": 0.0784,
+    "5y": 0.0807,
+    "10y": 0.0842
+   }
+  },
+  {
+   "id": "stocks",
+   "name": "Stocks only",
+   "start": "2004-12",
+   "end": "2026-10",
+   "months": 263,
+   "cagr": 0.1085,
+   "volatility": 0.1475,
+   "max_drawdown": -0.5078,
+   "worst_12m": -0.4342,
+   "sharpe": 0.6513,
+   "horizons": {
+    "3m": 0.0289,
+    "6m": 0.0595,
+    "1y": 0.1217,
+    "3y": 0.1082,
+    "5y": 0.1121,
+    "10y": 0.1178
+   }
+  }
+ ],
+ "curve": [
+  {
+   "date": "2004-12",
+   "consensus": 1.0182,
+   "neutral": 1.0191,
+   "sixty_forty": 1.0213,
+   "stocks": 1.0301
+  },
+  {
+   "date": "2005-01",
+   "consensus": 1.0018,
+   "neutral": 1.0051,
+   "sixty_forty": 1.0095,
+   "stocks": 1.007
+  },
+  {
+   "date": "2005-02",
+   "consensus": 1.0156,
+   "neutral": 1.0183,
+   "sixty_forty": 1.0207,
+   "stocks": 1.0281
+  },
+  {
+   "date": "2005-03",
+   "consensus": 1.0,
+   "neutral": 1.0034,
+   "sixty_forty": 1.0055,
+   "stocks": 1.0093
+  },
+  {
+   "date": "2005-04",
+   "consensus": 0.9901,
+   "neutral": 0.998,
+   "sixty_forty": 1.0011,
+   "stocks": 0.9904
+  },
+  {
+   "date": "2005-05",
+   "consensus": 1.0096,
+   "neutral": 1.018,
+   "sixty_forty": 1.0238,
+   "stocks": 1.0223
+  },
+  {
+   "date": "2005-06",
+   "consensus": 1.0165,
+   "neutral": 1.0239,
+   "sixty_forty": 1.0283,
+   "stocks": 1.0238
+  },
+  {
+   "date": "2005-07",
+   "consensus": 1.0372,
+   "neutral": 1.0436,
+   "sixty_forty": 1.0477,
+   "stocks": 1.063
+  },
+  {
+   "date": "2005-08",
+   "consensus": 1.035,
+   "neutral": 1.0423,
+   "sixty_forty": 1.0467,
+   "stocks": 1.053
+  },
+  {
+   "date": "2005-09",
+   "consensus": 1.0386,
+   "neutral": 1.0485,
+   "sixty_forty": 1.0478,
+   "stocks": 1.0615
+  },
+  {
+   "date": "2005-10",
+   "consensus": 1.0222,
+   "neutral": 1.0303,
+   "sixty_forty": 1.0288,
+   "stocks": 1.0364
+  },
+  {
+   "date": "2005-11",
+   "consensus": 1.0505,
+   "neutral": 1.0618,
+   "sixty_forty": 1.0575,
+   "stocks": 1.0819
+  },
+  {
+   "date": "2005-12",
+   "consensus": 1.0568,
+   "neutral": 1.0671,
+   "sixty_forty": 1.0611,
+   "stocks": 1.0799
+  },
+  {
+   "date": "2006-01",
+   "consensus": 1.083,
+   "neutral": 1.0877,
+   "sixty_forty": 1.0761,
+   "stocks": 1.1058
+  },
+  {
+   "date": "2006-02",
+   "consensus": 1.0864,
+   "neutral": 1.0916,
+   "sixty_forty": 1.0805,
+   "stocks": 1.1121
+  },
+  {
+   "date": "2006-03",
+   "consensus": 1.0998,
+   "neutral": 1.1015,
+   "sixty_forty": 1.0874,
+   "stocks": 1.1305
+  },
+  {
+   "date": "2006-04",
+   "consensus": 1.1138,
+   "neutral": 1.1148,
+   "sixty_forty": 1.095,
+   "stocks": 1.1448
+  },
+  {
+   "date": "2006-05",
+   "consensus": 1.0941,
+   "neutral": 1.0937,
+   "sixty_forty": 1.0744,
+   "stocks": 1.1103
+  },
+  {
+   "date": "2006-06",
+   "consensus": 1.093,
+   "neutral": 1.0936,
+   "sixty_forty": 1.0754,
+   "stocks": 1.1132
+  },
+  {
+   "date": "2006-07",
+   "consensus": 1.1018,
+   "neutral": 1.1028,
+   "sixty_forty": 1.0842,
+   "stocks": 1.1182
+  },
+  {
+   "date": "2006-08",
+   "consensus": 1.117,
+   "neutral": 1.1215,
+   "sixty_forty": 1.1053,
+   "stocks": 1.1426
+  },
+  {
+   "date": "2006-09",
+   "consensus": 1.1326,
+   "neutral": 1.1408,
+   "sixty_forty": 1.1277,
+   "stocks": 1.1734
+  },
+  {
+   "date": "2006-10",
+   "consensus": 1.1572,
+   "neutral": 1.1656,
+   "sixty_forty": 1.1521,
+   "stocks": 1.2104
+  },
+  {
+   "date": "2006-11",
+   "consensus": 1.1814,
+   "neutral": 1.1874,
+   "sixty_forty": 1.1708,
+   "stocks": 1.2345
+  },
+  {
+   "date": "2006-12",
+   "consensus": 1.1881,
+   "neutral": 1.1938,
+   "sixty_forty": 1.1774,
+   "stocks": 1.251
+  },
+  {
+   "date": "2007-01",
+   "consensus": 1.1995,
+   "neutral": 1.2046,
+   "sixty_forty": 1.1876,
+   "stocks": 1.2698
+  },
+  {
+   "date": "2007-02",
+   "consensus": 1.1936,
+   "neutral": 1.1989,
+   "sixty_forty": 1.1814,
+   "stocks": 1.2449
+  },
+  {
+   "date": "2007-03",
+   "consensus": 1.2013,
+   "neutral": 1.2067,
+   "sixty_forty": 1.1887,
+   "stocks": 1.2593
+  },
+  {
+   "date": "2007-04",
+   "consensus": 1.2365,
+   "neutral": 1.242,
+   "sixty_forty": 1.2231,
+   "stocks": 1.3151
+  },
+  {
+   "date": "2007-05",
+   "consensus": 1.2581,
+   "neutral": 1.2633,
+   "sixty_forty": 1.2435,
+   "stocks": 1.3597
+  },
+  {
+   "date": "2007-06",
+   "consensus": 1.2454,
+   "neutral": 1.2507,
+   "sixty_forty": 1.2307,
+   "stocks": 1.3398
+  },
+  {
+   "date": "2007-07",
+   "consensus": 1.2268,
+   "neutral": 1.2328,
+   "sixty_forty": 1.2129,
+   "stocks": 1.2979
+  },
+  {
+   "date": "2007-08",
+   "consensus": 1.2419,
+   "neutral": 1.247,
+   "sixty_forty": 1.2284,
+   "stocks": 1.3145
+  },
+  {
+   "date": "2007-09",
+   "consensus": 1.2737,
+   "neutral": 1.2848,
+   "sixty_forty": 1.2601,
+   "stocks": 1.3654
+  },
+  {
+   "date": "2007-10",
+   "consensus": 1.2888,
+   "neutral": 1.3043,
+   "sixty_forty": 1.2754,
+   "stocks": 1.3839
+  },
+  {
+   "date": "2007-11",
+   "consensus": 1.2674,
+   "neutral": 1.2805,
+   "sixty_forty": 1.2549,
+   "stocks": 1.3303
+  },
+  {
+   "date": "2007-12",
+   "consensus": 1.2589,
+   "neutral": 1.2763,
+   "sixty_forty": 1.2464,
+   "stocks": 1.3153
+  },
+  {
+   "date": "2008-01",
+   "consensus": 1.2297,
+   "neutral": 1.2434,
+   "sixty_forty": 1.2127,
+   "stocks": 1.2358
+  },
+  {
+   "date": "2008-02",
+   "consensus": 1.2203,
+   "neutral": 1.2287,
+   "sixty_forty": 1.1932,
+   "stocks": 1.2039
+  },
+  {
+   "date": "2008-03",
+   "consensus": 1.2112,
+   "neutral": 1.2206,
+   "sixty_forty": 1.1874,
+   "stocks": 1.1931
+  },
+  {
+   "date": "2008-04",
+   "consensus": 1.2426,
+   "neutral": 1.2574,
+   "sixty_forty": 1.2229,
+   "stocks": 1.25
+  },
+  {
+   "date": "2008-05",
+   "consensus": 1.2513,
+   "neutral": 1.2665,
+   "sixty_forty": 1.2278,
+   "stocks": 1.2689
+  },
+  {
+   "date": "2008-06",
+   "consensus": 1.1979,
+   "neutral": 1.2071,
+   "sixty_forty": 1.1653,
+   "stocks": 1.1628
+  },
+  {
+   "date": "2008-07",
+   "consensus": 1.1948,
+   "neutral": 1.1988,
+   "sixty_forty": 1.1609,
+   "stocks": 1.1524
+  },
+  {
+   "date": "2008-08",
+   "consensus": 1.2081,
+   "neutral": 1.2079,
+   "sixty_forty": 1.1751,
+   "stocks": 1.1702
+  },
+  {
+   "date": "2008-09",
+   "consensus": 1.1398,
+   "neutral": 1.1315,
+   "sixty_forty": 1.1004,
+   "stocks": 1.06
+  },
+  {
+   "date": "2008-10",
+   "consensus": 1.0232,
+   "neutral": 1.0,
+   "sixty_forty": 0.9813,
+   "stocks": 0.8849
+  },
+  {
+   "date": "2008-11",
+   "consensus": 1.0015,
+   "neutral": 0.9674,
+   "sixty_forty": 0.9522,
+   "stocks": 0.8233
+  },
+  {
+   "date": "2008-12",
+   "consensus": 1.0365,
+   "neutral": 0.9935,
+   "sixty_forty": 0.9832,
+   "stocks": 0.8314
+  },
+  {
+   "date": "2009-01",
+   "consensus": 0.9846,
+   "neutral": 0.9389,
+   "sixty_forty": 0.9269,
+   "stocks": 0.7631
+  },
+  {
+   "date": "2009-02",
+   "consensus": 0.9271,
+   "neutral": 0.8744,
+   "sixty_forty": 0.8632,
+   "stocks": 0.6811
+  },
+  {
+   "date": "2009-03",
+   "consensus": 0.9703,
+   "neutral": 0.9215,
+   "sixty_forty": 0.9102,
+   "stocks": 0.7378
+  },
+  {
+   "date": "2009-04",
+   "consensus": 1.0208,
+   "neutral": 0.9771,
+   "sixty_forty": 0.9663,
+   "stocks": 0.8111
+  },
+  {
+   "date": "2009-05",
+   "consensus": 1.0539,
+   "neutral": 1.0199,
+   "sixty_forty": 1.003,
+   "stocks": 0.8586
+  },
+  {
+   "date": "2009-06",
+   "consensus": 1.0531,
+   "neutral": 1.0188,
+   "sixty_forty": 1.0043,
+   "stocks": 0.858
+  },
+  {
+   "date": "2009-07",
+   "consensus": 1.0987,
+   "neutral": 1.0694,
+   "sixty_forty": 1.0543,
+   "stocks": 0.922
+  },
+  {
+   "date": "2009-08",
+   "consensus": 1.1232,
+   "neutral": 1.0959,
+   "sixty_forty": 1.0828,
+   "stocks": 0.9561
+  },
+  {
+   "date": "2009-09",
+   "consensus": 1.1499,
+   "neutral": 1.1247,
+   "sixty_forty": 1.111,
+   "stocks": 0.99
+  },
+  {
+   "date": "2009-10",
+   "consensus": 1.1429,
+   "neutral": 1.1155,
+   "sixty_forty": 1.0992,
+   "stocks": 0.9709
+  },
+  {
+   "date": "2009-11",
+   "consensus": 1.1888,
+   "neutral": 1.1658,
+   "sixty_forty": 1.1455,
+   "stocks": 1.0308
+  },
+  {
+   "date": "2009-12",
+   "consensus": 1.192,
+   "neutral": 1.1705,
+   "sixty_forty": 1.15,
+   "stocks": 1.0504
+  },
+  {
+   "date": "2010-01",
+   "consensus": 1.165,
+   "neutral": 1.1473,
+   "sixty_forty": 1.1314,
+   "stocks": 1.0123
+  },
+  {
+   "date": "2010-02",
+   "consensus": 1.1917,
+   "neutral": 1.1716,
+   "sixty_forty": 1.1535,
+   "stocks": 1.0438
+  },
+  {
+   "date": "2010-03",
+   "consensus": 1.2347,
+   "neutral": 1.2141,
+   "sixty_forty": 1.1956,
+   "stocks": 1.1074
+  },
+  {
+   "date": "2010-04",
+   "consensus": 1.2554,
+   "neutral": 1.2319,
+   "sixty_forty": 1.2113,
+   "stocks": 1.1245
+  },
+  {
+   "date": "2010-05",
+   "consensus": 1.1946,
+   "neutral": 1.175,
+   "sixty_forty": 1.1588,
+   "stocks": 1.0352
+  },
+  {
+   "date": "2010-06",
+   "consensus": 1.1634,
+   "neutral": 1.1449,
+   "sixty_forty": 1.1311,
+   "stocks": 0.9816
+  },
+  {
+   "date": "2010-07",
+   "consensus": 1.2142,
+   "neutral": 1.195,
+   "sixty_forty": 1.1813,
+   "stocks": 1.0487
+  },
+  {
+   "date": "2010-08",
+   "consensus": 1.1872,
+   "neutral": 1.1682,
+   "sixty_forty": 1.1555,
+   "stocks": 1.0015
+  },
+  {
+   "date": "2010-09",
+   "consensus": 1.2509,
+   "neutral": 1.2349,
+   "sixty_forty": 1.2176,
+   "stocks": 1.0912
+  },
+  {
+   "date": "2010-10",
+   "consensus": 1.2802,
+   "neutral": 1.2663,
+   "sixty_forty": 1.2462,
+   "stocks": 1.1329
+  },
+  {
+   "date": "2010-11",
+   "consensus": 1.2766,
+   "neutral": 1.2637,
+   "sixty_forty": 1.2421,
+   "stocks": 1.1329
+  },
+  {
+   "date": "2010-12",
+   "consensus": 1.3248,
+   "neutral": 1.3157,
+   "sixty_forty": 1.2885,
+   "stocks": 1.2086
+  },
+  {
+   "date": "2011-01",
+   "consensus": 1.343,
+   "neutral": 1.3328,
+   "sixty_forty": 1.3061,
+   "stocks": 1.2368
+  },
+  {
+   "date": "2011-02",
+   "consensus": 1.3723,
+   "neutral": 1.3652,
+   "sixty_forty": 1.3349,
+   "stocks": 1.2797
+  },
+  {
+   "date": "2011-03",
+   "consensus": 1.3729,
+   "neutral": 1.3658,
+   "sixty_forty": 1.3338,
+   "stocks": 1.2799
+  },
+  {
+   "date": "2011-04",
+   "consensus": 1.4079,
+   "neutral": 1.4006,
+   "sixty_forty": 1.3653,
+   "stocks": 1.3169
+  },
+  {
+   "date": "2011-05",
+   "consensus": 1.4012,
+   "neutral": 1.394,
+   "sixty_forty": 1.3629,
+   "stocks": 1.3022
+  },
+  {
+   "date": "2011-06",
+   "consensus": 1.3806,
+   "neutral": 1.3757,
+   "sixty_forty": 1.3467,
+   "stocks": 1.2802
+  },
+  {
+   "date": "2011-07",
+   "consensus": 1.379,
+   "neutral": 1.3706,
+   "sixty_forty": 1.3396,
+   "stocks": 1.2546
+  },
+  {
+   "date": "2011-08",
+   "consensus": 1.3472,
+   "neutral": 1.3357,
+   "sixty_forty": 1.3036,
+   "stocks": 1.1856
+  },
+  {
+   "date": "2011-09",
+   "consensus": 1.2765,
+   "neutral": 1.2746,
+   "sixty_forty": 1.2533,
+   "stocks": 1.1033
+  },
+  {
+   "date": "2011-10",
+   "consensus": 1.3691,
+   "neutral": 1.3628,
+   "sixty_forty": 1.336,
+   "stocks": 1.2237
+  },
+  {
+   "date": "2011-11",
+   "consensus": 1.3656,
+   "neutral": 1.3586,
+   "sixty_forty": 1.331,
+   "stocks": 1.2188
+  },
+  {
+   "date": "2011-12",
+   "consensus": 1.3697,
+   "neutral": 1.3681,
+   "sixty_forty": 1.3465,
+   "stocks": 1.2315
+  },
+  {
+   "date": "2012-01",
+   "consensus": 1.4159,
+   "neutral": 1.4143,
+   "sixty_forty": 1.3879,
+   "stocks": 1.2886
+  },
+  {
+   "date": "2012-02",
+   "consensus": 1.4543,
+   "neutral": 1.4519,
+   "sixty_forty": 1.424,
+   "stocks": 1.3445
+  },
+  {
+   "date": "2012-03",
+   "consensus": 1.4833,
+   "neutral": 1.4763,
+   "sixty_forty": 1.4482,
+   "stocks": 1.3878
+  },
+  {
+   "date": "2012-04",
+   "consensus": 1.4775,
+   "neutral": 1.4738,
+   "sixty_forty": 1.4476,
+   "stocks": 1.3785
+  },
+  {
+   "date": "2012-05",
+   "consensus": 1.4052,
+   "neutral": 1.4191,
+   "sixty_forty": 1.4017,
+   "stocks": 1.2957
+  },
+  {
+   "date": "2012-06",
+   "consensus": 1.4406,
+   "neutral": 1.4551,
+   "sixty_forty": 1.4357,
+   "stocks": 1.3483
+  },
+  {
+   "date": "2012-07",
+   "consensus": 1.4575,
+   "neutral": 1.4738,
+   "sixty_forty": 1.4537,
+   "stocks": 1.3643
+  },
+  {
+   "date": "2012-08",
+   "consensus": 1.4794,
+   "neutral": 1.4999,
+   "sixty_forty": 1.4756,
+   "stocks": 1.3984
+  },
+  {
+   "date": "2012-09",
+   "consensus": 1.5032,
+   "neutral": 1.5255,
+   "sixty_forty": 1.4996,
+   "stocks": 1.4339
+  },
+  {
+   "date": "2012-10",
+   "consensus": 1.4866,
+   "neutral": 1.506,
+   "sixty_forty": 1.483,
+   "stocks": 1.4078
+  },
+  {
+   "date": "2012-11",
+   "consensus": 1.493,
+   "neutral": 1.5129,
+   "sixty_forty": 1.4896,
+   "stocks": 1.4158
+  },
+  {
+   "date": "2012-12",
+   "consensus": 1.4998,
+   "neutral": 1.5186,
+   "sixty_forty": 1.4961,
+   "stocks": 1.4284
+  },
+  {
+   "date": "2013-01",
+   "consensus": 1.5437,
+   "neutral": 1.5631,
+   "sixty_forty": 1.5384,
+   "stocks": 1.5015
+  },
+  {
+   "date": "2013-02",
+   "consensus": 1.5555,
+   "neutral": 1.574,
+   "sixty_forty": 1.5538,
+   "stocks": 1.5207
+  },
+  {
+   "date": "2013-03",
+   "consensus": 1.5978,
+   "neutral": 1.611,
+   "sixty_forty": 1.5898,
+   "stocks": 1.5784
+  },
+  {
+   "date": "2013-04",
+   "consensus": 1.618,
+   "neutral": 1.6297,
+   "sixty_forty": 1.6143,
+   "stocks": 1.6088
+  },
+  {
+   "date": "2013-05",
+   "consensus": 1.6362,
+   "neutral": 1.6398,
+   "sixty_forty": 1.6242,
+   "stocks": 1.6467
+  },
+  {
+   "date": "2013-06",
+   "consensus": 1.6143,
+   "neutral": 1.6133,
+   "sixty_forty": 1.601,
+   "stocks": 1.6248
+  },
+  {
+   "date": "2013-07",
+   "consensus": 1.6658,
+   "neutral": 1.6689,
+   "sixty_forty": 1.6524,
+   "stocks": 1.7087
+  },
+  {
+   "date": "2013-08",
+   "consensus": 1.6349,
+   "neutral": 1.6381,
+   "sixty_forty": 1.6172,
+   "stocks": 1.6575
+  },
+  {
+   "date": "2013-09",
+   "consensus": 1.6721,
+   "neutral": 1.6714,
+   "sixty_forty": 1.6552,
+   "stocks": 1.7099
+  },
+  {
+   "date": "2013-10",
+   "consensus": 1.7225,
+   "neutral": 1.7218,
+   "sixty_forty": 1.7067,
+   "stocks": 1.7891
+  },
+  {
+   "date": "2013-11",
+   "consensus": 1.7544,
+   "neutral": 1.7484,
+   "sixty_forty": 1.7353,
+   "stocks": 1.8421
+  },
+  {
+   "date": "2013-12",
+   "consensus": 1.7828,
+   "neutral": 1.7713,
+   "sixty_forty": 1.7584,
+   "stocks": 1.8899
+  },
+  {
+   "date": "2014-01",
+   "consensus": 1.7448,
+   "neutral": 1.7422,
+   "sixty_forty": 1.7321,
+   "stocks": 1.8233
+  },
+  {
+   "date": "2014-02",
+   "consensus": 1.8067,
+   "neutral": 1.7966,
+   "sixty_forty": 1.782,
+   "stocks": 1.9063
+  },
+  {
+   "date": "2014-03",
+   "consensus": 1.8145,
+   "neutral": 1.8033,
+   "sixty_forty": 1.7898,
+   "stocks": 1.9221
+  },
+  {
+   "date": "2014-04",
+   "consensus": 1.8271,
+   "neutral": 1.816,
+   "sixty_forty": 1.8032,
+   "stocks": 1.9355
+  },
+  {
+   "date": "2014-05",
+   "consensus": 1.8569,
+   "neutral": 1.8457,
+   "sixty_forty": 1.8368,
+   "stocks": 1.9804
+  },
+  {
+   "date": "2014-06",
+   "consensus": 1.8911,
+   "neutral": 1.8722,
+   "sixty_forty": 1.8591,
+   "stocks": 2.0213
+  },
+  {
+   "date": "2014-07",
+   "consensus": 1.8646,
+   "neutral": 1.8517,
+   "sixty_forty": 1.8422,
+   "stocks": 1.9941
+  },
+  {
+   "date": "2014-08",
+   "consensus": 1.919,
+   "neutral": 1.9016,
+   "sixty_forty": 1.8943,
+   "stocks": 2.0728
+  },
+  {
+   "date": "2014-09",
+   "consensus": 1.887,
+   "neutral": 1.876,
+   "sixty_forty": 1.874,
+   "stocks": 2.0442
+  },
+  {
+   "date": "2014-10",
+   "consensus": 1.9163,
+   "neutral": 1.9052,
+   "sixty_forty": 1.9084,
+   "stocks": 2.0923
+  },
+  {
+   "date": "2014-11",
+   "consensus": 1.9474,
+   "neutral": 1.9361,
+   "sixty_forty": 1.9449,
+   "stocks": 2.1498
+  },
+  {
+   "date": "2014-12",
+   "consensus": 1.9453,
+   "neutral": 1.93,
+   "sixty_forty": 1.9431,
+   "stocks": 2.1444
+  },
+  {
+   "date": "2015-01",
+   "consensus": 1.9241,
+   "neutral": 1.909,
+   "sixty_forty": 1.9245,
+   "stocks": 2.0808
+  },
+  {
+   "date": "2015-02",
+   "consensus": 1.9952,
+   "neutral": 1.9676,
+   "sixty_forty": 1.9825,
+   "stocks": 2.1978
+  },
+  {
+   "date": "2015-03",
+   "consensus": 1.9708,
+   "neutral": 1.9472,
+   "sixty_forty": 1.9668,
+   "stocks": 2.1633
+  },
+  {
+   "date": "2015-04",
+   "consensus": 1.9826,
+   "neutral": 1.9602,
+   "sixty_forty": 1.9759,
+   "stocks": 2.1845
+  },
+  {
+   "date": "2015-05",
+   "consensus": 1.9948,
+   "neutral": 1.9715,
+   "sixty_forty": 1.9877,
+   "stocks": 2.2126
+  },
+  {
+   "date": "2015-06",
+   "consensus": 1.9631,
+   "neutral": 1.9411,
+   "sixty_forty": 1.9549,
+   "stocks": 2.1677
+  },
+  {
+   "date": "2015-07",
+   "consensus": 1.9853,
+   "neutral": 1.9631,
+   "sixty_forty": 1.9881,
+   "stocks": 2.2166
+  },
+  {
+   "date": "2015-08",
+   "consensus": 1.9124,
+   "neutral": 1.8911,
+   "sixty_forty": 1.9127,
+   "stocks": 2.0815
+  },
+  {
+   "date": "2015-09",
+   "consensus": 1.8853,
+   "neutral": 1.8642,
+   "sixty_forty": 1.8897,
+   "stocks": 2.0284
+  },
+  {
+   "date": "2015-10",
+   "consensus": 1.9831,
+   "neutral": 1.961,
+   "sixty_forty": 1.9866,
+   "stocks": 2.201
+  },
+  {
+   "date": "2015-11",
+   "consensus": 1.9785,
+   "neutral": 1.9564,
+   "sixty_forty": 1.9879,
+   "stocks": 2.209
+  },
+  {
+   "date": "2015-12",
+   "consensus": 1.9566,
+   "neutral": 1.9319,
+   "sixty_forty": 1.9658,
+   "stocks": 2.1708
+  },
+  {
+   "date": "2016-01",
+   "consensus": 1.9028,
+   "neutral": 1.882,
+   "sixty_forty": 1.9168,
+   "stocks": 2.0628
+  },
+  {
+   "date": "2016-02",
+   "consensus": 1.9053,
+   "neutral": 1.8911,
+   "sixty_forty": 1.9226,
+   "stocks": 2.061
+  },
+  {
+   "date": "2016-03",
+   "consensus": 1.9759,
+   "neutral": 1.974,
+   "sixty_forty": 2.007,
+   "stocks": 2.1997
+  },
+  {
+   "date": "2016-04",
+   "consensus": 1.9955,
+   "neutral": 1.9875,
+   "sixty_forty": 2.0138,
+   "stocks": 2.2084
+  },
+  {
+   "date": "2016-05",
+   "consensus": 2.0106,
+   "neutral": 2.0053,
+   "sixty_forty": 2.0344,
+   "stocks": 2.2459
+  },
+  {
+   "date": "2016-06",
+   "consensus": 2.0341,
+   "neutral": 2.0278,
+   "sixty_forty": 2.0544,
+   "stocks": 2.2537
+  },
+  {
+   "date": "2016-07",
+   "consensus": 2.0762,
+   "neutral": 2.073,
+   "sixty_forty": 2.1038,
+   "stocks": 2.3359
+  },
+  {
+   "date": "2016-08",
+   "consensus": 2.0739,
+   "neutral": 2.0719,
+   "sixty_forty": 2.1035,
+   "stocks": 2.3387
+  },
+  {
+   "date": "2016-09",
+   "consensus": 2.0795,
+   "neutral": 2.0749,
+   "sixty_forty": 2.104,
+   "stocks": 2.3389
+  },
+  {
+   "date": "2016-10",
+   "consensus": 2.0501,
+   "neutral": 2.0466,
+   "sixty_forty": 2.0753,
+   "stocks": 2.2983
+  },
+  {
+   "date": "2016-11",
+   "consensus": 2.0749,
+   "neutral": 2.0726,
+   "sixty_forty": 2.0999,
+   "stocks": 2.383
+  },
+  {
+   "date": "2016-12",
+   "consensus": 2.1038,
+   "neutral": 2.1006,
+   "sixty_forty": 2.1275,
+   "stocks": 2.4313
+  },
+  {
+   "date": "2017-01",
+   "consensus": 2.1321,
+   "neutral": 2.1271,
+   "sixty_forty": 2.1522,
+   "stocks": 2.4748
+  },
+  {
+   "date": "2017-02",
+   "consensus": 2.1877,
+   "neutral": 2.183,
+   "sixty_forty": 2.2085,
+   "stocks": 2.572
+  },
+  {
+   "date": "2017-03",
+   "consensus": 2.1853,
+   "neutral": 2.1823,
+   "sixty_forty": 2.2097,
+   "stocks": 2.5752
+  },
+  {
+   "date": "2017-04",
+   "consensus": 2.2011,
+   "neutral": 2.2008,
+   "sixty_forty": 2.2308,
+   "stocks": 2.6008
+  },
+  {
+   "date": "2017-05",
+   "consensus": 2.2251,
+   "neutral": 2.2232,
+   "sixty_forty": 2.2559,
+   "stocks": 2.6375
+  },
+  {
+   "date": "2017-06",
+   "consensus": 2.2327,
+   "neutral": 2.23,
+   "sixty_forty": 2.2643,
+   "stocks": 2.6543
+  },
+  {
+   "date": "2017-07",
+   "consensus": 2.2695,
+   "neutral": 2.2633,
+   "sixty_forty": 2.2953,
+   "stocks": 2.7089
+  },
+  {
+   "date": "2017-08",
+   "consensus": 2.2798,
+   "neutral": 2.2764,
+   "sixty_forty": 2.3079,
+   "stocks": 2.7168
+  },
+  {
+   "date": "2017-09",
+   "consensus": 2.3102,
+   "neutral": 2.2993,
+   "sixty_forty": 2.3306,
+   "stocks": 2.7715
+  },
+  {
+   "date": "2017-10",
+   "consensus": 2.3435,
+   "neutral": 2.3345,
+   "sixty_forty": 2.3644,
+   "stocks": 2.8368
+  },
+  {
+   "date": "2017-11",
+   "consensus": 2.3862,
+   "neutral": 2.3771,
+   "sixty_forty": 2.4064,
+   "stocks": 2.9235
+  },
+  {
+   "date": "2017-12",
+   "consensus": 2.4087,
+   "neutral": 2.4008,
+   "sixty_forty": 2.4285,
+   "stocks": 2.959
+  },
+  {
+   "date": "2018-01",
+   "consensus": 2.4969,
+   "neutral": 2.4777,
+   "sixty_forty": 2.4996,
+   "stocks": 3.1258
+  },
+  {
+   "date": "2018-02",
+   "consensus": 2.4286,
+   "neutral": 2.4132,
+   "sixty_forty": 2.435,
+   "stocks": 3.0121
+  },
+  {
+   "date": "2018-03",
+   "consensus": 2.395,
+   "neutral": 2.3803,
+   "sixty_forty": 2.4015,
+   "stocks": 2.9296
+  },
+  {
+   "date": "2018-04",
+   "consensus": 2.4025,
+   "neutral": 2.3826,
+   "sixty_forty": 2.3999,
+   "stocks": 2.9447
+  },
+  {
+   "date": "2018-05",
+   "consensus": 2.4423,
+   "neutral": 2.4232,
+   "sixty_forty": 2.4413,
+   "stocks": 3.0163
+  },
+  {
+   "date": "2018-06",
+   "consensus": 2.4449,
+   "neutral": 2.4291,
+   "sixty_forty": 2.4507,
+   "stocks": 3.0336
+  },
+  {
+   "date": "2018-07",
+   "consensus": 2.494,
+   "neutral": 2.4802,
+   "sixty_forty": 2.5049,
+   "stocks": 3.146
+  },
+  {
+   "date": "2018-08",
+   "consensus": 2.5428,
+   "neutral": 2.5313,
+   "sixty_forty": 2.5586,
+   "stocks": 3.2464
+  },
+  {
+   "date": "2018-09",
+   "consensus": 2.5536,
+   "neutral": 2.5376,
+   "sixty_forty": 2.5613,
+   "stocks": 3.2657
+  },
+  {
+   "date": "2018-10",
+   "consensus": 2.4415,
+   "neutral": 2.4255,
+   "sixty_forty": 2.4485,
+   "stocks": 3.0401
+  },
+  {
+   "date": "2018-11",
+   "consensus": 2.4668,
+   "neutral": 2.4526,
+   "sixty_forty": 2.4834,
+   "stocks": 3.0964
+  },
+  {
+   "date": "2018-12",
+   "consensus": 2.3471,
+   "neutral": 2.3384,
+   "sixty_forty": 2.3718,
+   "stocks": 2.8238
+  },
+  {
+   "date": "2019-01",
+   "consensus": 2.4752,
+   "neutral": 2.4632,
+   "sixty_forty": 2.4944,
+   "stocks": 3.0499
+  },
+  {
+   "date": "2019-02",
+   "consensus": 2.5183,
+   "neutral": 2.5119,
+   "sixty_forty": 2.5418,
+   "stocks": 3.1488
+  },
+  {
+   "date": "2019-03",
+   "consensus": 2.5555,
+   "neutral": 2.5542,
+   "sixty_forty": 2.591,
+   "stocks": 3.2058
+  },
+  {
+   "date": "2019-04",
+   "consensus": 2.6179,
+   "neutral": 2.6158,
+   "sixty_forty": 2.6524,
+   "stocks": 3.3367
+  },
+  {
+   "date": "2019-05",
+   "consensus": 2.5288,
+   "neutral": 2.5283,
+   "sixty_forty": 2.5712,
+   "stocks": 3.1239
+  },
+  {
+   "date": "2019-06",
+   "consensus": 2.6409,
+   "neutral": 2.65,
+   "sixty_forty": 2.6899,
+   "stocks": 3.3413
+  },
+  {
+   "date": "2019-07",
+   "consensus": 2.6654,
+   "neutral": 2.6749,
+   "sixty_forty": 2.7162,
+   "stocks": 3.3918
+  },
+  {
+   "date": "2019-08",
+   "consensus": 2.6633,
+   "neutral": 2.6728,
+   "sixty_forty": 2.7192,
+   "stocks": 3.335
+  },
+  {
+   "date": "2019-09",
+   "consensus": 2.6882,
+   "neutral": 2.698,
+   "sixty_forty": 2.7443,
+   "stocks": 3.3999
+  },
+  {
+   "date": "2019-10",
+   "consensus": 2.7314,
+   "neutral": 2.7387,
+   "sixty_forty": 2.7829,
+   "stocks": 3.4751
+  },
+  {
+   "date": "2019-11",
+   "consensus": 2.786,
+   "neutral": 2.7959,
+   "sixty_forty": 2.843,
+   "stocks": 3.6009
+  },
+  {
+   "date": "2019-12",
+   "consensus": 2.834,
+   "neutral": 2.851,
+   "sixty_forty": 2.892,
+   "stocks": 3.7055
+  },
+  {
+   "date": "2020-01",
+   "consensus": 2.8542,
+   "neutral": 2.865,
+   "sixty_forty": 2.9148,
+   "stocks": 3.704
+  },
+  {
+   "date": "2020-02",
+   "consensus": 2.735,
+   "neutral": 2.7375,
+   "sixty_forty": 2.7948,
+   "stocks": 3.4108
+  },
+  {
+   "date": "2020-03",
+   "consensus": 2.5136,
+   "neutral": 2.5162,
+   "sixty_forty": 2.5795,
+   "stocks": 2.9849
+  },
+  {
+   "date": "2020-04",
+   "consensus": 2.7212,
+   "neutral": 2.7235,
+   "sixty_forty": 2.7938,
+   "stocks": 3.3639
+  },
+  {
+   "date": "2020-05",
+   "consensus": 2.7938,
+   "neutral": 2.8141,
+   "sixty_forty": 2.8812,
+   "stocks": 3.5242
+  },
+  {
+   "date": "2020-06",
+   "consensus": 2.8269,
+   "neutral": 2.8548,
+   "sixty_forty": 2.9194,
+   "stocks": 3.5867
+  },
+  {
+   "date": "2020-07",
+   "consensus": 2.9271,
+   "neutral": 2.9784,
+   "sixty_forty": 3.0382,
+   "stocks": 3.7979
+  },
+  {
+   "date": "2020-08",
+   "consensus": 3.0184,
+   "neutral": 3.099,
+   "sixty_forty": 3.1554,
+   "stocks": 4.063
+  },
+  {
+   "date": "2020-09",
+   "consensus": 2.9435,
+   "neutral": 3.0225,
+   "sixty_forty": 3.0833,
+   "stocks": 3.9109
+  },
+  {
+   "date": "2020-10",
+   "consensus": 2.8918,
+   "neutral": 2.9695,
+   "sixty_forty": 3.0303,
+   "stocks": 3.8133
+  },
+  {
+   "date": "2020-11",
+   "consensus": 3.0945,
+   "neutral": 3.1776,
+   "sixty_forty": 3.2427,
+   "stocks": 4.2281
+  },
+  {
+   "date": "2020-12",
+   "consensus": 3.1831,
+   "neutral": 3.259,
+   "sixty_forty": 3.3159,
+   "stocks": 4.3848
+  },
+  {
+   "date": "2021-01",
+   "consensus": 3.1576,
+   "neutral": 3.2319,
+   "sixty_forty": 3.2857,
+   "stocks": 4.3401
+  },
+  {
+   "date": "2021-02",
+   "consensus": 3.204,
+   "neutral": 3.2742,
+   "sixty_forty": 3.3206,
+   "stocks": 4.4608
+  },
+  {
+   "date": "2021-03",
+   "consensus": 3.2787,
+   "neutral": 3.3506,
+   "sixty_forty": 3.3958,
+   "stocks": 4.6633
+  },
+  {
+   "date": "2021-04",
+   "consensus": 3.4078,
+   "neutral": 3.4739,
+   "sixty_forty": 3.5135,
+   "stocks": 4.91
+  },
+  {
+   "date": "2021-05",
+   "consensus": 3.4426,
+   "neutral": 3.4998,
+   "sixty_forty": 3.5303,
+   "stocks": 4.9423
+  },
+  {
+   "date": "2021-06",
+   "consensus": 3.4901,
+   "neutral": 3.5523,
+   "sixty_forty": 3.5894,
+   "stocks": 5.0531
+  },
+  {
+   "date": "2021-07",
+   "consensus": 3.5627,
+   "neutral": 3.6197,
+   "sixty_forty": 3.6581,
+   "stocks": 5.1765
+  },
+  {
+   "date": "2021-08",
+   "consensus": 3.6326,
+   "neutral": 3.6806,
+   "sixty_forty": 3.7204,
+   "stocks": 5.3305
+  },
+  {
+   "date": "2021-09",
+   "consensus": 3.5121,
+   "neutral": 3.5694,
+   "sixty_forty": 3.6028,
+   "stocks": 5.0821
+  },
+  {
+   "date": "2021-10",
+   "consensus": 3.6973,
+   "neutral": 3.7261,
+   "sixty_forty": 3.7543,
+   "stocks": 5.4387
+  },
+  {
+   "date": "2021-11",
+   "consensus": 3.6607,
+   "neutral": 3.7023,
+   "sixty_forty": 3.7403,
+   "stocks": 5.395
+  },
+  {
+   "date": "2021-12",
+   "consensus": 3.7953,
+   "neutral": 3.8103,
+   "sixty_forty": 3.8387,
+   "stocks": 5.6445
+  },
+  {
+   "date": "2022-01",
+   "consensus": 3.6541,
+   "neutral": 3.6728,
+   "sixty_forty": 3.6865,
+   "stocks": 5.3468
+  },
+  {
+   "date": "2022-02",
+   "consensus": 3.5945,
+   "neutral": 3.6067,
+   "sixty_forty": 3.6043,
+   "stocks": 5.189
+  },
+  {
+   "date": "2022-03",
+   "consensus": 3.6677,
+   "neutral": 3.6671,
+   "sixty_forty": 3.6451,
+   "stocks": 5.384
+  },
+  {
+   "date": "2022-04",
+   "consensus": 3.46,
+   "neutral": 3.4355,
+   "sixty_forty": 3.3976,
+   "stocks": 4.9115
+  },
+  {
+   "date": "2022-05",
+   "consensus": 3.4713,
+   "neutral": 3.4492,
+   "sixty_forty": 3.4126,
+   "stocks": 4.9226
+  },
+  {
+   "date": "2022-06",
+   "consensus": 3.3019,
+   "neutral": 3.2548,
+   "sixty_forty": 3.2225,
+   "stocks": 4.5166
+  },
+  {
+   "date": "2022-07",
+   "consensus": 3.4639,
+   "neutral": 3.4559,
+   "sixty_forty": 3.4333,
+   "stocks": 4.9326
+  },
+  {
+   "date": "2022-08",
+   "consensus": 3.3658,
+   "neutral": 3.3363,
+   "sixty_forty": 3.3075,
+   "stocks": 4.7313
+  },
+  {
+   "date": "2022-09",
+   "consensus": 3.177,
+   "neutral": 3.1018,
+   "sixty_forty": 3.0692,
+   "stocks": 4.2939
+  },
+  {
+   "date": "2022-10",
+   "consensus": 3.298,
+   "neutral": 3.2442,
+   "sixty_forty": 3.2032,
+   "stocks": 4.6429
+  },
+  {
+   "date": "2022-11",
+   "consensus": 3.429,
+   "neutral": 3.3981,
+   "sixty_forty": 3.3588,
+   "stocks": 4.901
+  },
+  {
+   "date": "2022-12",
+   "consensus": 3.3262,
+   "neutral": 3.2725,
+   "sixty_forty": 3.231,
+   "stocks": 4.6186
+  },
+  {
+   "date": "2023-01",
+   "consensus": 3.4663,
+   "neutral": 3.4347,
+   "sixty_forty": 3.3959,
+   "stocks": 4.909
+  },
+  {
+   "date": "2023-02",
+   "consensus": 3.4026,
+   "neutral": 3.3476,
+   "sixty_forty": 3.3085,
+   "stocks": 4.7856
+  },
+  {
+   "date": "2023-03",
+   "consensus": 3.4987,
+   "neutral": 3.4559,
+   "sixty_forty": 3.417,
+   "stocks": 4.963
+  },
+  {
+   "date": "2023-04",
+   "consensus": 3.5381,
+   "neutral": 3.4957,
+   "sixty_forty": 3.4577,
+   "stocks": 5.0423
+  },
+  {
+   "date": "2023-05",
+   "consensus": 3.5369,
+   "neutral": 3.4874,
+   "sixty_forty": 3.4514,
+   "stocks": 5.0656
+  },
+  {
+   "date": "2023-06",
+   "consensus": 3.6747,
+   "neutral": 3.6205,
+   "sixty_forty": 3.5805,
+   "stocks": 5.3939
+  },
+  {
+   "date": "2023-07",
+   "consensus": 3.7501,
+   "neutral": 3.7023,
+   "sixty_forty": 3.6506,
+   "stocks": 5.5704
+  },
+  {
+   "date": "2023-08",
+   "consensus": 3.7122,
+   "neutral": 3.6585,
+   "sixty_forty": 3.6058,
+   "stocks": 5.4799
+  },
+  {
+   "date": "2023-09",
+   "consensus": 3.5901,
+   "neutral": 3.5238,
+   "sixty_forty": 3.4658,
+   "stocks": 5.2199
+  },
+  {
+   "date": "2023-10",
+   "consensus": 3.5418,
+   "neutral": 3.467,
+   "sixty_forty": 3.3989,
+   "stocks": 5.1066
+  },
+  {
+   "date": "2023-11",
+   "consensus": 3.7666,
+   "neutral": 3.7057,
+   "sixty_forty": 3.6476,
+   "stocks": 5.5731
+  },
+  {
+   "date": "2023-12",
+   "consensus": 3.9009,
+   "neutral": 3.8473,
+   "sixty_forty": 3.8015,
+   "stocks": 5.8275
+  },
+  {
+   "date": "2024-01",
+   "consensus": 3.9401,
+   "neutral": 3.8831,
+   "sixty_forty": 3.8355,
+   "stocks": 5.9203
+  },
+  {
+   "date": "2024-02",
+   "consensus": 4.0441,
+   "neutral": 3.9873,
+   "sixty_forty": 3.933,
+   "stocks": 6.2293
+  },
+  {
+   "date": "2024-03",
+   "consensus": 4.1369,
+   "neutral": 4.0904,
+   "sixty_forty": 4.0244,
+   "stocks": 6.433
+  },
+  {
+   "date": "2024-04",
+   "consensus": 4.0031,
+   "neutral": 3.9666,
+   "sixty_forty": 3.8871,
+   "stocks": 6.1736
+  },
+  {
+   "date": "2024-05",
+   "consensus": 4.1484,
+   "neutral": 4.1091,
+   "sixty_forty": 4.031,
+   "stocks": 6.4859
+  },
+  {
+   "date": "2024-06",
+   "consensus": 4.2477,
+   "neutral": 4.2076,
+   "sixty_forty": 4.1307,
+   "stocks": 6.7147
+  },
+  {
+   "date": "2024-07",
+   "consensus": 4.3131,
+   "neutral": 4.2724,
+   "sixty_forty": 4.2006,
+   "stocks": 6.796
+  },
+  {
+   "date": "2024-08",
+   "consensus": 4.3934,
+   "neutral": 4.352,
+   "sixty_forty": 4.2841,
+   "stocks": 6.9548
+  },
+  {
+   "date": "2024-09",
+   "consensus": 4.4697,
+   "neutral": 4.4315,
+   "sixty_forty": 4.3609,
+   "stocks": 7.1009
+  },
+  {
+   "date": "2024-10",
+   "consensus": 4.4058,
+   "neutral": 4.3816,
+   "sixty_forty": 4.2936,
+   "stocks": 7.0375
+  },
+  {
+   "date": "2024-11",
+   "consensus": 4.5818,
+   "neutral": 4.5482,
+   "sixty_forty": 4.4663,
+   "stocks": 7.4572
+  },
+  {
+   "date": "2024-12",
+   "consensus": 4.4884,
+   "neutral": 4.4607,
+   "sixty_forty": 4.3716,
+   "stocks": 7.2778
+  },
+  {
+   "date": "2025-01",
+   "consensus": 4.5885,
+   "neutral": 4.5509,
+   "sixty_forty": 4.4511,
+   "stocks": 7.4733
+  },
+  {
+   "date": "2025-02",
+   "consensus": 4.5862,
+   "neutral": 4.5498,
+   "sixty_forty": 4.457,
+   "stocks": 7.3784
+  },
+  {
+   "date": "2025-03",
+   "consensus": 4.46,
+   "neutral": 4.4115,
+   "sixty_forty": 4.3075,
+   "stocks": 6.9673
+  },
+  {
+   "date": "2025-04",
+   "consensus": 4.4396,
+   "neutral": 4.3916,
+   "sixty_forty": 4.2925,
+   "stocks": 6.9069
+  },
+  {
+   "date": "2025-05",
+   "consensus": 4.6009,
+   "neutral": 4.5516,
+   "sixty_forty": 4.444,
+   "stocks": 7.3409
+  },
+  {
+   "date": "2025-06",
+   "consensus": 4.7698,
+   "neutral": 4.7181,
+   "sixty_forty": 4.6069,
+   "stocks": 7.7181
+  },
+  {
+   "date": "2025-07",
+   "consensus": 4.8322,
+   "neutral": 4.7832,
+   "sixty_forty": 4.6657,
+   "stocks": 7.8959
+  },
+  {
+   "date": "2025-08",
+   "consensus": 4.9124,
+   "neutral": 4.8647,
+   "sixty_forty": 4.7453,
+   "stocks": 8.0579
+  },
+  {
+   "date": "2025-09",
+   "consensus": 5.0644,
+   "neutral": 5.0021,
+   "sixty_forty": 4.8681,
+   "stocks": 8.3449
+  },
+  {
+   "date": "2025-10",
+   "consensus": 5.1586,
+   "neutral": 5.0901,
+   "sixty_forty": 4.9497,
+   "stocks": 8.5439
+  },
+  {
+   "date": "2025-11",
+   "consensus": 5.1895,
+   "neutral": 5.114,
+   "sixty_forty": 4.9675,
+   "stocks": 8.5605
+  },
+  {
+   "date": "2025-12",
+   "consensus": 5.1948,
+   "neutral": 5.1161,
+   "sixty_forty": 4.9644,
+   "stocks": 8.5674
+  },
+  {
+   "date": "2026-01",
+   "consensus": 5.2455,
+   "neutral": 5.1935,
+   "sixty_forty": 5.0132,
+   "stocks": 8.6936
+  },
+  {
+   "date": "2026-02",
+   "consensus": 5.271,
+   "neutral": 5.2071,
+   "sixty_forty": 5.0193,
+   "stocks": 8.6185
+  },
+  {
+   "date": "2026-03",
+   "consensus": 5.1011,
+   "neutral": 5.0312,
+   "sixty_forty": 4.8345,
+   "stocks": 8.1929
+  },
+  {
+   "date": "2026-04",
+   "consensus": 5.4404,
+   "neutral": 5.359,
+   "sixty_forty": 5.1425,
+   "stocks": 9.0536
+  },
+  {
+   "date": "2026-05",
+   "consensus": 5.5986,
+   "neutral": 5.5248,
+   "sixty_forty": 5.311,
+   "stocks": 9.53
+  },
+  {
+   "date": "2026-06",
+   "consensus": 5.505,
+   "neutral": 5.4663,
+   "sixty_forty": 5.2836,
+   "stocks": 9.432
+  },
+  {
+   "date": "2026-07",
+   "consensus": 5.523,
+   "neutral": 5.4626,
+   "sixty_forty": 5.2573,
+   "stocks": 9.4352
+  },
+  {
+   "date": "2026-08",
+   "consensus": 5.6626,
+   "neutral": 5.5798,
+   "sixty_forty": 5.35,
+   "stocks": 9.6881
+  },
+  {
+   "date": "2026-09",
+   "consensus": 5.6039,
+   "neutral": 5.5211,
+   "sixty_forty": 5.2836,
+   "stocks": 9.6562
+  },
+  {
+   "date": "2026-10",
+   "consensus": 5.5876,
+   "neutral": 5.5263,
+   "sixty_forty": 5.3032,
+   "stocks": 9.5687
+  }
+ ],
+ "frameworks": [
+  {
+   "id": "quadrant",
+   "name": "Growth and inflation quadrants",
+   "family": "macro",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0684,
+    "volatility": 0.1093,
+    "max_drawdown": -0.2059,
+    "worst_12m": -0.2052,
+    "sharpe": 0.4968,
+    "horizons": {
+     "3m": 0.0177,
+     "6m": 0.0347,
+     "1y": 0.0687,
+     "3y": 0.0625,
+     "5y": 0.0604,
+     "10y": 0.0698
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.4657,
+    "mixed": 0.2419,
+    "cash": 0.2924
+   },
+   "switches_per_year": 4.6354,
+   "forward": {
+    "1": {
+     "months": 195,
+     "3m": 0.0364,
+     "6m": 0.0693,
+     "1y": 0.1333
+    },
+    "0": {
+     "months": 108,
+     "3m": 0.0247,
+     "6m": 0.0376,
+     "1y": 0.087
+    },
+    "-1": {
+     "months": 120,
+     "3m": 0.0268,
+     "6m": 0.0692,
+     "1y": 0.1375
+    }
+   }
+  },
+  {
+   "id": "investment_clock",
+   "name": "Investment Clock",
+   "family": "macro",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0825,
+    "volatility": 0.0918,
+    "max_drawdown": -0.1713,
+    "worst_12m": -0.1553,
+    "sharpe": 0.7163,
+    "horizons": {
+     "3m": 0.0207,
+     "6m": 0.041,
+     "1y": 0.0821,
+     "3y": 0.0751,
+     "5y": 0.0735,
+     "10y": 0.0758
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.1408,
+    "mixed": 0.6606,
+    "cash": 0.1986
+   },
+   "switches_per_year": 2.7726,
+   "forward": {
+    "1": {
+     "months": 96,
+     "3m": 0.0493,
+     "6m": 0.0829,
+     "1y": 0.1194
+    },
+    "0": {
+     "months": 244,
+     "3m": 0.0289,
+     "6m": 0.0646,
+     "1y": 0.1269
+    },
+    "-1": {
+     "months": 83,
+     "3m": 0.0237,
+     "6m": 0.0381,
+     "1y": 0.1165
+    }
+   }
+  },
+  {
+   "id": "business_cycle",
+   "name": "Business cycle phase",
+   "family": "macro",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0897,
+    "volatility": 0.1039,
+    "max_drawdown": -0.216,
+    "worst_12m": -0.1747,
+    "sharpe": 0.7084,
+    "horizons": {
+     "3m": 0.0226,
+     "6m": 0.0448,
+     "1y": 0.0895,
+     "3y": 0.0845,
+     "5y": 0.083,
+     "10y": 0.0935
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.4946,
+    "mixed": 0.3538,
+    "cash": 0.1516
+   },
+   "switches_per_year": 0.5199,
+   "forward": {
+    "1": {
+     "months": 198,
+     "3m": 0.0313,
+     "6m": 0.059,
+     "1y": 0.0997
+    },
+    "0": {
+     "months": 148,
+     "3m": 0.0309,
+     "6m": 0.0638,
+     "1y": 0.1276
+    },
+    "-1": {
+     "months": 72,
+     "3m": 0.0283,
+     "6m": 0.0666,
+     "1y": 0.1916
+    }
+   }
+  },
+  {
+   "id": "yield_curve",
+   "name": "Yield curve recession model",
+   "family": "recession",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0896,
+    "volatility": 0.1316,
+    "max_drawdown": -0.5078,
+    "worst_12m": -0.4342,
+    "sharpe": 0.5835,
+    "horizons": {
+     "3m": 0.0237,
+     "6m": 0.0479,
+     "1y": 0.0969,
+     "3y": 0.087,
+     "5y": 0.089,
+     "10y": 0.1035
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.722,
+    "mixed": 0.1877,
+    "cash": 0.0903
+   },
+   "switches_per_year": 0.6065,
+   "forward": {
+    "1": {
+     "months": 335,
+     "3m": 0.0276,
+     "6m": 0.0554,
+     "1y": 0.112
+    },
+    "0": {
+     "months": 78,
+     "3m": 0.03,
+     "6m": 0.0648,
+     "1y": 0.1269
+    },
+    "-1": {
+     "months": 29,
+     "3m": 0.0583,
+     "6m": 0.108,
+     "1y": 0.2118
+    }
+   }
+  },
+  {
+   "id": "sahm",
+   "name": "Sahm rule",
+   "family": "recession",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.1004,
+    "volatility": 0.1182,
+    "max_drawdown": -0.2393,
+    "worst_12m": -0.1818,
+    "sharpe": 0.719,
+    "horizons": {
+     "3m": 0.0256,
+     "6m": 0.0511,
+     "1y": 0.1032,
+     "3y": 0.0962,
+     "5y": 0.0918,
+     "10y": 0.1017
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.7726,
+    "mixed": 0.0794,
+    "cash": 0.148
+   },
+   "switches_per_year": 0.6931,
+   "forward": {
+    "1": {
+     "months": 326,
+     "3m": 0.0301,
+     "6m": 0.0599,
+     "1y": 0.116
+    },
+    "0": {
+     "months": 32,
+     "3m": 0.0442,
+     "6m": 0.0735,
+     "1y": 0.0843
+    },
+    "-1": {
+     "months": 83,
+     "3m": 0.0259,
+     "6m": 0.065,
+     "1y": 0.1851
+    }
+   }
+  },
+  {
+   "id": "cfnai_ma3",
+   "name": "Leading activity (CFNAI)",
+   "family": "recession",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0964,
+    "volatility": 0.1063,
+    "max_drawdown": -0.2191,
+    "worst_12m": -0.1896,
+    "sharpe": 0.7518,
+    "horizons": {
+     "3m": 0.0241,
+     "6m": 0.0479,
+     "1y": 0.096,
+     "3y": 0.0897,
+     "5y": 0.0879,
+     "10y": 0.0936
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.4296,
+    "mixed": 0.5018,
+    "cash": 0.0686
+   },
+   "switches_per_year": 1.7762,
+   "forward": {
+    "1": {
+     "months": 212,
+     "3m": 0.0298,
+     "6m": 0.0594,
+     "1y": 0.0994
+    },
+    "0": {
+     "months": 200,
+     "3m": 0.0356,
+     "6m": 0.0673,
+     "1y": 0.1357
+    },
+    "-1": {
+     "months": 27,
+     "3m": -0.0007,
+     "6m": 0.0351,
+     "1y": 0.1813
+    }
+   }
+  },
+  {
+   "id": "claims",
+   "name": "Jobless claims trend",
+   "family": "recession",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0993,
+    "volatility": 0.1218,
+    "max_drawdown": -0.2588,
+    "worst_12m": -0.1944,
+    "sharpe": 0.6934,
+    "horizons": {
+     "3m": 0.0254,
+     "6m": 0.0504,
+     "1y": 0.1016,
+     "3y": 0.0937,
+     "5y": 0.0881,
+     "10y": 0.0974
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.8664,
+    "mixed": 0.0325,
+    "cash": 0.1011
+   },
+   "switches_per_year": 0.6931,
+   "forward": {
+    "1": {
+     "months": 363,
+     "3m": 0.031,
+     "6m": 0.0607,
+     "1y": 0.1161
+    },
+    "0": {
+     "months": 22,
+     "3m": null,
+     "6m": null,
+     "1y": null
+    },
+    "-1": {
+     "months": 45,
+     "3m": 0.033,
+     "6m": 0.0842,
+     "1y": 0.2161
+    }
+   }
+  },
+  {
+   "id": "fed_direction",
+   "name": "Don't fight the Fed",
+   "family": "policy",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0587,
+    "volatility": 0.1039,
+    "max_drawdown": -0.5078,
+    "worst_12m": -0.4342,
+    "sharpe": 0.4297,
+    "horizons": {
+     "3m": 0.0159,
+     "6m": 0.0317,
+     "1y": 0.0628,
+     "3y": 0.0542,
+     "5y": 0.0518,
+     "10y": 0.0577
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.1913,
+    "mixed": 0.4874,
+    "cash": 0.3213
+   },
+   "switches_per_year": 0.8231,
+   "forward": {
+    "1": {
+     "months": 118,
+     "3m": 0.0134,
+     "6m": 0.0357,
+     "1y": 0.1176
+    },
+    "0": {
+     "months": 191,
+     "3m": 0.037,
+     "6m": 0.0694,
+     "1y": 0.1133
+    },
+    "-1": {
+     "months": 127,
+     "3m": 0.0321,
+     "6m": 0.0667,
+     "1y": 0.1434
+    }
+   }
+  },
+  {
+   "id": "taylor_gap",
+   "name": "Taylor rule gap",
+   "family": "policy",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0535,
+    "volatility": 0.0993,
+    "max_drawdown": -0.3653,
+    "worst_12m": -0.3504,
+    "sharpe": 0.3951,
+    "horizons": {
+     "3m": 0.0142,
+     "6m": 0.0281,
+     "1y": 0.0577,
+     "3y": 0.0501,
+     "5y": 0.0445,
+     "10y": 0.0578
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.2238,
+    "mixed": 0.5704,
+    "cash": 0.2058
+   },
+   "switches_per_year": 1.4296,
+   "forward": {
+    "1": {
+     "months": 63,
+     "3m": 0.0217,
+     "6m": 0.0478,
+     "1y": 0.1325
+    },
+    "0": {
+     "months": 211,
+     "3m": 0.0283,
+     "6m": 0.0591,
+     "1y": 0.1156
+    },
+    "-1": {
+     "months": 155,
+     "3m": 0.0475,
+     "6m": 0.0847,
+     "1y": 0.1367
+    }
+   }
+  },
+  {
+   "id": "fin_conditions",
+   "name": "Financial conditions",
+   "family": "policy",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.119,
+    "volatility": 0.1117,
+    "max_drawdown": -0.235,
+    "worst_12m": -0.1772,
+    "sharpe": 0.905,
+    "horizons": {
+     "3m": 0.0297,
+     "6m": 0.0594,
+     "1y": 0.1211,
+     "3y": 0.1149,
+     "5y": 0.1114,
+     "10y": 0.1157
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.7726,
+    "mixed": 0.1227,
+    "cash": 0.1047
+   },
+   "switches_per_year": 1.5596,
+   "forward": {
+    "1": {
+     "months": 336,
+     "3m": 0.0359,
+     "6m": 0.0707,
+     "1y": 0.1396
+    },
+    "0": {
+     "months": 65,
+     "3m": 0.0302,
+     "6m": 0.0634,
+     "1y": 0.1263
+    },
+    "-1": {
+     "months": 38,
+     "3m": -0.0081,
+     "6m": -0.0064,
+     "1y": 0.0054
+    }
+   }
+  },
+  {
+   "id": "buffett",
+   "name": "Buffett indicator",
+   "family": "valuation",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.049,
+    "volatility": 0.0652,
+    "max_drawdown": -0.2969,
+    "worst_12m": -0.2724,
+    "sharpe": 0.4914,
+    "horizons": {
+     "3m": 0.0125,
+     "6m": 0.0251,
+     "1y": 0.0505,
+     "3y": 0.0472,
+     "5y": 0.0451,
+     "10y": 0.0436
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.0433,
+    "mixed": 0.3466,
+    "cash": 0.6101
+   },
+   "switches_per_year": 0.3899,
+   "forward": {
+    "1": {
+     "months": 12,
+     "3m": 0.0953,
+     "6m": 0.1599,
+     "1y": 0.1631
+    },
+    "0": {
+     "months": 123,
+     "3m": 0.021,
+     "6m": 0.0503,
+     "1y": 0.135
+    },
+    "-1": {
+     "months": 185,
+     "3m": 0.0321,
+     "6m": 0.0619,
+     "1y": 0.1134
+    }
+   }
+  },
+  {
+   "id": "trend_10m",
+   "name": "10-month trend rule",
+   "family": "trend",
+   "stats": {
+    "start": "2003-11",
+    "end": "2026-10",
+    "months": 276,
+    "cagr": 0.0869,
+    "volatility": 0.103,
+    "max_drawdown": -0.2214,
+    "worst_12m": -0.2026,
+    "sharpe": 0.6884,
+    "horizons": {
+     "3m": 0.0225,
+     "6m": 0.045,
+     "1y": 0.093,
+     "3y": 0.0862,
+     "5y": 0.0841,
+     "10y": 0.0861
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1095,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0289,
+      "6m": 0.0587,
+      "1y": 0.1202,
+      "3y": 0.1085,
+      "5y": 0.1042,
+      "10y": 0.1144
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0798,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0203,
+      "6m": 0.0411,
+      "1y": 0.084,
+      "3y": 0.0786,
+      "5y": 0.0763,
+      "10y": 0.0827
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.8188,
+    "mixed": 0.0,
+    "cash": 0.1812
+   },
+   "switches_per_year": 1.4783,
+   "forward": {
+    "1": {
+     "months": 227,
+     "3m": 0.0283,
+     "6m": 0.0586,
+     "1y": 0.12
+    },
+    "0": {
+     "months": 0,
+     "3m": null,
+     "6m": null,
+     "1y": null
+    },
+    "-1": {
+     "months": 50,
+     "3m": 0.0316,
+     "6m": 0.059,
+     "1y": 0.121
+    }
+   }
+  },
+  {
+   "id": "golden_cross",
+   "name": "Golden cross / death cross",
+   "family": "trend",
+   "stats": {
+    "start": "2003-11",
+    "end": "2026-10",
+    "months": 276,
+    "cagr": 0.0956,
+    "volatility": 0.1068,
+    "max_drawdown": -0.2224,
+    "worst_12m": -0.1387,
+    "sharpe": 0.7425,
+    "horizons": {
+     "3m": 0.0245,
+     "6m": 0.0492,
+     "1y": 0.0999,
+     "3y": 0.095,
+     "5y": 0.0906,
+     "10y": 0.0888
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1095,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0289,
+      "6m": 0.0587,
+      "1y": 0.1202,
+      "3y": 0.1085,
+      "5y": 0.1042,
+      "10y": 0.1144
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0798,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0203,
+      "6m": 0.0411,
+      "1y": 0.084,
+      "3y": 0.0786,
+      "5y": 0.0763,
+      "10y": 0.0827
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.7935,
+    "mixed": 0.0,
+    "cash": 0.2065
+   },
+   "switches_per_year": 0.9565,
+   "forward": {
+    "1": {
+     "months": 220,
+     "3m": 0.0296,
+     "6m": 0.0593,
+     "1y": 0.1203
+    },
+    "0": {
+     "months": 0,
+     "3m": null,
+     "6m": null,
+     "1y": null
+    },
+    "-1": {
+     "months": 57,
+     "3m": 0.0261,
+     "6m": 0.0564,
+     "1y": 0.1201
+    }
+   }
+  },
+  {
+   "id": "abs_momentum",
+   "name": "Absolute momentum",
+   "family": "trend",
+   "stats": {
+    "start": "2004-02",
+    "end": "2026-10",
+    "months": 273,
+    "cagr": 0.0917,
+    "volatility": 0.1147,
+    "max_drawdown": -0.2626,
+    "worst_12m": -0.1969,
+    "sharpe": 0.6671,
+    "horizons": {
+     "3m": 0.0241,
+     "6m": 0.0489,
+     "1y": 0.0996,
+     "3y": 0.0893,
+     "5y": 0.0843,
+     "10y": 0.085
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1069,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0285,
+      "6m": 0.0587,
+      "1y": 0.1203,
+      "3y": 0.1085,
+      "5y": 0.1059,
+      "10y": 0.1152
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0781,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0201,
+      "6m": 0.0412,
+      "1y": 0.084,
+      "3y": 0.0786,
+      "5y": 0.0773,
+      "10y": 0.0831
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.8388,
+    "mixed": 0.0,
+    "cash": 0.1612
+   },
+   "switches_per_year": 0.7912,
+   "forward": {
+    "1": {
+     "months": 230,
+     "3m": 0.0294,
+     "6m": 0.0629,
+     "1y": 0.1199
+    },
+    "0": {
+     "months": 0,
+     "3m": null,
+     "6m": null,
+     "1y": null
+    },
+    "-1": {
+     "months": 44,
+     "3m": 0.0243,
+     "6m": 0.0378,
+     "1y": 0.1224
+    }
+   }
+  },
+  {
+   "id": "hy_spread",
+   "name": "High-yield spread regime",
+   "family": "credit_vol",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.1019,
+    "volatility": 0.1055,
+    "max_drawdown": -0.2175,
+    "worst_12m": -0.1763,
+    "sharpe": 0.805,
+    "horizons": {
+     "3m": 0.0256,
+     "6m": 0.051,
+     "1y": 0.103,
+     "3y": 0.096,
+     "5y": 0.0928,
+     "10y": 0.0974
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.6462,
+    "mixed": 0.2383,
+    "cash": 0.1155
+   },
+   "switches_per_year": 1.213,
+   "forward": {
+    "1": {
+     "months": 271,
+     "3m": 0.0291,
+     "6m": 0.0611,
+     "1y": 0.1112
+    },
+    "0": {
+     "months": 105,
+     "3m": 0.0484,
+     "6m": 0.0888,
+     "1y": 0.1992
+    },
+    "-1": {
+     "months": 66,
+     "3m": 0.0024,
+     "6m": 0.0087,
+     "1y": 0.0315
+    }
+   }
+  },
+  {
+   "id": "vix",
+   "name": "VIX level and term structure",
+   "family": "credit_vol",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0912,
+    "volatility": 0.1045,
+    "max_drawdown": -0.2008,
+    "worst_12m": -0.1967,
+    "sharpe": 0.7179,
+    "horizons": {
+     "3m": 0.0231,
+     "6m": 0.0459,
+     "1y": 0.0935,
+     "3y": 0.0871,
+     "5y": 0.0831,
+     "10y": 0.091
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.6715,
+    "mixed": 0.2563,
+    "cash": 0.0722
+   },
+   "switches_per_year": 2.1227,
+   "forward": {
+    "1": {
+     "months": 271,
+     "3m": 0.0261,
+     "6m": 0.0556,
+     "1y": 0.1118
+    },
+    "0": {
+     "months": 139,
+     "3m": 0.0319,
+     "6m": 0.0512,
+     "1y": 0.1011
+    },
+    "-1": {
+     "months": 32,
+     "3m": 0.0656,
+     "6m": 0.1498,
+     "1y": 0.2966
+    }
+   }
+  },
+  {
+   "id": "seasonality",
+   "name": "Seasonality and election cycle",
+   "family": "calendar",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0931,
+    "volatility": 0.1189,
+    "max_drawdown": -0.4426,
+    "worst_12m": -0.3592,
+    "sharpe": 0.6595,
+    "horizons": {
+     "3m": 0.024,
+     "6m": 0.048,
+     "1y": 0.0983,
+     "3y": 0.0917,
+     "5y": 0.0886,
+     "10y": 0.0942
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.5235,
+    "mixed": 0.3466,
+    "cash": 0.13
+   },
+   "switches_per_year": 1.7762,
+   "forward": {
+    "1": {
+     "months": 235,
+     "3m": 0.0323,
+     "6m": 0.0674,
+     "1y": 0.1264
+    },
+    "0": {
+     "months": 147,
+     "3m": 0.0295,
+     "6m": 0.0517,
+     "1y": 0.1188
+    },
+    "-1": {
+     "months": 60,
+     "3m": 0.0269,
+     "6m": 0.0657,
+     "1y": 0.1258
+    }
+   }
+  },
+  {
+   "id": "dual_momentum",
+   "name": "Dual momentum",
+   "family": "trend",
+   "stats": {
+    "start": "2009-05",
+    "end": "2026-10",
+    "months": 210,
+    "cagr": 0.1064,
+    "volatility": 0.1245,
+    "max_drawdown": -0.1951,
+    "worst_12m": -0.1374,
+    "sharpe": 0.7585,
+    "horizons": {
+     "3m": 0.0279,
+     "6m": 0.0569,
+     "1y": 0.1139,
+     "3y": 0.1014,
+     "5y": 0.0948,
+     "10y": 0.089
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1514,
+     "max_drawdown": -0.2393,
+     "horizons": {
+      "3m": 0.0377,
+      "6m": 0.0751,
+      "1y": 0.1508,
+      "3y": 0.142,
+      "5y": 0.1376,
+      "10y": 0.1362
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.1022,
+     "max_drawdown": -0.2005,
+     "horizons": {
+      "3m": 0.0253,
+      "6m": 0.0503,
+      "1y": 0.1007,
+      "3y": 0.0949,
+      "5y": 0.0916,
+      "10y": 0.0919
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.8714,
+    "mixed": 0.0,
+    "cash": 0.1286
+   },
+   "switches_per_year": 0.7429,
+   "forward": {
+    "1": {
+     "months": 184,
+     "3m": 0.0329,
+     "6m": 0.0695,
+     "1y": 0.1397
+    },
+    "0": {
+     "months": 0,
+     "3m": null,
+     "6m": null,
+     "1y": null
+    },
+    "-1": {
+     "months": 27,
+     "3m": 0.0703,
+     "6m": 0.1121,
+     "1y": 0.2214
+    }
+   }
+  },
+  {
+   "id": "breadth",
+   "name": "Market breadth",
+   "family": "trend",
+   "stats": {
+    "start": "2003-11",
+    "end": "2026-10",
+    "months": 276,
+    "cagr": 0.0881,
+    "volatility": 0.1034,
+    "max_drawdown": -0.2492,
+    "worst_12m": -0.2492,
+    "sharpe": 0.697,
+    "horizons": {
+     "3m": 0.0226,
+     "6m": 0.0454,
+     "1y": 0.0929,
+     "3y": 0.085,
+     "5y": 0.084,
+     "10y": 0.091
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1095,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0289,
+      "6m": 0.0587,
+      "1y": 0.1202,
+      "3y": 0.1085,
+      "5y": 0.1042,
+      "10y": 0.1144
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0798,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0203,
+      "6m": 0.0411,
+      "1y": 0.084,
+      "3y": 0.0786,
+      "5y": 0.0763,
+      "10y": 0.0827
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.7536,
+    "mixed": 0.1014,
+    "cash": 0.1449
+   },
+   "switches_per_year": 2.6522,
+   "forward": {
+    "1": {
+     "months": 209,
+     "3m": 0.0257,
+     "6m": 0.0543,
+     "1y": 0.1107
+    },
+    "0": {
+     "months": 28,
+     "3m": 0.0511,
+     "6m": 0.0768,
+     "1y": 0.1403
+    },
+    "-1": {
+     "months": 40,
+     "3m": 0.0302,
+     "6m": 0.0688,
+     "1y": 0.1548
+    }
+   }
+  },
+  {
+   "id": "dow_theory",
+   "name": "Dow Theory",
+   "family": "trend",
+   "stats": {
+    "start": "2004-11",
+    "end": "2026-10",
+    "months": 264,
+    "cagr": 0.0774,
+    "volatility": 0.1022,
+    "max_drawdown": -0.1687,
+    "worst_12m": -0.161,
+    "sharpe": 0.6032,
+    "horizons": {
+     "3m": 0.02,
+     "6m": 0.0406,
+     "1y": 0.0831,
+     "3y": 0.0772,
+     "5y": 0.0777,
+     "10y": 0.0815
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1103,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.029,
+      "6m": 0.0594,
+      "1y": 0.1215,
+      "3y": 0.1083,
+      "5y": 0.1116,
+      "10y": 0.1176
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0799,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0203,
+      "6m": 0.0415,
+      "1y": 0.0845,
+      "3y": 0.0784,
+      "5y": 0.0804,
+      "10y": 0.0841
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.6818,
+    "mixed": 0.1629,
+    "cash": 0.1553
+   },
+   "switches_per_year": 2.8182,
+   "forward": {
+    "1": {
+     "months": 181,
+     "3m": 0.029,
+     "6m": 0.0603,
+     "1y": 0.1283
+    },
+    "0": {
+     "months": 43,
+     "3m": 0.0047,
+     "6m": 0.0058,
+     "1y": 0.0243
+    },
+    "-1": {
+     "months": 41,
+     "3m": 0.054,
+     "6m": 0.1108,
+     "1y": 0.1904
+    }
+   }
+  },
+  {
+   "id": "cape",
+   "name": "Shiller CAPE and excess CAPE yield",
+   "family": "valuation",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0294,
+    "volatility": 0.0498,
+    "max_drawdown": -0.2164,
+    "worst_12m": -0.2086,
+    "sharpe": 0.2468,
+    "horizons": {
+     "3m": 0.0076,
+     "6m": 0.0155,
+     "1y": 0.0312,
+     "3y": 0.0297,
+     "5y": 0.028,
+     "10y": 0.0255
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.0036,
+    "mixed": 0.1047,
+    "cash": 0.8917
+   },
+   "switches_per_year": 0.5199,
+   "forward": {
+    "1": {
+     "months": 1,
+     "3m": null,
+     "6m": null,
+     "1y": null
+    },
+    "0": {
+     "months": 51,
+     "3m": 0.0502,
+     "6m": 0.1095,
+     "1y": 0.1967
+    },
+    "-1": {
+     "months": 390,
+     "3m": 0.028,
+     "6m": 0.0552,
+     "1y": 0.1136
+    }
+   }
+  },
+  {
+   "id": "fed_model",
+   "name": "Fed model (equity risk premium)",
+   "family": "valuation",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0865,
+    "volatility": 0.1101,
+    "max_drawdown": -0.2143,
+    "worst_12m": -0.1729,
+    "sharpe": 0.6469,
+    "horizons": {
+     "3m": 0.0223,
+     "6m": 0.0447,
+     "1y": 0.0917,
+     "3y": 0.0906,
+     "5y": 0.0932,
+     "10y": 0.1051
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.4116,
+    "mixed": 0.4224,
+    "cash": 0.1661
+   },
+   "switches_per_year": 1.213,
+   "forward": {
+    "1": {
+     "months": 114,
+     "3m": 0.0359,
+     "6m": 0.0693,
+     "1y": 0.1393
+    },
+    "0": {
+     "months": 119,
+     "3m": 0.0237,
+     "6m": 0.0454,
+     "1y": 0.0904
+    },
+    "-1": {
+     "months": 209,
+     "3m": 0.0353,
+     "6m": 0.0846,
+     "1y": 0.1715
+    }
+   }
+  },
+  {
+   "id": "rule_of_20",
+   "name": "Rule of 20",
+   "family": "valuation",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0595,
+    "volatility": 0.0536,
+    "max_drawdown": -0.1119,
+    "worst_12m": -0.0229,
+    "sharpe": 0.7704,
+    "horizons": {
+     "3m": 0.0149,
+     "6m": 0.0304,
+     "1y": 0.0625,
+     "3y": 0.0631,
+     "5y": 0.0628,
+     "10y": 0.067
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.0614,
+    "mixed": 0.2816,
+    "cash": 0.657
+   },
+   "switches_per_year": 0.7798,
+   "forward": {
+    "1": {
+     "months": 20,
+     "3m": 0.0793,
+     "6m": 0.123,
+     "1y": 0.1552
+    },
+    "0": {
+     "months": 106,
+     "3m": 0.0257,
+     "6m": 0.0527,
+     "1y": 0.11
+    },
+    "-1": {
+     "months": 303,
+     "3m": 0.0284,
+     "6m": 0.06,
+     "1y": 0.1268
+    }
+   }
+  },
+  {
+   "id": "sentiment",
+   "name": "Contrarian sentiment",
+   "family": "calendar",
+   "stats": {
+    "start": "2003-10",
+    "end": "2026-10",
+    "months": 277,
+    "cagr": 0.0804,
+    "volatility": 0.0978,
+    "max_drawdown": -0.323,
+    "worst_12m": -0.2649,
+    "sharpe": 0.6581,
+    "horizons": {
+     "3m": 0.0207,
+     "6m": 0.0423,
+     "1y": 0.0871,
+     "3y": 0.0835,
+     "5y": 0.0814,
+     "10y": 0.0866
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1116,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0292,
+      "6m": 0.059,
+      "1y": 0.1203,
+      "3y": 0.1086,
+      "5y": 0.104,
+      "10y": 0.1141
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0808,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0205,
+      "6m": 0.0413,
+      "1y": 0.084,
+      "3y": 0.0787,
+      "5y": 0.0762,
+      "10y": 0.0826
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.0614,
+    "mixed": 0.8917,
+    "cash": 0.0469
+   },
+   "switches_per_year": 1.6895,
+   "forward": {
+    "1": {
+     "months": 23,
+     "3m": 0.0459,
+     "6m": 0.0808,
+     "1y": 0.0994
+    },
+    "0": {
+     "months": 389,
+     "3m": 0.0299,
+     "6m": 0.0612,
+     "1y": 0.1277
+    },
+    "-1": {
+     "months": 30,
+     "3m": 0.0268,
+     "6m": 0.0503,
+     "1y": 0.0872
+    }
+   }
+  },
+  {
+   "id": "net_liquidity",
+   "name": "Liquidity",
+   "family": "policy",
+   "stats": {
+    "start": "2014-03",
+    "end": "2026-10",
+    "months": 152,
+    "cagr": 0.0982,
+    "volatility": 0.0969,
+    "max_drawdown": -0.1945,
+    "worst_12m": -0.1265,
+    "sharpe": 0.8112,
+    "horizons": {
+     "3m": 0.025,
+     "6m": 0.0499,
+     "1y": 0.0984,
+     "3y": 0.0934,
+     "5y": 0.0892,
+     "10y": 0.0934
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1358,
+     "max_drawdown": -0.2393,
+     "horizons": {
+      "3m": 0.0347,
+      "6m": 0.0701,
+      "1y": 0.1433,
+      "3y": 0.139,
+      "5y": 0.1348,
+      "10y": 0.1387
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0899,
+     "max_drawdown": -0.2005,
+     "horizons": {
+      "3m": 0.0228,
+      "6m": 0.0461,
+      "1y": 0.0934,
+      "3y": 0.0907,
+      "5y": 0.0879,
+      "10y": 0.0905
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.4013,
+    "mixed": 0.2303,
+    "cash": 0.3684
+   },
+   "switches_per_year": 4.2632,
+   "forward": {
+    "1": {
+     "months": 65,
+     "3m": 0.0315,
+     "6m": 0.0701,
+     "1y": 0.1402
+    },
+    "0": {
+     "months": 37,
+     "3m": 0.0429,
+     "6m": 0.0778,
+     "1y": 0.1395
+    },
+    "-1": {
+     "months": 57,
+     "3m": 0.0248,
+     "6m": 0.0581,
+     "1y": 0.1459
+    }
+   }
+  },
+  {
+   "id": "gtaa",
+   "name": "Multi-asset trend",
+   "family": "where",
+   "stats": {
+    "start": "2009-02",
+    "end": "2026-10",
+    "months": 213,
+    "cagr": 0.1342,
+    "volatility": 0.1178,
+    "max_drawdown": -0.1671,
+    "worst_12m": -0.1671,
+    "sharpe": 1.0092,
+    "horizons": {
+     "3m": 0.0344,
+     "6m": 0.069,
+     "1y": 0.136,
+     "3y": 0.1257,
+     "5y": 0.1249,
+     "10y": 0.1249
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1531,
+     "max_drawdown": -0.2393,
+     "horizons": {
+      "3m": 0.0395,
+      "6m": 0.0786,
+      "1y": 0.1553,
+      "3y": 0.1434,
+      "5y": 0.139,
+      "10y": 0.1369
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.1033,
+     "max_drawdown": -0.2005,
+     "horizons": {
+      "3m": 0.0264,
+      "6m": 0.0526,
+      "1y": 0.1036,
+      "3y": 0.0961,
+      "5y": 0.0926,
+      "10y": 0.0924
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.7136,
+    "mixed": 0.2113,
+    "cash": 0.0751
+   },
+   "switches_per_year": 2.3099,
+   "forward": {
+    "1": {
+     "months": 152,
+     "3m": 0.0362,
+     "6m": 0.0741,
+     "1y": 0.1463
+    },
+    "0": {
+     "months": 46,
+     "3m": 0.0583,
+     "6m": 0.103,
+     "1y": 0.1911
+    },
+    "-1": {
+     "months": 16,
+     "3m": 0.0176,
+     "6m": 0.051,
+     "1y": 0.1339
+    }
+   }
+  },
+  {
+   "id": "sector_rotation",
+   "name": "Sector momentum rotation",
+   "family": "where",
+   "stats": {
+    "start": "2004-02",
+    "end": "2026-10",
+    "months": 273,
+    "cagr": 0.1033,
+    "volatility": 0.1083,
+    "max_drawdown": -0.189,
+    "worst_12m": -0.1532,
+    "sharpe": 0.7973,
+    "horizons": {
+     "3m": 0.0265,
+     "6m": 0.0542,
+     "1y": 0.1116,
+     "3y": 0.1031,
+     "5y": 0.0993,
+     "10y": 0.0948
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1069,
+     "max_drawdown": -0.5078,
+     "horizons": {
+      "3m": 0.0285,
+      "6m": 0.0587,
+      "1y": 0.1203,
+      "3y": 0.1085,
+      "5y": 0.1059,
+      "10y": 0.1152
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0781,
+     "max_drawdown": -0.3232,
+     "horizons": {
+      "3m": 0.0201,
+      "6m": 0.0412,
+      "1y": 0.084,
+      "3y": 0.0786,
+      "5y": 0.0773,
+      "10y": 0.0831
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.7912,
+    "mixed": 0.0,
+    "cash": 0.2088
+   },
+   "switches_per_year": 1.3187,
+   "forward": {
+    "1": {
+     "months": 217,
+     "3m": 0.0302,
+     "6m": 0.0608,
+     "1y": 0.1134
+    },
+    "0": {
+     "months": 0,
+     "3m": null,
+     "6m": null,
+     "1y": null
+    },
+    "-1": {
+     "months": 57,
+     "3m": 0.0224,
+     "6m": 0.051,
+     "1y": 0.1453
+    }
+   }
+  },
+  {
+   "id": "intermarket",
+   "name": "Intermarket ratios",
+   "family": "where",
+   "stats": {
+    "start": "2012-09",
+    "end": "2026-10",
+    "months": 170,
+    "cagr": 0.103,
+    "volatility": 0.0934,
+    "max_drawdown": -0.1803,
+    "worst_12m": -0.1371,
+    "sharpe": 0.907,
+    "horizons": {
+     "3m": 0.0259,
+     "6m": 0.0527,
+     "1y": 0.1052,
+     "3y": 0.0911,
+     "5y": 0.0925,
+     "10y": 0.0902
+    }
+   },
+   "benchmarks": {
+    "stocks": {
+     "cagr": 0.1454,
+     "max_drawdown": -0.2393,
+     "horizons": {
+      "3m": 0.0367,
+      "6m": 0.0746,
+      "1y": 0.1511,
+      "3y": 0.1362,
+      "5y": 0.1346,
+      "10y": 0.133
+     }
+    },
+    "sixty_forty": {
+     "cagr": 0.0945,
+     "max_drawdown": -0.2005,
+     "horizons": {
+      "3m": 0.0238,
+      "6m": 0.0484,
+      "1y": 0.0977,
+      "3y": 0.0895,
+      "5y": 0.0879,
+      "10y": 0.0868
+     }
+    }
+   },
+   "time": {
+    "stocks": 0.4588,
+    "mixed": 0.3059,
+    "cash": 0.2353
+   },
+   "switches_per_year": 3.3176,
+   "forward": {
+    "1": {
+     "months": 78,
+     "3m": 0.0391,
+     "6m": 0.0742,
+     "1y": 0.1285
+    },
+    "0": {
+     "months": 53,
+     "3m": 0.0358,
+     "6m": 0.0862,
+     "1y": 0.1777
+    },
+    "-1": {
+     "months": 40,
+     "3m": 0.033,
+     "6m": 0.0605,
+     "1y": 0.1583
+    }
+   }
+  }
+ ],
+ "generated_at": "2026-11-27 23:30 UTC"
+}

@@ -1,0 +1,81 @@
+[
+ {
+  "id": "2026-10",
+  "date": "2026-10-31",
+  "title": "October 2026: the frameworks say Neutral",
+  "summary": "28 frameworks, one stance: Neutral, with a score of +0.36.",
+  "sections": [
+   {
+    "heading": "The short version",
+    "paragraphs": [
+     "The consensus for October 2026 is Neutral. That means holding your neutral mix. The frameworks do not agree strongly enough to lean either way.",
+     "The score is +0.36 on a scale from -1 to +1. It takes +0.5 or more to lean into stocks and -0.5 or less to lean away. The driver families contributed +0.50. The alarm families took 0.14 off."
+    ],
+    "bullets": []
+   },
+   {
+    "heading": "What changed since last month",
+    "paragraphs": [],
+    "bullets": [
+     "Growth and inflation quadrants moved from Positive to Neutral.",
+     "High-yield spread regime moved from Clear to Watch.",
+     "Seasonality and election cycle moved from Negative to Positive.",
+     "Market breadth moved from Negative to Positive.",
+     "Dow Theory moved from Neutral to Positive.",
+     "Multi-asset trend moved from Positive to Neutral."
+    ]
+   },
+   {
+    "heading": "Where the frameworks agree and disagree",
+    "paragraphs": [
+     "Of the 25 frameworks that feed the score, 14 are positive or clear, 6 are neutral or on watch, and 5 are negative.",
+     "The negatives: Don't fight the Fed, Buffett indicator, Shiller CAPE and excess CAPE yield, Fed model (equity risk premium) and Rule of 20."
+    ],
+    "bullets": [
+     "Macro regime (+0.33): Stagflation: growth slowing, inflation accelerating; Overheat: growth above trend, inflation rising; Mid cycle.",
+     "Policy and liquidity (0.00): Fed is hiking; Policy is 0.9 pts looser than the rule; NFCI -0.46 (looser than average); Net liquidity +0.6% over 6 months.",
+     "Trend and momentum (+1.00): S&P 500 is 3.8% above its 10-month average; Golden cross: 50-day above 200-day; Stocks +10.8% over 12 months vs 4.0% in T-bills; Holds Foreign stocks; 64% of sectors are above their 10-month average; Industrials and transports both in uptrends.",
+     "Sentiment and calendar (+0.50): November 2026: inside the November to April window, post-midterm window; Bulls minus bears: -4 points.",
+     "Recession risk (0.00): 13% recession probability; Sahm reading 0.00; CFNAI 3-month average +0.02; Claims -14% from a year ago.",
+     "Credit and volatility (-0.29): High-yield spread 3.44%; VIX one-month average 16.9.",
+     "Valuation (-1.00): Stocks are 255% of GDP, 100th percentile of history; CAPE about 40.0 (estimated), 98th percentile of history; Stocks yield 1.0 pts less than the 10-year Treasury; P/E plus inflation is 27.8.",
+     "Where to look (not scored): In uptrends: US stocks, Commodities; Leading: Energy, Health care, Technology. Lagging: Consumer discretionary, Utilities, Communication; 1 of 3 growth ratios are rising."
+    ]
+   },
+   {
+    "heading": "What this means for a portfolio",
+    "paragraphs": [
+     "For a neutral mix of 60% stocks, 30% bonds, 5% cash, 5% alternatives, the rules give 60% stocks, 15% bonds, 15% cash, 10% alternatives this month.",
+     "Counting each framework's own playbook: 5 favor stocks, 2 favor bonds, 4 favor cash and 3 favor alternatives.",
+     "Valuation reads expensive, so even an Overweight would be half the usual size."
+    ],
+    "bullets": [
+     "Stocks stay at neutral because the consensus is Neutral.",
+     "Alternatives get 5 extra points: inflation is accelerating.",
+     "The Fed is hiking, so half of the bond-and-cash sleeve sits in cash and T-bills."
+    ]
+   },
+   {
+    "heading": "Framework in focus: Shiller CAPE and excess CAPE yield",
+    "paragraphs": [
+     "Compare the market's price with ten years of inflation-adjusted earnings so that one boom or bust year does not distort the ratio.",
+     "This month it reads negative: CAPE about 40.0 (estimated), 98th percentile of history.",
+     "Where it has failed: It has been above its long-run average for almost all of the past 30 years. Accounting changes and buybacks make old and new readings hard to compare."
+    ],
+    "bullets": [],
+    "link": "cape"
+   },
+   {
+    "heading": "What would change the picture",
+    "paragraphs": [
+     "The score would need to rise 0.14 to reach Overweight or fall 0.86 to reach Underweight, and hold there for two months.",
+     "Alarms on watch: High-yield spread regime. A move to triggered would pull the score down.",
+     "The next brief covers November and arrives in the first days of December."
+    ],
+    "bullets": []
+   }
+  ],
+  "disclaimer": "This brief is assembled from the model's rules. It describes what well-known frameworks say about current conditions. It is not a forecast and it is not personal investment advice.",
+  "sample": false
+ }
+]

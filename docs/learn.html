@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learn the frameworks</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div id="app"><div class="loading">Loading lessons...</div></div>
+<footer></footer>
+
+<script src="app.js"></script>
+<script>
+renderNav('learn.html');
+
+const FAMILY_NAME = { macro: 'Macro regime', policy: 'Policy and liquidity', trend: 'Trend and momentum', calendar: 'Sentiment and calendar',
+  recession: 'Recession risk', credit_vol: 'Credit and volatility', valuation: 'Valuation', where: 'Where to invest' };
+const SECTIONS = [['idea', 'The idea'], ['origin', 'Where it comes from'], ['how', 'How it is calculated here'],
+  ['read', 'How to read it'], ['apply', 'How investors use it'], ['fails', 'Where it has failed']];
+let state = { level: 'All', status: 'All' };
+
+function lessonCard(l, live) {
+  const now = live ? `<span class="tag ${voteClass(live.vote)}">${esc(live.vote_label)}</span>` : `<span class="tag plain">${l.status === 'live' ? 'No data yet' : 'Coming soon'}</span>`;
+  const today = live && live.vote != null ? `<div class="today"><h4>With this month's numbers</h4>
+      ${live.inputs.length ? `<table>${live.inputs.map((i) => `<tr><td>${esc(i.label)}</td><td>${esc(i.value)}</td></tr>`).join('')}</table>` : ''}
+      ${miniTable(live.table)}
+      <p class="hint" style="margin-top:8px">Rule: ${esc(live.rule)}</p></div>` : '';
+  return `<details class="lesson" id="${l.id}" data-level="${esc(l.level)}" data-status="${l.status}">
+    <summary>
+      <span class="title">${esc(l.name)} ${now}<span class="tag blue">${esc(l.level)}</span><span class="tag purple" title="${esc(GRADES[l.grade])}">Evidence ${esc(l.grade)}</span></span>
+      <span class="now">${live ? esc(live.reading) : esc(l.idea)}</span>
+    </summary>
+    <div class="body">
+      ${SECTIONS.map(([k, t]) => `<div><h4>${t}</h4><p>${esc(l[k])}</p></div>${k === 'how' ? today : ''}`).join('')}
+    </div>
+  </details>`;
+}
+
+let GRADES = {};
+function render(lessons, signals) {
+  GRADES = lessons.grades;
+  const live = Object.fromEntries((signals ? signals.frameworks : []).map((f) => [f.id, f]));
+  const chips = (key, values) => values.map((v) => `<button class="chip ${state[key] === v ? 'on' : ''}" data-key="${key}" data-value="${v}">${v}</button>`).join('');
+  const show = (l) => (state.level === 'All' || l.level === state.level) && (state.status === 'All' || (state.status === 'Live now') === (l.status === 'live'));
+  const fams = [...new Set(lessons.lessons.map((l) => l.family))];
+  const body = fams.map((fam) => {
+    const items = lessons.lessons.filter((l) => l.family === fam && show(l));
+    return items.length ? `<h2>${esc(FAMILY_NAME[fam] || fam)}</h2>${items.map((l) => lessonCard(l, live[l.id])).join('')}` : '';
+  }).join('');
+  const glossary = signals ? `<h2 id="metrics">Metric glossary</h2><p class="hint">The numbers behind the frameworks, with this month's value.</p>` +
+    signals.metrics.map((m) => { const ex = lessons.metrics[m.key]; return ex ? `<details class="lesson"><summary><span class="title">${esc(m.label)} <span class="tag plain">${esc(m.value)}</span></span><span class="now">${esc(ex.what)}</span></summary>
+      <div class="body"><div><h4>Why it matters</h4><p>${esc(ex.why)}</p></div><div><h4>How to read it</h4><p>${esc(ex.read)}</p></div></div></details>` : ''; }).join('') : '';
+
+  $('#app').innerHTML = sampleBanner(signals) + `
+    <div class="card">
+      <p>Each lesson covers one investing framework: the idea, where it comes from, how it is calculated here, how to read it, how investors use it, and where it has failed. Live frameworks show this month's numbers plugged into the formula.</p>
+      <p class="hint" style="margin-top:8px">New to this? Start with the "Start here" lessons, then open the <a href="index.html">dashboard</a> and see how they vote.</p>
+    </div>
+    <div class="chips">${chips('level', ['All', ...lessons.levels])}${lessons.lessons.some((l) => l.status !== 'live') ? `<span style="width:8px"></span>${chips('status', ['All', 'Live now', 'Coming soon'])}` : ''}</div>
+    <div class="card" style="margin-bottom:8px"><div class="label">Evidence grades</div>
+      <ul class="notes">${Object.entries(lessons.grades).map(([g, t]) => `<li><b>${g}.</b> ${esc(t)}</li>`).join('')}</ul></div>
+    ${body || '<p class="hint">No lessons match these filters.</p>'}${glossary}`;
+
+  document.querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => { state[b.dataset.key] = b.dataset.value; render(lessons, signals); }));
+  const target = location.hash && document.getElementById(location.hash.slice(1));
+  if (target) { target.open = true; target.scrollIntoView(); }
+  renderFooter(signals);
+}
+
+loadJSON('data/lessons.json').then((lessons) =>
+  loadJSON('data/signals.json').catch(() => null).then((signals) => render(lessons, signals))
+).catch(showError);
+</script>
+</body>
+</html>

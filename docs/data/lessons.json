@@ -1,0 +1,558 @@
+{
+ "grades": {
+  "A": "Strong evidence: long history, studied independently, has held up after publication.",
+  "B": "Mixed evidence: sound logic and a real record, but with long stretches where it misled.",
+  "C": "Weak evidence: popular and worth knowing, but small samples or poor results once costs and data mining are counted."
+ },
+ "levels": [
+  "Start here",
+  "Go deeper",
+  "Advanced"
+ ],
+ "metrics": {
+  "cfnai_ma3": {
+   "what": "The Chicago Fed's summary of 85 monthly indicators, averaged over three months.",
+   "why": "It is the broadest single read on whether the economy is growing faster or slower than its trend.",
+   "read": "Zero is trend growth. Above zero is faster than trend. Below -0.70 has marked recessions."
+  },
+  "indpro_yoy": {
+   "what": "The change over a year in output from factories, mines and utilities.",
+   "why": "Goods production is the most cyclical part of the economy and one of the series used to date recessions.",
+   "read": "Positive means output is expanding. A move below zero has usually accompanied recessions."
+  },
+  "unrate": {
+   "what": "The share of people in the labor force who want a job and do not have one.",
+   "why": "It is the Fed's main gauge for the employment half of its mandate.",
+   "read": "The level matters less than the direction. A rise of half a point off the low is the warning (see the Sahm rule)."
+  },
+  "claims_4wk": {
+   "what": "New applications for unemployment benefits each week, averaged over four weeks.",
+   "why": "It is the fastest hard data on layoffs.",
+   "read": "A low and stable number is healthy. A rise of more than 20% over a year has come with recessions."
+  },
+  "sahm": {
+   "what": "How far the 3-month average unemployment rate has risen above its low of the past year.",
+   "why": "It has identified the start of past recessions within a few months.",
+   "read": "Below 0.30 is clear. At 0.50 a recession has usually begun."
+  },
+  "core_pce_yoy": {
+   "what": "Yearly price change for consumer spending, leaving out food and energy.",
+   "why": "It is the inflation measure the Fed targets, at 2%.",
+   "read": "Above 2% keeps pressure on the Fed to hold or raise rates. Above 3% is well outside its comfort zone."
+  },
+  "cpi_yoy": {
+   "what": "Yearly change in the Consumer Price Index, all items.",
+   "why": "It is the headline inflation number, and it drives cost-of-living adjustments and inflation-protected bonds.",
+   "read": "It runs a few tenths above PCE on average and swings more with energy prices."
+  },
+  "fed_funds": {
+   "what": "The top of the Fed's target range for the overnight rate banks charge each other.",
+   "why": "It anchors every short-term interest rate in the economy, including what cash and T-bills pay.",
+   "read": "Compare it with inflation (the real rate) and with the Taylor rule to judge whether it is tight or loose."
+  },
+  "real_ff": {
+   "what": "The Fed funds rate minus core PCE inflation.",
+   "why": "Borrowers and savers respond to rates after inflation, so this is a cleaner read on how restrictive policy is.",
+   "read": "Around 1% is roughly neutral by common estimates. Well above that is restrictive; negative is very loose."
+  },
+  "taylor_gap": {
+   "what": "The Fed funds rate minus the rate a Taylor rule would prescribe.",
+   "why": "It shows whether the Fed is ahead of or behind what inflation and unemployment call for.",
+   "read": "Positive means tighter than the rule. Negative means looser, which implies more hikes if inflation is high."
+  },
+  "y10": {
+   "what": "The yield on a 10-year US Treasury note.",
+   "why": "It is the benchmark for mortgage rates and the discount rate for stocks and other long-lived assets.",
+   "read": "Rising yields lower the value of existing bonds and pressure stock valuations. They also mean new bonds pay more."
+  },
+  "y2": {
+   "what": "The yield on a 2-year US Treasury note.",
+   "why": "It reflects where investors expect the Fed's rate to average over the next two years.",
+   "read": "Above the Fed funds rate means markets expect hikes. Below means they expect cuts."
+  },
+  "curve": {
+   "what": "The 10-year Treasury yield minus the 3-month yield.",
+   "why": "It is the input to the best-known recession model.",
+   "read": "Positive is normal. Negative (inverted) has preceded most recessions, with a lead of 6 months to 2 years."
+  },
+  "curve_prob": {
+   "what": "The chance of a recession 12 months from now implied by the yield curve, using the New York Fed's method.",
+   "why": "It turns the curve into a probability you can compare over time.",
+   "read": "Under 20% is benign. Above 40% has usually been followed by a recession."
+  },
+  "nfci": {
+   "what": "The Chicago Fed's weekly index of 105 measures of financial risk, credit and leverage.",
+   "why": "It shows how easy or hard it is to borrow, beyond the Fed's rate alone.",
+   "read": "Zero is average. Negative is looser than average, positive is tighter."
+  },
+  "hy_oas": {
+   "what": "The extra yield that junk-rated companies pay over Treasuries.",
+   "why": "Lenders spot cash flow trouble early, so it often widens before the economy weakens.",
+   "read": "Under 4% is calm. The long-run norm is closer to 5%. Recessions have pushed it to 8% and beyond."
+  },
+  "vix": {
+   "what": "The stock market's expected volatility over the next month, taken from option prices.",
+   "why": "It is the standard gauge of fear.",
+   "read": "Below 20 is calm, above 30 is acute stress. Divide by 16 for the rough daily move it implies, in percent."
+  },
+  "vix_ratio": {
+   "what": "The one-month VIX divided by the three-month VIX.",
+   "why": "It shows whether fear is concentrated in the near term.",
+   "read": "Below 1 is normal. Above 1 means investors are paying more for immediate protection, a sign of acute stress."
+  },
+  "sp500": {
+   "what": "The level of the S&P 500 index of large US companies.",
+   "why": "It is the standard measure of the US stock market.",
+   "read": "The level means little by itself. Compare it with its trend, with earnings and with a year ago."
+  },
+  "sp500_vs_sma": {
+   "what": "How far the S&P 500 is above or below its 10-month average.",
+   "why": "It is the input to the most widely used trend rule.",
+   "read": "Positive means an uptrend. Negative means the trend has broken, by the rule's definition."
+  },
+  "sp500_ret12": {
+   "what": "The S&P 500's price change over the past 12 months, before dividends.",
+   "why": "It is the input to momentum rules, which compare it with what cash earned.",
+   "read": "Above the T-bill yield means stocks have been worth the risk lately. Below means they have not."
+  },
+  "buffett": {
+   "what": "The market value of US corporate stock as a percentage of yearly GDP.",
+   "why": "It compares what the market is worth with the size of the economy that produces its profits.",
+   "read": "Higher means more expensive relative to history. It says more about returns over 10 years than over the next year."
+  },
+  "breadth": {
+   "what": "The share of the 11 stock market sectors trading above their own 10-month average.",
+   "why": "It shows whether a market move is broad or carried by a few sectors.",
+   "read": "Above 60% is broad participation. Below 40% means most of the market is in a downtrend, whatever the index says."
+  },
+  "cape": {
+   "what": "The S&P 500's price divided by its average inflation-adjusted earnings over the past 10 years.",
+   "why": "Averaging 10 years smooths out booms and recessions, so it is the standard long-run valuation gauge.",
+   "read": "The long-run average is about 17. Readings above 30 have been followed by below-average returns over the next decade."
+  },
+  "pe": {
+   "what": "The S&P 500's price divided by its reported earnings over the past 12 months.",
+   "why": "It is the simplest measure of what investors pay for a dollar of current profit.",
+   "read": "Roughly 15 to 20 has been typical. It jumps in recessions because earnings fall faster than prices."
+  },
+  "fed_model_gap": {
+   "what": "What stocks earn on their price (the earnings yield) minus the 10-year Treasury yield.",
+   "why": "It is the reward for owning stocks over safe bonds.",
+   "read": "A wide positive gap favors stocks. Near or below zero means bonds offer serious competition."
+  },
+  "excess_cape_yield": {
+   "what": "The inverse of CAPE, minus the real (after-inflation) 10-year Treasury yield.",
+   "why": "It is Robert Shiller's way of judging stock valuations against interest rates.",
+   "read": "Higher is better for stocks. Low readings, around 1% to 2%, have preceded weak decades."
+  },
+  "real_y10": {
+   "what": "The yield on a 10-year inflation-protected Treasury (TIPS).",
+   "why": "It is the risk-free return after inflation, the bar every other investment has to clear.",
+   "read": "Above 2% is high by the standards of the past 20 years and weighs on stock and gold valuations."
+  },
+  "net_liquidity_chg6": {
+   "what": "The six-month change in the Fed's balance sheet minus Treasury cash and reverse repo balances.",
+   "why": "It approximates how much central bank money is circulating in markets.",
+   "read": "Rising is a tailwind for risk assets. Falling is a headwind."
+  },
+  "aaii_spread": {
+   "what": "Bullish minus bearish individual investors in AAII's weekly survey, averaged over four weeks.",
+   "why": "Extremes in mood have tended to mark turning points.",
+   "read": "The long-run average is about +6. Below -20 is deep pessimism; above +30 is euphoria."
+  }
+ },
+ "lessons": [
+  {
+   "id": "trend_10m",
+   "name": "10-month trend rule",
+   "family": "trend",
+   "status": "live",
+   "level": "Start here",
+   "grade": "A",
+   "idea": "Own stocks when the market is above its long-run average price, and step aside when it is below. It makes no forecast. It just asks whether the market is currently rising or falling.",
+   "origin": "Meb Faber's 2007 paper \"A Quantitative Approach to Tactical Asset Allocation\" made the 10-month version famous. The 200-day moving average is its daily cousin and has been used by traders for most of a century.",
+   "how": "Take the S&P 500 close on the last trading day of each of the past 10 months and average them. Compare the latest month-end close with that average.",
+   "read": "Above the average is a positive vote, below is negative. There is no neutral. The signal only changes at month-end, which is the point: it ignores what happens in between.",
+   "apply": "Investors use it as an on/off switch for stock exposure, or to scale exposure down when the trend breaks. Its main benefit has been smaller losses in long bear markets, not higher returns.",
+   "fails": "It gets whipsawed in sharp V-shaped drops such as 2020 and April 2025: it sells after the fall and buys back higher. In taxable accounts the trading can also create a tax bill."
+  },
+  {
+   "id": "yield_curve",
+   "name": "Yield curve recession model",
+   "family": "recession",
+   "status": "live",
+   "level": "Start here",
+   "grade": "A",
+   "idea": "Normally a 10-year Treasury pays more than a 3-month bill. When that flips, bond investors are betting the Fed will have to cut rates because the economy is going to weaken.",
+   "origin": "Campbell Harvey documented the link in his 1986 dissertation. Arturo Estrella and Frederic Mishkin turned it into a probability model at the New York Fed in 1996, and the New York Fed still publishes it monthly.",
+   "how": "Subtract the 3-month yield from the 10-year yield (monthly averages) and run the spread through the published formula: probability = N(-0.5333 - 0.6330 x spread), where N is the normal distribution. The result is the chance of a recession 12 months from now.",
+   "read": "Under 20% is clear. From 20% to 40% is a watch. Above 40% is triggered. A spread of +1 point gives about 12%; a spread of -1 point gives about 54%.",
+   "apply": "It is an alarm, not a timing tool. A triggered reading is a reason to avoid adding risk and to check the other recession gauges, not a reason to sell everything that day.",
+   "fails": "The lead time has ranged from about 6 months to 2 years, and stocks often rise during the wait. The 2022 to 2024 inversion was the longest on record and no recession followed."
+  },
+  {
+   "id": "sahm",
+   "name": "Sahm rule",
+   "family": "recession",
+   "status": "live",
+   "level": "Start here",
+   "grade": "A",
+   "idea": "Unemployment rarely rises a little. Once it climbs half a point off its low, it has almost always kept climbing, because job losses feed on themselves.",
+   "origin": "Economist Claudia Sahm proposed it in 2019 as a trigger for automatic stimulus payments. The St. Louis Fed publishes the real-time version.",
+   "how": "Take the 3-month average unemployment rate and subtract the lowest 3-month average of the previous 12 months.",
+   "read": "Below 0.30 is clear, 0.30 to 0.49 is a watch, and 0.50 or more is triggered, meaning a recession has probably already begun.",
+   "apply": "Because it confirms a recession that has started, investors use it to stop treating a decline as a simple dip. When it triggers, average bear-market losses have been much deeper.",
+   "fails": "It is a coincident signal, so the market has usually fallen before it fires. It triggered in mid-2024 without a recession, partly because labor supply was growing unusually fast."
+  },
+  {
+   "id": "hy_spread",
+   "name": "High-yield spread regime",
+   "family": "credit_vol",
+   "status": "live",
+   "level": "Start here",
+   "grade": "A",
+   "idea": "Lenders to risky companies care about one thing: getting paid back. When they demand much more yield than Treasuries pay, they see trouble in corporate cash flows, often before stock investors react.",
+   "origin": "Credit spreads have been watched for generations. Gilchrist and Zakrajsek's 2012 research showed they predict economic activity better than most indicators.",
+   "how": "Use the ICE BofA high-yield option-adjusted spread, in percent. Compare it with 4%, 5% and its own 12-month average. Where that series has no history, we fall back to the Chicago Fed's credit conditions subindex.",
+   "read": "Under 4% and not far above its 12-month average is clear. Above both 5% and its 12-month average is triggered. Anything else is a watch.",
+   "apply": "A triggered credit signal caps the consensus at Neutral no matter what else is positive. Many investors treat widening spreads as the difference between a valuation correction and something economic.",
+   "fails": "Spreads can stay tight right up to a shock, and central bank support can hold them down while risks build. They also react to oil prices because energy firms are a large share of junk borrowers."
+  },
+  {
+   "id": "fed_direction",
+   "name": "Don't fight the Fed",
+   "family": "policy",
+   "status": "live",
+   "level": "Start here",
+   "grade": "B",
+   "idea": "When the Fed is cutting rates, money gets cheaper and asset prices have a tailwind. When it is raising them, the wind is in your face.",
+   "origin": "Martin Zweig coined the phrase and built rules around it in \"Winning on Wall Street\" (1986).",
+   "how": "Compare the Fed funds target rate with its level six months ago. Zweig's original used discount rate and reserve requirement changes; this is the modern simplification.",
+   "read": "Lower by a quarter point or more is positive. Higher by a quarter point or more is negative. Unchanged is neutral.",
+   "apply": "It also decides where the defensive part of a portfolio sits here: cash and T-bills while the Fed is hiking, intermediate bonds once it is cutting.",
+   "fails": "The Fed cut all the way through the 2001 and 2008 bear markets, and stocks rose through most of the 2004 to 2006 and 2016 to 2018 hiking cycles. Why the Fed is moving matters as much as the direction."
+  },
+  {
+   "id": "buffett",
+   "name": "Buffett indicator",
+   "family": "valuation",
+   "status": "live",
+   "level": "Start here",
+   "grade": "B",
+   "idea": "Compare what the whole stock market is worth with the size of the economy that produces its profits. If stocks are worth far more than usual relative to GDP, future returns are likely to be lower.",
+   "origin": "Warren Buffett called it \"probably the best single measure of where valuations stand at any given moment\" in a 2001 Fortune article.",
+   "how": "Divide the market value of US corporate equities (from the Fed's Z.1 accounts) by nominal GDP, then rank today's ratio against its own history up to that date.",
+   "read": "Above the 80th percentile of its history reads expensive. Below the 40th reads cheap. In between is neutral.",
+   "apply": "Valuation never moves the consensus here. It sets the size of moves: when stocks are expensive, an Overweight is half the usual size.",
+   "fails": "The ratio has trended up for 40 years as profit margins rose, interest rates fell and US firms earned more abroad, so it has read expensive for most of the past decade while stocks kept rising. It says little about the next one to three years."
+  },
+  {
+   "id": "seasonality",
+   "name": "Seasonality and election cycle",
+   "family": "calendar",
+   "status": "live",
+   "level": "Start here",
+   "grade": "C",
+   "idea": "Stocks have historically done better from November through April than from May through October, and better in the year after a midterm election than in the months before one.",
+   "origin": "Yale Hirsch's Stock Trader's Almanac (first published 1968) popularized both. Bouman and Jacobsen (2002) found the November to April effect in 36 of 37 countries.",
+   "how": "Look at the coming month. Add one if it falls in November to April. Add one if it falls between a midterm election and the end of the following year. Subtract one if it is in a midterm year before November.",
+   "read": "A total of one or more is positive, zero is neutral, below zero is negative.",
+   "apply": "Treat it as a tie-breaker at most. It carries half weight in the consensus.",
+   "fails": "The samples are small (about 20 midterms since 1950), the average edge is modest, and there is no agreed reason it should persist. Midterm-year Decembers fell hard in 2002, 2018 and 2022."
+  },
+  {
+   "id": "quadrant",
+   "name": "Growth and inflation quadrants",
+   "family": "macro",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Two questions sort the economy into four regimes: is growth speeding up or slowing, and is inflation speeding up or slowing? Each regime has favored different assets.",
+   "origin": "Ray Dalio's Bridgewater built the All Weather portfolio around these four environments in 1996. Hedgeye's \"Quads\" and 42 Macro's \"GRID\" are well-known modern versions. Theirs use proprietary forecasts; ours is a public-data version of the same idea.",
+   "how": "Growth: the Chicago Fed National Activity Index, 3-month average, versus three months earlier. Inflation: core PCE yearly inflation versus six months earlier.",
+   "read": "Goldilocks (growth up, inflation down) and Reflation (both up) are positive for stocks. Stagflation (growth down, inflation up) is neutral. Deflation (both down) is negative.",
+   "apply": "Beyond the stock vote, the regime suggests where to look: commodities and value in Reflation, quality and bonds in Deflation, cash and real assets in Stagflation.",
+   "fails": "It measures direction, not level, so a slowdown from very strong growth reads the same as a slide into recession. Regimes can flip several times a year, and the asset playbook is an average, not a rule."
+  },
+  {
+   "id": "investment_clock",
+   "name": "Investment Clock",
+   "family": "macro",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "The economy moves around a clock face in four phases, and each phase has a favored asset class and set of sectors.",
+   "origin": "Trevor Greetham published \"The Investment Clock\" at Merrill Lynch in 2004, testing 30 years of US data.",
+   "how": "Growth is measured against trend (is the CFNAI 3-month average above zero?) and inflation by direction (is core PCE inflation higher than six months ago?).",
+   "read": "Recovery (growth above trend, inflation falling) favors stocks. Overheat (above trend, inflation rising) favors commodities. Stagflation (below trend, inflation rising) favors cash. Reflation (below trend, inflation falling) favors bonds.",
+   "apply": "Use it for tilts. In Overheat the playbook leans to energy, industrials and materials; in Reflation to financials and consumer names; in Stagflation to utilities, staples and health care.",
+   "fails": "The clock does not always turn in order and can jump phases. The original study covered 1973 to 2004, a period with large inflation swings that may not repeat."
+  },
+  {
+   "id": "business_cycle",
+   "name": "Business cycle phase",
+   "family": "macro",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Expansions age. Early in the cycle there is slack and easy money, and stocks do best. Late in the cycle labor is tight and the Fed is restrictive, and returns thin out before a recession.",
+   "origin": "Fidelity's Asset Allocation Research Team publishes the best-known early, mid, late and recession framework. Theirs weighs many indicators with judgment. Ours is a simplified rule-based version.",
+   "how": "Recession: activity far below trend or the Sahm rule triggered. Early: unemployment at least a point above its 3-year low and growth improving. Late: unemployment within half a point of its low while the Fed has tightened or the yield curve is flat. Everything else is Mid.",
+   "read": "Early and Mid are positive, Late is neutral, Recession is negative.",
+   "apply": "Sector tilts follow the phase: financials, industrials and consumer discretionary early; technology and communication mid; energy, materials, staples and health care late; staples, utilities and health care in recession.",
+   "fails": "Phases are only obvious in hindsight, and \"late cycle\" can last for years, as in 1996 to 2000 and 2017 to 2019."
+  },
+  {
+   "id": "cfnai_ma3",
+   "name": "Leading activity (CFNAI)",
+   "family": "recession",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "A",
+   "idea": "One number that summarizes 85 monthly indicators of production, jobs, spending and housing. Zero means the economy is growing at its trend rate.",
+   "origin": "The Chicago Fed built it on research by James Stock and Mark Watson (1999). It stands in here for the ISM survey and the Conference Board's leading index, which are licensed.",
+   "how": "Average the last three monthly readings of the Chicago Fed National Activity Index.",
+   "read": "Zero or above is clear. Between -0.70 and zero is a watch. Below -0.70 after a period of expansion is the Chicago Fed's own threshold for a likely recession.",
+   "apply": "It is the growth input for the quadrant, clock and cycle frameworks too, so it does a lot of work across the dashboard.",
+   "fails": "It is revised after release and published with about a month's delay, so it confirms more than it predicts."
+  },
+  {
+   "id": "claims",
+   "name": "Jobless claims trend",
+   "family": "recession",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Layoffs show up in weekly unemployment claims before they show up anywhere else. A sustained rise is the earliest hard evidence that the job market is turning.",
+   "origin": "Initial claims are a component of the Conference Board's Leading Economic Index and one of the most-watched weekly releases.",
+   "how": "Compare the 4-week average of initial claims with the same week a year earlier.",
+   "read": "Up less than 10% is clear. Up 10% to 20% is a watch. Up more than 20% is triggered.",
+   "apply": "It is the fastest of the recession alarms, useful for an early read between the monthly jobs reports.",
+   "fails": "Claims are noisy around holidays, strikes and storms, and they stayed low in 2022 and 2023 while many other warnings flashed."
+  },
+  {
+   "id": "taylor_gap",
+   "name": "Taylor rule gap",
+   "family": "policy",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "A simple formula says where the Fed's rate \"should\" be given inflation and unemployment. Comparing the actual rate with it shows whether policy is tight or loose.",
+   "origin": "Stanford economist John Taylor proposed the rule in 1993. Fed officials use versions of it as a reference point.",
+   "how": "Rule rate = neutral real rate (1%) + core inflation + half of (inflation minus 2%) + the unemployment gap. The gap is the actual Fed funds rate minus the rule rate.",
+   "read": "More than a point above the rule is tight, a negative. More than a point below is loose, which is a positive only if inflation is at or under 3%. Loose policy with inflation above 3% means the Fed is behind and has more hiking to do, so it reads neutral.",
+   "apply": "It gives context to \"Don't fight the Fed\": a hike from very loose policy is different from a hike into already tight policy.",
+   "fails": "The answer depends heavily on the neutral rate you assume, which nobody can observe. Policy sat below the rule for most of 2009 to 2021 without the inflation the rule implied."
+  },
+  {
+   "id": "fin_conditions",
+   "name": "Financial conditions",
+   "family": "policy",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "The Fed's rate is only one part of how easy it is to borrow. Credit spreads, lending standards, stock prices and the dollar all matter, and an index can combine them.",
+   "origin": "The Chicago Fed's National Financial Conditions Index, built by Scott Brave and Andrew Butters, combines 105 measures of risk, credit and leverage each week.",
+   "how": "Read the latest NFCI and its change over three months. Zero is the average since 1971; negative means looser than average.",
+   "read": "At or below zero and not tightening quickly is positive. Above zero is negative. Below zero but tightening fast is neutral.",
+   "apply": "When the Fed is hiking but conditions stay loose, tightening is not biting yet. When conditions tighten without the Fed, markets are doing the Fed's work.",
+   "fails": "It moves with markets, so it often tells you what prices already show. It was loose right before the 2007 and 2020 breaks."
+  },
+  {
+   "id": "golden_cross",
+   "name": "Golden cross and death cross",
+   "family": "trend",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "C",
+   "idea": "When the 50-day average price rises above the 200-day average, the medium-term trend has overtaken the long-term trend. Chartists call that a golden cross, and the reverse a death cross.",
+   "origin": "A staple of technical analysis for decades and one of the most quoted chart signals in the financial press.",
+   "how": "Compare the S&P 500's 50-day and 200-day simple moving averages at month-end.",
+   "read": "50-day above 200-day is positive. Below is negative.",
+   "apply": "Mostly useful as confirmation of the 10-month rule. It carries half weight here.",
+   "fails": "It lags badly. Death crosses in 2016, 2020 and 2025 arrived near the low, and studies find no reliable edge once you account for how late it signals."
+  },
+  {
+   "id": "abs_momentum",
+   "name": "Absolute momentum",
+   "family": "trend",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "If stocks have beaten cash over the past year, stay in stocks. If they have not, hold something safer.",
+   "origin": "Moskowitz, Ooi and Pedersen documented \"time series momentum\" across dozens of markets in 2012. Gary Antonacci built it into his Dual Momentum strategy (2014).",
+   "how": "Compare the S&P 500's 12-month price return with the 3-month T-bill yield of a year ago. This uses price only, so it understates stocks by the dividend yield.",
+   "read": "Stocks ahead of T-bills is positive. Behind is negative.",
+   "apply": "It is the first half of Dual Momentum. The second half, choosing between US stocks, foreign stocks and bonds, arrives with the price-data phase.",
+   "fails": "Like all trend signals it is late at turning points, and a 12-month window can keep it positive well into a decline that follows a strong year."
+  },
+  {
+   "id": "vix",
+   "name": "VIX level and term structure",
+   "family": "credit_vol",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Option prices reveal how much movement investors are paying to insure against. A high VIX means fear. When near-term fear is higher than three-month fear, stress is acute.",
+   "origin": "The CBOE launched the VIX in 1993 from work by Robert Whaley. Comparing it with the 3-month version is a common desk indicator.",
+   "how": "Average the VIX over the last month, and divide the month-end VIX by the 3-month VIX.",
+   "read": "An average under 20 with the ratio below 1 is clear. An average above 30 is triggered. Between is a watch. A VIX of 16 implies daily moves of about 1%; 32 implies about 2%.",
+   "apply": "High volatility argues for smaller positions because the same holding carries more risk. Very high readings have also marked good long-term entry points, which is why this is an alarm and not a sell signal.",
+   "fails": "Volatility was very low before the 2018 and 2020 shocks. It measures present fear, not future risk."
+  },
+  {
+   "id": "net_liquidity",
+   "name": "Liquidity",
+   "family": "policy",
+   "status": "live",
+   "level": "Advanced",
+   "grade": "B",
+   "idea": "Asset prices respond to the amount of money moving through the financial system, not only to its price. More liquidity tends to lift risk assets.",
+   "origin": "Michael Howell of CrossBorder Capital is the best-known advocate (\"Capital Wars\", 2020). His index is proprietary. A public shortcut became popular around 2022.",
+   "how": "Fed total assets, minus the Treasury's cash account at the Fed, minus overnight reverse repo balances. All three come from FRED. The vote uses the change over six months.",
+   "read": "Up more than 2% over six months is positive. Down more than 2% is negative. In between is neutral.",
+   "apply": "Used to explain rallies that fundamentals do not, and as a tailwind or headwind gauge for crypto and growth stocks in particular.",
+   "fails": "The simple formula fit 2022 and 2023 well and less well since. It can be a description of the past more than a forecast."
+  },
+  {
+   "id": "cape",
+   "name": "Shiller CAPE and excess CAPE yield",
+   "family": "valuation",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Compare the market's price with ten years of inflation-adjusted earnings so that one boom or bust year does not distort the ratio.",
+   "origin": "John Campbell and Robert Shiller introduced it in 1988. Shiller added the excess CAPE yield in 2020 to account for interest rates.",
+   "how": "Price divided by the 10-year average of inflation-adjusted earnings, from the published Shiller series. Today's value is ranked against its own history back to the 1880s. The excess CAPE yield (100 divided by CAPE, minus the real 10-year Treasury yield) is shown alongside.",
+   "read": "Above the 80th percentile of its history reads expensive. Below the 40th reads cheap. A higher excess CAPE yield means stocks offer more over inflation-protected bonds.",
+   "apply": "Best used to set long-run return expectations and the size of positions, not to time entries.",
+   "fails": "It has been above its long-run average for almost all of the past 30 years. Accounting changes and buybacks make old and new readings hard to compare."
+  },
+  {
+   "id": "fed_model",
+   "name": "Fed model (equity risk premium)",
+   "family": "valuation",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Stocks compete with bonds. Compare what stocks earn on their price with what a Treasury pays. The gap is your reward for taking equity risk.",
+   "origin": "Ed Yardeni named it after a chart in the Fed's 1997 report to Congress. Cliff Asness's 2003 paper \"Fight the Fed Model\" is the classic critique.",
+   "how": "Earnings yield (100 divided by the trailing P/E) minus the 10-year Treasury yield. Professional desks usually use forecast earnings, which are licensed; this uses reported earnings, so the gap reads a little lower.",
+   "read": "A gap above 2 points is positive: stocks pay well for their risk. Below zero is negative: the Treasury yields more than stocks earn. In between is neutral.",
+   "apply": "Useful for the stock versus bond decision at the margin, and for explaining why high rates pressure valuations.",
+   "fails": "It compares a real quantity (earnings yield) with a nominal one (bond yield). The gap sat near zero through much of the 1980s and 1990s while stocks boomed."
+  },
+  {
+   "id": "rule_of_20",
+   "name": "Rule of 20",
+   "family": "valuation",
+   "status": "live",
+   "level": "Start here",
+   "grade": "C",
+   "idea": "A quick check: the market's P/E ratio plus the inflation rate should be about 20. Higher means expensive, lower means cheap.",
+   "origin": "A Wall Street rule of thumb from the 1980s, usually credited to strategist Jim Moltz.",
+   "how": "Trailing P/E plus yearly CPI inflation.",
+   "read": "Above 22 reads expensive, below 18 cheap, with a neutral band between.",
+   "apply": "Handy for intuition about why inflation and valuations move in opposite directions.",
+   "fails": "There is no theory behind the number 20, and the rule has read expensive for most of the past decade."
+  },
+  {
+   "id": "dual_momentum",
+   "name": "Dual momentum",
+   "family": "trend",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Combine two questions. Are stocks beating cash? If yes, which is stronger, US or foreign stocks? Hold the winner; if stocks are losing to cash, hold bonds.",
+   "origin": "Gary Antonacci's Global Equities Momentum model, from his 2014 book \"Dual Momentum Investing\".",
+   "how": "Compare 12-month total returns of US stocks, foreign stocks and T-bills, using broad index funds. If US stocks beat T-bills, hold whichever of US or foreign stocks returned more. If not, hold bonds.",
+   "read": "Holding either stock fund is a positive vote. Holding bonds is negative. The reading names the holding.",
+   "apply": "One of the simplest complete tactical strategies. It trades about once or twice a year.",
+   "fails": "It lagged a simple index fund for most of 2010 to 2020, when US stocks led steadily and the few switches cost more than they saved."
+  },
+  {
+   "id": "dow_theory",
+   "name": "Dow Theory",
+   "family": "trend",
+   "status": "live",
+   "level": "Advanced",
+   "grade": "C",
+   "idea": "A move in the industrial average should be confirmed by the transportation average. If the companies that make goods are rising, the companies that ship them should be too.",
+   "origin": "Charles Dow's Wall Street Journal editorials around 1900, later formalized by William Hamilton and Robert Rhea.",
+   "how": "A simplified version: are funds tracking the Dow industrials and the Dow transports each above their 10-month average?",
+   "read": "Both above is positive, both below is negative, and a split is neutral, which Dow theorists call a non-confirmation.",
+   "apply": "Mostly of historical interest, and a good introduction to the idea of confirmation between markets.",
+   "fails": "The modern economy is far less about freight, and the rules are open to interpretation."
+  },
+  {
+   "id": "breadth",
+   "name": "Market breadth",
+   "family": "trend",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "A healthy rally lifts most stocks. If the index is rising while most stocks are falling, a few large companies are carrying it, and that is fragile.",
+   "origin": "Advance-decline lines date to the 1920s. Martin Zweig's \"breadth thrust\" is the best-known buy signal built on it.",
+   "how": "The share of the 11 sector funds trading above their own 10-month average.",
+   "read": "60% or more is positive. 40% or less is negative. A rising index with low breadth means a few sectors are carrying the market.",
+   "apply": "Especially relevant when a handful of mega-caps dominate the index.",
+   "fails": "Narrow markets can run for years, as in 2023 and 2024. True breadth needs stock-level data that is licensed."
+  },
+  {
+   "id": "sentiment",
+   "name": "Contrarian sentiment",
+   "family": "calendar",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "C",
+   "idea": "When nearly everyone is bearish, most of the selling has already happened. When nearly everyone is bullish, there are few buyers left.",
+   "origin": "The AAII survey has asked individual investors weekly since 1987. Put/call ratios and fear-and-greed composites serve the same purpose.",
+   "how": "AAII's weekly survey: the share of individual investors who are bullish minus the share who are bearish, averaged over four weeks.",
+   "read": "A spread of -20 or lower (deep pessimism) is a positive. A spread of +30 or higher (euphoria) is a negative. Readings in between say nothing.",
+   "apply": "Most useful at extremes during selloffs, as a check on the urge to sell at the bottom.",
+   "fails": "Surveys measure what people say, not what they own. Pessimism stayed high through most of 2022 while prices kept falling."
+  },
+  {
+   "id": "sector_rotation",
+   "name": "Sector momentum rotation",
+   "family": "where",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "B",
+   "idea": "Sectors that have led over the past several months tend to keep leading for a while. Own the leaders and avoid the laggards.",
+   "origin": "Sam Stovall mapped sectors to the business cycle in the 1990s. Faber and others tested simple momentum versions.",
+   "how": "Rank the 11 sector funds by the average of their 6 and 12-month total returns, and note which are above their 10-month average.",
+   "read": "The table shows leaders and laggards. Two or more cyclical sectors in the top three reads as cyclical leadership; one or none reads as defensive leadership.",
+   "apply": "Answers \"where\" once the consensus has answered \"how much\". It is shown for context and does not move the consensus score.",
+   "fails": "Leadership reverses sharply at market turns, and turnover is high."
+  },
+  {
+   "id": "intermarket",
+   "name": "Intermarket ratios",
+   "family": "where",
+   "status": "live",
+   "level": "Advanced",
+   "grade": "C",
+   "idea": "Compare pairs of assets to hear what markets are saying about growth: copper against gold, cyclical stocks against defensive ones, small companies against large.",
+   "origin": "John Murphy's \"Intermarket Analysis\" (1991). Jeffrey Gundlach popularized the copper to gold ratio as a guide to bond yields.",
+   "how": "Three ratios, each compared with its own 10-month average: copper to gold, consumer discretionary to consumer staples, and small companies to large.",
+   "read": "Two or more rising says markets expect stronger growth. None rising says the opposite.",
+   "apply": "A cross-check on the economic data. When prices and data disagree, prices usually move first. It is shown for context and does not move the consensus score.",
+   "fails": "Each ratio has its own quirks, such as Chinese demand for copper or central bank buying of gold, that have nothing to do with US growth."
+  },
+  {
+   "id": "gtaa",
+   "name": "Multi-asset trend",
+   "family": "where",
+   "status": "live",
+   "level": "Go deeper",
+   "grade": "A",
+   "idea": "Apply the 10-month trend rule to every major asset class, not only stocks. Hold what is rising and move the rest to cash.",
+   "origin": "This is the full version of Meb Faber's 2007 tactical allocation paper, which tested the rule on five asset classes back to 1973.",
+   "how": "Compare the month-end price of each of five funds (US stocks, foreign stocks, US bonds, gold and broad commodities) with its own 10-month average.",
+   "read": "The table shows which asset classes are in uptrends. Three or more of five is a healthy backdrop; one or none means almost nothing is working.",
+   "apply": "It answers \"where\" after the consensus answers \"how much\". Here it also confirms the alternatives tilt: extra room for gold and commodities needs at least one of them to be in an uptrend. It is shown for context and does not move the consensus score.",
+   "fails": "The same whipsaws as the stock version, multiplied across five markets. It lagged a simple balanced fund through most of 2009 to 2021."
+  }
+ ]
+}

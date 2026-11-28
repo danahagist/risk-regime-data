@@ -1,0 +1,2125 @@
+{
+ "generated_at": "2026-11-27 23:30 UTC",
+ "as_of": "2026-10-31",
+ "as_of_label": "October 2026",
+ "stance": {
+  "label": "Neutral",
+  "raw_label": "Neutral",
+  "composite": 0.3571,
+  "driver_score": 0.5,
+  "alarm_penalty": -0.1429,
+  "agreement": 0.75,
+  "equity_offset": 0.0,
+  "step_up": 5,
+  "step_down": 10,
+  "valuation_tilt": "expensive",
+  "defensive": "cash",
+  "breakers": [],
+  "threshold": 0.5
+ },
+ "families": [
+  {
+   "id": "macro",
+   "name": "Macro regime",
+   "weight": 0.75,
+   "role": "driver",
+   "score": 0.3333,
+   "members": [
+    "quadrant",
+    "investment_clock",
+    "business_cycle"
+   ]
+  },
+  {
+   "id": "policy",
+   "name": "Policy and liquidity",
+   "weight": 0.75,
+   "role": "driver",
+   "score": 0.0,
+   "members": [
+    "fed_direction",
+    "taylor_gap",
+    "fin_conditions",
+    "net_liquidity"
+   ]
+  },
+  {
+   "id": "trend",
+   "name": "Trend and momentum",
+   "weight": 1.0,
+   "role": "driver",
+   "score": 1.0,
+   "members": [
+    "trend_10m",
+    "golden_cross",
+    "abs_momentum",
+    "dual_momentum",
+    "breadth",
+    "dow_theory"
+   ]
+  },
+  {
+   "id": "calendar",
+   "name": "Sentiment and calendar",
+   "weight": 0.5,
+   "role": "driver",
+   "score": 0.5,
+   "members": [
+    "seasonality",
+    "sentiment"
+   ]
+  },
+  {
+   "id": "recession",
+   "name": "Recession risk",
+   "weight": 1.0,
+   "role": "alarm",
+   "score": 0.0,
+   "members": [
+    "yield_curve",
+    "sahm",
+    "cfnai_ma3",
+    "claims"
+   ]
+  },
+  {
+   "id": "credit_vol",
+   "name": "Credit and volatility",
+   "weight": 1.0,
+   "role": "alarm",
+   "score": -0.2857,
+   "members": [
+    "hy_spread",
+    "vix"
+   ]
+  },
+  {
+   "id": "valuation",
+   "name": "Valuation",
+   "weight": 0.75,
+   "role": "sizing",
+   "score": -1.0,
+   "members": [
+    "buffett",
+    "cape",
+    "fed_model",
+    "rule_of_20"
+   ]
+  },
+  {
+   "id": "where",
+   "name": "Where to look",
+   "weight": 0.0,
+   "role": "info",
+   "score": 0.375,
+   "members": [
+    "gtaa",
+    "sector_rotation",
+    "intermarket"
+   ]
+  }
+ ],
+ "frameworks": [
+  {
+   "id": "quadrant",
+   "name": "Growth and inflation quadrants",
+   "family": "macro",
+   "weight": 0.75,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "Stagflation: growth slowing, inflation accelerating",
+   "rule": "Growth and inflation each accelerating or slowing. Goldilocks or Reflation: +1. Stagflation: 0. Deflation: -1.",
+   "inputs": [
+    {
+     "label": "CFNAI 3-mo avg, change over 3 months",
+     "value": "-0.00"
+    },
+    {
+     "label": "Core PCE inflation",
+     "value": "3.1%"
+    },
+    {
+     "label": "Change in inflation over 6 months",
+     "value": "0.04 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "investment_clock",
+   "name": "Investment Clock",
+   "family": "macro",
+   "weight": 0.75,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "Overheat: growth above trend, inflation rising",
+   "rule": "Growth above or below trend, inflation rising or falling. Recovery: +1. Overheat or Reflation: 0. Stagflation: -1.",
+   "inputs": [
+    {
+     "label": "CFNAI 3-mo avg (0 = trend growth)",
+     "value": "0.02"
+    },
+    {
+     "label": "Change in inflation over 6 months",
+     "value": "0.04 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "business_cycle",
+   "name": "Business cycle phase",
+   "family": "macro",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Mid cycle",
+   "rule": "Early or Mid cycle: +1. Late cycle: 0. Recession: -1.",
+   "inputs": [
+    {
+     "label": "Unemployment above its 3-year low",
+     "value": "0.5 pts"
+    },
+    {
+     "label": "Fed funds change, 12 months",
+     "value": "0.00 pts"
+    },
+    {
+     "label": "Yield curve (10y minus 3m)",
+     "value": "0.90 pts"
+    },
+    {
+     "label": "CFNAI 3-mo avg",
+     "value": "0.02"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "yield_curve",
+   "name": "Yield curve recession model",
+   "family": "recession",
+   "weight": 1.0,
+   "vote": 1.0,
+   "vote_label": "Clear",
+   "reading": "13% recession probability",
+   "rule": "Recession probability 12 months out from the 10-year minus 3-month spread. Under 20%: +1. 40% or more: -1.",
+   "inputs": [
+    {
+     "label": "10-year yield",
+     "value": "5.13%"
+    },
+    {
+     "label": "3-month yield",
+     "value": "4.23%"
+    },
+    {
+     "label": "Spread",
+     "value": "0.90 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "sahm",
+   "name": "Sahm rule",
+   "family": "recession",
+   "weight": 1.0,
+   "vote": 1.0,
+   "vote_label": "Clear",
+   "reading": "Sahm reading 0.00",
+   "rule": "Rise in 3-month average unemployment over its 12-month low. Under 0.30: +1. 0.50 or more: -1.",
+   "inputs": [
+    {
+     "label": "Sahm rule",
+     "value": "0.00"
+    },
+    {
+     "label": "Unemployment rate",
+     "value": "4.2%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "cfnai_ma3",
+   "name": "Leading activity (CFNAI)",
+   "family": "recession",
+   "weight": 1.0,
+   "vote": 1.0,
+   "vote_label": "Clear",
+   "reading": "CFNAI 3-month average +0.02",
+   "rule": "CFNAI 3-month average. Zero or above: +1. Below -0.70: -1.",
+   "inputs": [
+    {
+     "label": "CFNAI 3-mo avg",
+     "value": "0.02"
+    },
+    {
+     "label": "Industrial production, yearly change",
+     "value": "1.7%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "claims",
+   "name": "Jobless claims trend",
+   "family": "recession",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Clear",
+   "reading": "Claims -14% from a year ago",
+   "rule": "Initial claims (4-week average) versus a year ago. Up less than 10%: +1. Up more than 20%: -1.",
+   "inputs": [
+    {
+     "label": "Initial claims, 4-week avg",
+     "value": "195,250"
+    },
+    {
+     "label": "Change from a year ago",
+     "value": "-13.9%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "fed_direction",
+   "name": "Don't fight the Fed",
+   "family": "policy",
+   "weight": 0.75,
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "Fed is hiking",
+   "rule": "Fed funds target versus 6 months ago. Lower: +1. Higher: -1.",
+   "inputs": [
+    {
+     "label": "Fed funds target (upper)",
+     "value": "4.00%"
+    },
+    {
+     "label": "Change over 6 months",
+     "value": "0.25 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "taylor_gap",
+   "name": "Taylor rule gap",
+   "family": "policy",
+   "weight": 0.75,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "Policy is 0.9 pts looser than the rule",
+   "rule": "Fed funds minus the Taylor rule rate. More than 1 pt above: -1. More than 1 pt below with inflation at or under 3%: +1.",
+   "inputs": [
+    {
+     "label": "Fed funds",
+     "value": "4.00%"
+    },
+    {
+     "label": "Taylor rule rate",
+     "value": "4.90%"
+    },
+    {
+     "label": "Core PCE inflation",
+     "value": "3.1%"
+    },
+    {
+     "label": "Unemployment gap",
+     "value": "0.2 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "fin_conditions",
+   "name": "Financial conditions",
+   "family": "policy",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "NFCI -0.46 (looser than average)",
+   "rule": "Chicago Fed NFCI. At or below zero and not tightening fast: +1. Above zero: -1.",
+   "inputs": [
+    {
+     "label": "NFCI",
+     "value": "-0.46"
+    },
+    {
+     "label": "Change over 3 months",
+     "value": "0.07"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "buffett",
+   "name": "Buffett indicator",
+   "family": "valuation",
+   "weight": 0.75,
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "Stocks are 255% of GDP, 100th percentile of history",
+   "rule": "Market value of US stocks as a share of GDP, ranked against its own history. Below the 40th percentile: +1. Above the 80th: -1.",
+   "inputs": [
+    {
+     "label": "Equity market value / GDP",
+     "value": "255%"
+    },
+    {
+     "label": "Percentile of own history",
+     "value": "100"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "trend_10m",
+   "name": "10-month trend rule",
+   "family": "trend",
+   "weight": 1.0,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "S&P 500 is 3.8% above its 10-month average",
+   "rule": "S&P 500 month-end close at or above its 10-month average: +1. Below: -1.",
+   "inputs": [
+    {
+     "label": "S&P 500 month-end close",
+     "value": "7,580"
+    },
+    {
+     "label": "10-month average",
+     "value": "7,304"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "golden_cross",
+   "name": "Golden cross / death cross",
+   "family": "trend",
+   "weight": 0.5,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Golden cross: 50-day above 200-day",
+   "rule": "50-day average above the 200-day average: +1. Below: -1.",
+   "inputs": [
+    {
+     "label": "50-day average",
+     "value": "7,697"
+    },
+    {
+     "label": "200-day average",
+     "value": "7,310"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "abs_momentum",
+   "name": "Absolute momentum",
+   "family": "trend",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Stocks +10.8% over 12 months vs 4.0% in T-bills",
+   "rule": "S&P 500 12-month price return above the T-bill yield of a year ago: +1. Below: -1.",
+   "inputs": [
+    {
+     "label": "S&P 500 12-month return (price only)",
+     "value": "10.8%"
+    },
+    {
+     "label": "3-month T-bill yield a year ago",
+     "value": "3.98%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "hy_spread",
+   "name": "High-yield spread regime",
+   "family": "credit_vol",
+   "weight": 1.0,
+   "vote": 0.0,
+   "vote_label": "Watch",
+   "reading": "High-yield spread 3.44%",
+   "rule": "Spread under 4% and near or below its 12-month average: +1. Above both 5% and its 12-month average: -1.",
+   "inputs": [
+    {
+     "label": "High-yield spread",
+     "value": "3.44%"
+    },
+    {
+     "label": "12-month average",
+     "value": "2.95%"
+    },
+    {
+     "label": "Chicago Fed credit subindex",
+     "value": "-0.01"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "vix",
+   "name": "VIX level and term structure",
+   "family": "credit_vol",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Clear",
+   "reading": "VIX one-month average 16.9",
+   "rule": "One-month average VIX under 20 with VIX below 3-month VIX: +1. Average above 30: -1.",
+   "inputs": [
+    {
+     "label": "VIX, one-month average",
+     "value": "16.9"
+    },
+    {
+     "label": "VIX, month-end",
+     "value": "19.4"
+    },
+    {
+     "label": "VIX / 3-month VIX",
+     "value": "0.93"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "seasonality",
+   "name": "Seasonality and election cycle",
+   "family": "calendar",
+   "weight": 0.5,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "November 2026: inside the November to April window, post-midterm window",
+   "rule": "Next month in November to April adds 1. Post-midterm window adds 1; midterm year before November subtracts 1. Total of 1 or more: +1. Below zero: -1.",
+   "inputs": [],
+   "table": null
+  },
+  {
+   "id": "dual_momentum",
+   "name": "Dual momentum",
+   "family": "trend",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Holds Foreign stocks",
+   "rule": "If US stocks beat T-bills over 12 months, hold US or foreign stocks, whichever is stronger: +1. Otherwise hold bonds: -1.",
+   "inputs": [
+    {
+     "label": "US stocks, 12-month return",
+     "value": "12.0%"
+    },
+    {
+     "label": "Foreign stocks, 12-month return",
+     "value": "13.7%"
+    },
+    {
+     "label": "T-bills, 12-month return",
+     "value": "3.7%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "breadth",
+   "name": "Market breadth",
+   "family": "trend",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "64% of sectors are above their 10-month average",
+   "rule": "Share of the 11 sectors above their 10-month average. 60% or more: +1. 40% or less: -1.",
+   "inputs": [
+    {
+     "label": "Sectors above their 10-month average",
+     "value": "64%"
+    },
+    {
+     "label": "Sectors counted",
+     "value": "11"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "dow_theory",
+   "name": "Dow Theory",
+   "family": "trend",
+   "weight": 0.5,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Industrials and transports both in uptrends",
+   "rule": "Dow industrials and transports both above their 10-month averages: +1. Both below: -1. Split: 0.",
+   "inputs": [
+    {
+     "label": "Industrials vs 10-month average",
+     "value": "2.8%"
+    },
+    {
+     "label": "Transports vs 10-month average",
+     "value": "0.5%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "cape",
+   "name": "Shiller CAPE and excess CAPE yield",
+   "family": "valuation",
+   "weight": 0.75,
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "CAPE about 40.0 (estimated), 98th percentile of history",
+   "rule": "CAPE ranked against its own history. Below the 40th percentile: +1. Above the 80th: -1.",
+   "inputs": [
+    {
+     "label": "CAPE",
+     "value": "40.0"
+    },
+    {
+     "label": "Percentile of own history",
+     "value": "98"
+    },
+    {
+     "label": "Real 10-year Treasury yield",
+     "value": "2.78%"
+    },
+    {
+     "label": "Excess CAPE yield",
+     "value": "-0.28%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "fed_model",
+   "name": "Fed model (equity risk premium)",
+   "family": "valuation",
+   "weight": 0.75,
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "Stocks yield 1.0 pts less than the 10-year Treasury",
+   "rule": "Trailing earnings yield minus the 10-year Treasury yield. Above 2 points: +1. Below zero: -1.",
+   "inputs": [
+    {
+     "label": "Trailing P/E",
+     "value": "24.1"
+    },
+    {
+     "label": "Earnings yield",
+     "value": "4.15%"
+    },
+    {
+     "label": "10-year Treasury yield",
+     "value": "5.13%"
+    },
+    {
+     "label": "Gap",
+     "value": "-0.99 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "rule_of_20",
+   "name": "Rule of 20",
+   "family": "valuation",
+   "weight": 0.5,
+   "vote": -1.0,
+   "vote_label": "Negative",
+   "reading": "P/E plus inflation is 27.8",
+   "rule": "Trailing P/E plus CPI inflation. Below 18: +1. Above 22: -1.",
+   "inputs": [
+    {
+     "label": "Trailing P/E",
+     "value": "24.1"
+    },
+    {
+     "label": "CPI inflation",
+     "value": "3.7%"
+    },
+    {
+     "label": "Sum",
+     "value": "27.8"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "sentiment",
+   "name": "Contrarian sentiment",
+   "family": "calendar",
+   "weight": 0.5,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "Bulls minus bears: -4 points",
+   "rule": "AAII bulls minus bears, 4-week average. At -20 or lower: +1. At +30 or higher: -1.",
+   "inputs": [
+    {
+     "label": "AAII bull-bear spread, 4-week average",
+     "value": "-3.5 pts"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "net_liquidity",
+   "name": "Liquidity",
+   "family": "policy",
+   "weight": 0.75,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "Net liquidity +0.6% over 6 months",
+   "rule": "Fed balance sheet minus Treasury cash minus reverse repo, change over 6 months. Up more than 2%: +1. Down more than 2%: -1.",
+   "inputs": [
+    {
+     "label": "Net liquidity ($ billions)",
+     "value": "5,742"
+    },
+    {
+     "label": "Change over 6 months",
+     "value": "0.6%"
+    }
+   ],
+   "table": null
+  },
+  {
+   "id": "gtaa",
+   "name": "Multi-asset trend",
+   "family": "where",
+   "weight": 0.75,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "In uptrends: US stocks, Commodities",
+   "rule": "Each asset class against its own 10-month average. Three or more of five in uptrends: +1. One or none: -1.",
+   "inputs": [],
+   "table": {
+    "columns": [
+     "Asset class",
+     "vs 10-month average",
+     "12-month return"
+    ],
+    "rows": [
+     [
+      "US stocks",
+      "Above",
+      "12.0%"
+     ],
+     [
+      "Foreign stocks",
+      "Below",
+      "13.7%"
+     ],
+     [
+      "US bonds",
+      "Below",
+      "-0.2%"
+     ],
+     [
+      "Gold",
+      "Below",
+      "-3.4%"
+     ],
+     [
+      "Commodities",
+      "Above",
+      "51.8%"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "sector_rotation",
+   "name": "Sector momentum rotation",
+   "family": "where",
+   "weight": 0.75,
+   "vote": 1.0,
+   "vote_label": "Positive",
+   "reading": "Leading: Energy, Health care, Technology. Lagging: Consumer discretionary, Utilities, Communication",
+   "rule": "Sectors ranked by their average 6 and 12-month return. Two or more cyclical sectors in the top three: +1. One or none: -1.",
+   "inputs": [],
+   "table": {
+    "columns": [
+     "Rank",
+     "Sector",
+     "Type",
+     "6 and 12-month return, averaged",
+     "vs 10-month average"
+    ],
+    "rows": [
+     [
+      1,
+      "Energy",
+      "Cyclical",
+      "41.2%",
+      "Above"
+     ],
+     [
+      2,
+      "Health care",
+      "Defensive",
+      "29.0%",
+      "Above"
+     ],
+     [
+      3,
+      "Technology",
+      "Cyclical",
+      "16.4%",
+      "Above"
+     ],
+     [
+      4,
+      "Materials",
+      "Cyclical",
+      "14.3%",
+      "Above"
+     ],
+     [
+      5,
+      "Consumer staples",
+      "Defensive",
+      "14.0%",
+      "Above"
+     ],
+     [
+      6,
+      "Financials",
+      "Cyclical",
+      "9.4%",
+      "Above"
+     ],
+     [
+      7,
+      "Real estate",
+      "Defensive",
+      "4.1%",
+      "Above"
+     ],
+     [
+      8,
+      "Industrials",
+      "Cyclical",
+      "2.8%",
+      "Below"
+     ],
+     [
+      9,
+      "Consumer discretionary",
+      "Cyclical",
+      "-2.6%",
+      "Below"
+     ],
+     [
+      10,
+      "Utilities",
+      "Defensive",
+      "-2.9%",
+      "Below"
+     ],
+     [
+      11,
+      "Communication",
+      "Cyclical",
+      "-12.8%",
+      "Below"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "intermarket",
+   "name": "Intermarket ratios",
+   "family": "where",
+   "weight": 0.5,
+   "vote": 0.0,
+   "vote_label": "Neutral",
+   "reading": "1 of 3 growth ratios are rising",
+   "rule": "Copper/gold, discretionary/staples and small/large against their 10-month averages. Two or more rising: +1. None rising: -1.",
+   "inputs": [],
+   "table": {
+    "columns": [
+     "Ratio",
+     "vs its 10-month average",
+     "Says"
+    ],
+    "rows": [
+     [
+      "Copper / gold",
+      "Above",
+      "Growth improving"
+     ],
+     [
+      "Discretionary / staples",
+      "Below",
+      "Growth weakening"
+     ],
+     [
+      "Small caps / large caps",
+      "Below",
+      "Growth weakening"
+     ]
+    ]
+   }
+  }
+ ],
+ "changes": [
+  "Growth and inflation quadrants moved from Positive to Neutral",
+  "High-yield spread regime moved from Clear to Watch",
+  "Seasonality and election cycle moved from Negative to Positive",
+  "Market breadth moved from Negative to Positive",
+  "Dow Theory moved from Neutral to Positive",
+  "Multi-asset trend moved from Positive to Neutral"
+ ],
+ "allocation": {
+  "neutral": {
+   "stocks": 60,
+   "bonds": 30,
+   "cash": 5,
+   "alternatives": 5
+  },
+  "model": {
+   "stocks": 60,
+   "bonds": 15,
+   "cash": 15,
+   "alternatives": 10
+  },
+  "equity_offset": 0.0,
+  "alt_tilt": 5.0,
+  "alt_note": "inflation is accelerating.",
+  "defensive": "cash",
+  "cash_share": {
+   "cash": 0.5,
+   "bonds": 0.1,
+   "split": null
+  },
+  "alt_step": 5,
+  "views": [
+   {
+    "id": "quadrant",
+    "favors": [
+     "alternatives",
+     "cash"
+    ],
+    "note": "Growth down, inflation up: commodities, gold and cash; hard on both stocks and bonds."
+   },
+   {
+    "id": "investment_clock",
+    "favors": [
+     "alternatives"
+    ],
+    "note": "Above-trend growth with rising inflation: commodities lead, bonds lag."
+   },
+   {
+    "id": "business_cycle",
+    "favors": [
+     "stocks"
+    ],
+    "note": "Mid cycle: stocks still lead, with smaller gains and more frequent corrections."
+   },
+   {
+    "id": "fed_direction",
+    "favors": [
+     "cash"
+    ],
+    "note": "Fed hiking: short-term holdings earn more each meeting while longer bonds lose value."
+   },
+   {
+    "id": "trend_10m",
+    "favors": [
+     "stocks"
+    ],
+    "note": "Stocks are in an uptrend: stay invested."
+   },
+   {
+    "id": "abs_momentum",
+    "favors": [
+     "stocks"
+    ],
+    "note": "Stocks have beaten T-bills over 12 months: hold stocks."
+   },
+   {
+    "id": "dual_momentum",
+    "favors": [
+     "stocks"
+    ],
+    "note": "Dual momentum currently holds foreign stocks."
+   },
+   {
+    "id": "gtaa",
+    "favors": [
+     "stocks",
+     "alternatives",
+     "cash"
+    ],
+    "note": "In uptrends: US stocks, Commodities."
+   },
+   {
+    "id": "fed_model",
+    "favors": [
+     "bonds"
+    ],
+    "note": "The 10-year Treasury yields more than stocks earn: bonds are the better deal on this measure."
+   },
+   {
+    "id": "buffett",
+    "favors": [
+     "bonds",
+     "cash"
+    ],
+    "note": "Stocks are expensive against the economy: expect lower long-run stock returns and keep stock bets small."
+   }
+  ],
+  "tally": {
+   "stocks": 4.0,
+   "bonds": 1.5,
+   "cash": 3.0,
+   "alternatives": 2.25
+  }
+ },
+ "metrics": [
+  {
+   "key": "cfnai_ma3",
+   "group": "Growth",
+   "label": "CFNAI, 3-month average",
+   "value": "0.02",
+   "avg12": "-0.10",
+   "vs_avg": "above"
+  },
+  {
+   "key": "indpro_yoy",
+   "group": "Growth",
+   "label": "Industrial production, yearly change",
+   "value": "1.7%",
+   "avg12": "0.8%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "unrate",
+   "group": "Labor",
+   "label": "Unemployment rate",
+   "value": "4.2%",
+   "avg12": "4.3%",
+   "vs_avg": "below"
+  },
+  {
+   "key": "claims_4wk",
+   "group": "Labor",
+   "label": "Initial claims, 4-week average",
+   "value": "195,250",
+   "avg12": "213,333",
+   "vs_avg": "below"
+  },
+  {
+   "key": "sahm",
+   "group": "Labor",
+   "label": "Sahm rule",
+   "value": "0.00",
+   "avg12": "0.18",
+   "vs_avg": "below"
+  },
+  {
+   "key": "core_pce_yoy",
+   "group": "Inflation",
+   "label": "Core PCE inflation",
+   "value": "3.1%",
+   "avg12": "3.0%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "cpi_yoy",
+   "group": "Inflation",
+   "label": "CPI inflation",
+   "value": "3.7%",
+   "avg12": "3.1%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "fed_funds",
+   "group": "Policy and rates",
+   "label": "Fed funds target (upper)",
+   "value": "4.00%",
+   "avg12": "3.81%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "real_ff",
+   "group": "Policy and rates",
+   "label": "Real policy rate",
+   "value": "0.86%",
+   "avg12": "0.86%",
+   "vs_avg": "below"
+  },
+  {
+   "key": "taylor_gap",
+   "group": "Policy and rates",
+   "label": "Taylor rule gap",
+   "value": "-0.90 pts",
+   "avg12": "-0.71 pts",
+   "vs_avg": "below"
+  },
+  {
+   "key": "y10",
+   "group": "Policy and rates",
+   "label": "10-year Treasury yield",
+   "value": "5.13%",
+   "avg12": "4.37%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "y2",
+   "group": "Policy and rates",
+   "label": "2-year Treasury yield",
+   "value": "4.74%",
+   "avg12": "3.86%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "curve",
+   "group": "Policy and rates",
+   "label": "Yield curve, 10y minus 3m",
+   "value": "0.90 pts",
+   "avg12": "0.56 pts",
+   "vs_avg": "above"
+  },
+  {
+   "key": "curve_prob",
+   "group": "Policy and rates",
+   "label": "Recession probability (yield curve)",
+   "value": "13%",
+   "avg12": "19%",
+   "vs_avg": "below"
+  },
+  {
+   "key": "nfci",
+   "group": "Policy and rates",
+   "label": "Financial conditions (NFCI)",
+   "value": "-0.46",
+   "avg12": "-0.51",
+   "vs_avg": "above"
+  },
+  {
+   "key": "hy_oas",
+   "group": "Credit and volatility",
+   "label": "High-yield spread",
+   "value": "3.44%",
+   "avg12": "2.91%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "vix",
+   "group": "Credit and volatility",
+   "label": "VIX",
+   "value": "19.4",
+   "avg12": "17.3",
+   "vs_avg": "above"
+  },
+  {
+   "key": "vix_ratio",
+   "group": "Credit and volatility",
+   "label": "VIX / 3-month VIX",
+   "value": "0.93",
+   "avg12": "0.87",
+   "vs_avg": "above"
+  },
+  {
+   "key": "sp500",
+   "group": "Markets",
+   "label": "S&P 500",
+   "value": "7,580",
+   "avg12": "7,166",
+   "vs_avg": "above"
+  },
+  {
+   "key": "sp500_vs_sma",
+   "group": "Markets",
+   "label": "S&P 500 vs 10-month average",
+   "value": "3.8%",
+   "avg12": "6.8%",
+   "vs_avg": "below"
+  },
+  {
+   "key": "sp500_ret12",
+   "group": "Markets",
+   "label": "S&P 500, 12-month return",
+   "value": "10.8%",
+   "avg12": "18.9%",
+   "vs_avg": "below"
+  },
+  {
+   "key": "breadth",
+   "group": "Markets",
+   "label": "Sectors above their 10-month average",
+   "value": "64%",
+   "avg12": "77%",
+   "vs_avg": "below"
+  },
+  {
+   "key": "buffett",
+   "group": "Valuation",
+   "label": "Stock market value / GDP",
+   "value": "255%",
+   "avg12": "225%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "cape",
+   "group": "Valuation",
+   "label": "Shiller CAPE",
+   "value": "40.0",
+   "avg12": "40.5",
+   "vs_avg": "below"
+  },
+  {
+   "key": "pe",
+   "group": "Valuation",
+   "label": "Trailing P/E",
+   "value": "24.1",
+   "avg12": "24.4",
+   "vs_avg": "below"
+  },
+  {
+   "key": "fed_model_gap",
+   "group": "Valuation",
+   "label": "Earnings yield minus 10-year yield",
+   "value": "-0.99 pts",
+   "avg12": "-0.27 pts",
+   "vs_avg": "below"
+  },
+  {
+   "key": "excess_cape_yield",
+   "group": "Valuation",
+   "label": "Excess CAPE yield",
+   "value": "-0.28%",
+   "avg12": "0.42%",
+   "vs_avg": "below"
+  },
+  {
+   "key": "real_y10",
+   "group": "Policy and rates",
+   "label": "10-year real yield (TIPS)",
+   "value": "2.78%",
+   "avg12": "2.06%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "net_liquidity_chg6",
+   "group": "Policy and rates",
+   "label": "Net liquidity, 6-month change",
+   "value": "0.6%",
+   "avg12": "-0.8%",
+   "vs_avg": "above"
+  },
+  {
+   "key": "aaii_spread",
+   "group": "Sentiment",
+   "label": "AAII bulls minus bears",
+   "value": "-4 pts",
+   "avg12": "-2 pts",
+   "vs_avg": "below"
+  }
+ ],
+ "history": [
+  {
+   "date": "2016-11-30",
+   "composite": 0.2696,
+   "stance": "Neutral",
+   "sp500": 2198.81
+  },
+  {
+   "date": "2016-12-31",
+   "composite": 0.2071,
+   "stance": "Neutral",
+   "sp500": 2238.83
+  },
+  {
+   "date": "2017-01-31",
+   "composite": 0.5833,
+   "stance": "Neutral",
+   "sp500": 2278.87
+  },
+  {
+   "date": "2017-02-28",
+   "composite": 0.6458,
+   "stance": "Overweight",
+   "sp500": 2363.64
+  },
+  {
+   "date": "2017-03-31",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 2362.72
+  },
+  {
+   "date": "2017-04-30",
+   "composite": 0.3083,
+   "stance": "Overweight",
+   "sp500": 2384.2
+  },
+  {
+   "date": "2017-05-31",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 2411.8
+  },
+  {
+   "date": "2017-06-30",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 2423.41
+  },
+  {
+   "date": "2017-07-31",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 2470.3
+  },
+  {
+   "date": "2017-08-31",
+   "composite": 0.4583,
+   "stance": "Overweight",
+   "sp500": 2471.65
+  },
+  {
+   "date": "2017-09-30",
+   "composite": 0.3333,
+   "stance": "Neutral",
+   "sp500": 2519.36
+  },
+  {
+   "date": "2017-10-31",
+   "composite": 0.4792,
+   "stance": "Neutral",
+   "sp500": 2575.26
+  },
+  {
+   "date": "2017-11-30",
+   "composite": 0.7083,
+   "stance": "Neutral",
+   "sp500": 2647.58
+  },
+  {
+   "date": "2017-12-31",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 2673.61
+  },
+  {
+   "date": "2018-01-31",
+   "composite": 0.3958,
+   "stance": "Overweight",
+   "sp500": 2823.81
+  },
+  {
+   "date": "2018-02-28",
+   "composite": 0.2887,
+   "stance": "Neutral",
+   "sp500": 2713.83
+  },
+  {
+   "date": "2018-03-31",
+   "composite": 0.337,
+   "stance": "Neutral",
+   "sp500": 2640.87
+  },
+  {
+   "date": "2018-04-30",
+   "composite": 0.1912,
+   "stance": "Neutral",
+   "sp500": 2648.05
+  },
+  {
+   "date": "2018-05-31",
+   "composite": 0.2157,
+   "stance": "Neutral",
+   "sp500": 2705.27
+  },
+  {
+   "date": "2018-06-30",
+   "composite": 0.25,
+   "stance": "Neutral",
+   "sp500": 2718.37
+  },
+  {
+   "date": "2018-07-31",
+   "composite": 0.3333,
+   "stance": "Neutral",
+   "sp500": 2816.29
+  },
+  {
+   "date": "2018-08-31",
+   "composite": 0.25,
+   "stance": "Neutral",
+   "sp500": 2901.52
+  },
+  {
+   "date": "2018-09-30",
+   "composite": 0.3333,
+   "stance": "Neutral",
+   "sp500": 2913.98
+  },
+  {
+   "date": "2018-10-31",
+   "composite": -0.0042,
+   "stance": "Neutral",
+   "sp500": 2711.74
+  },
+  {
+   "date": "2018-11-30",
+   "composite": 0.1525,
+   "stance": "Neutral",
+   "sp500": 2760.17
+  },
+  {
+   "date": "2018-12-31",
+   "composite": -0.7792,
+   "stance": "Neutral",
+   "sp500": 2506.85
+  },
+  {
+   "date": "2019-01-31",
+   "composite": -0.5115,
+   "stance": "Underweight",
+   "sp500": 2704.1
+  },
+  {
+   "date": "2019-02-28",
+   "composite": 0.0199,
+   "stance": "Underweight",
+   "sp500": 2784.49
+  },
+  {
+   "date": "2019-03-31",
+   "composite": 0.0199,
+   "stance": "Neutral",
+   "sp500": 2834.4
+  },
+  {
+   "date": "2019-04-30",
+   "composite": 0.1375,
+   "stance": "Neutral",
+   "sp500": 2945.83
+  },
+  {
+   "date": "2019-05-31",
+   "composite": -0.2743,
+   "stance": "Neutral",
+   "sp500": 2752.06
+  },
+  {
+   "date": "2019-06-30",
+   "composite": 0.3667,
+   "stance": "Neutral",
+   "sp500": 2941.76
+  },
+  {
+   "date": "2019-07-31",
+   "composite": 0.4292,
+   "stance": "Neutral",
+   "sp500": 2980.38
+  },
+  {
+   "date": "2019-08-31",
+   "composite": 0.1919,
+   "stance": "Neutral",
+   "sp500": 2926.46
+  },
+  {
+   "date": "2019-09-30",
+   "composite": 0.1478,
+   "stance": "Neutral",
+   "sp500": 2976.74
+  },
+  {
+   "date": "2019-10-31",
+   "composite": 0.45,
+   "stance": "Neutral",
+   "sp500": 3037.56
+  },
+  {
+   "date": "2019-11-30",
+   "composite": 0.45,
+   "stance": "Neutral",
+   "sp500": 3140.98
+  },
+  {
+   "date": "2019-12-31",
+   "composite": 0.45,
+   "stance": "Neutral",
+   "sp500": 3230.78
+  },
+  {
+   "date": "2020-01-31",
+   "composite": 0.3429,
+   "stance": "Neutral",
+   "sp500": 3225.52
+  },
+  {
+   "date": "2020-02-29",
+   "composite": -0.0488,
+   "stance": "Neutral",
+   "sp500": 2954.22
+  },
+  {
+   "date": "2020-03-31",
+   "composite": -0.625,
+   "stance": "Neutral",
+   "sp500": 2584.59
+  },
+  {
+   "date": "2020-04-30",
+   "composite": -1.0,
+   "stance": "Underweight",
+   "sp500": 2912.43
+  },
+  {
+   "date": "2020-05-31",
+   "composite": -0.7074,
+   "stance": "Underweight",
+   "sp500": 3044.31
+  },
+  {
+   "date": "2020-06-30",
+   "composite": -0.6478,
+   "stance": "Underweight",
+   "sp500": 3100.29
+  },
+  {
+   "date": "2020-07-31",
+   "composite": -0.325,
+   "stance": "Underweight",
+   "sp500": 3271.12
+  },
+  {
+   "date": "2020-08-31",
+   "composite": 0.2012,
+   "stance": "Neutral",
+   "sp500": 3500.31
+  },
+  {
+   "date": "2020-09-30",
+   "composite": 0.1387,
+   "stance": "Neutral",
+   "sp500": 3363.0
+  },
+  {
+   "date": "2020-10-31",
+   "composite": 0.097,
+   "stance": "Neutral",
+   "sp500": 3269.96
+  },
+  {
+   "date": "2020-11-30",
+   "composite": 0.0554,
+   "stance": "Neutral",
+   "sp500": 3621.63
+  },
+  {
+   "date": "2020-12-31",
+   "composite": 0.1179,
+   "stance": "Neutral",
+   "sp500": 3756.07
+  },
+  {
+   "date": "2021-01-31",
+   "composite": 0.1179,
+   "stance": "Neutral",
+   "sp500": 3714.24
+  },
+  {
+   "date": "2021-02-28",
+   "composite": 0.1179,
+   "stance": "Neutral",
+   "sp500": 3811.15
+  },
+  {
+   "date": "2021-03-31",
+   "composite": 0.0679,
+   "stance": "Neutral",
+   "sp500": 3972.89
+  },
+  {
+   "date": "2021-04-30",
+   "composite": 0.3042,
+   "stance": "Neutral",
+   "sp500": 4181.17
+  },
+  {
+   "date": "2021-05-31",
+   "composite": 0.5417,
+   "stance": "Neutral",
+   "sp500": 4204.11
+  },
+  {
+   "date": "2021-06-30",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 4297.5
+  },
+  {
+   "date": "2021-07-31",
+   "composite": 0.5417,
+   "stance": "Overweight",
+   "sp500": 4395.26
+  },
+  {
+   "date": "2021-08-31",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 4522.68
+  },
+  {
+   "date": "2021-09-30",
+   "composite": 0.44,
+   "stance": "Overweight",
+   "sp500": 4307.54
+  },
+  {
+   "date": "2021-10-31",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 4605.38
+  },
+  {
+   "date": "2021-11-30",
+   "composite": 0.625,
+   "stance": "Overweight",
+   "sp500": 4567.0
+  },
+  {
+   "date": "2021-12-31",
+   "composite": 0.5179,
+   "stance": "Overweight",
+   "sp500": 4766.18
+  },
+  {
+   "date": "2022-01-31",
+   "composite": 0.4161,
+   "stance": "Overweight",
+   "sp500": 4515.55
+  },
+  {
+   "date": "2022-02-28",
+   "composite": -0.0821,
+   "stance": "Neutral",
+   "sp500": 4373.94
+  },
+  {
+   "date": "2022-03-31",
+   "composite": -0.0368,
+   "stance": "Neutral",
+   "sp500": 4530.41
+  },
+  {
+   "date": "2022-04-30",
+   "composite": -0.5074,
+   "stance": "Neutral",
+   "sp500": 4131.93
+  },
+  {
+   "date": "2022-05-31",
+   "composite": -0.5662,
+   "stance": "Underweight",
+   "sp500": 4132.15
+  },
+  {
+   "date": "2022-06-30",
+   "composite": -0.7083,
+   "stance": "Underweight",
+   "sp500": 3785.38
+  },
+  {
+   "date": "2022-07-31",
+   "composite": -0.9417,
+   "stance": "Underweight",
+   "sp500": 4130.29
+  },
+  {
+   "date": "2022-08-31",
+   "composite": -0.9458,
+   "stance": "Underweight",
+   "sp500": 3955.0
+  },
+  {
+   "date": "2022-09-30",
+   "composite": -0.8625,
+   "stance": "Underweight",
+   "sp500": 3585.62
+  },
+  {
+   "date": "2022-10-31",
+   "composite": -0.5304,
+   "stance": "Underweight",
+   "sp500": 3871.98
+  },
+  {
+   "date": "2022-11-30",
+   "composite": -0.1929,
+   "stance": "Underweight",
+   "sp500": 4080.11
+  },
+  {
+   "date": "2022-12-31",
+   "composite": -0.6645,
+   "stance": "Underweight",
+   "sp500": 3839.5
+  },
+  {
+   "date": "2023-01-31",
+   "composite": -0.4304,
+   "stance": "Underweight",
+   "sp500": 4076.6
+  },
+  {
+   "date": "2023-02-28",
+   "composite": -0.4733,
+   "stance": "Neutral",
+   "sp500": 3970.15
+  },
+  {
+   "date": "2023-03-31",
+   "composite": -0.0395,
+   "stance": "Neutral",
+   "sp500": 4109.31
+  },
+  {
+   "date": "2023-04-30",
+   "composite": 0.0395,
+   "stance": "Neutral",
+   "sp500": 4169.48
+  },
+  {
+   "date": "2023-05-31",
+   "composite": -0.1823,
+   "stance": "Neutral",
+   "sp500": 4179.83
+  },
+  {
+   "date": "2023-06-30",
+   "composite": 0.003,
+   "stance": "Neutral",
+   "sp500": 4450.38
+  },
+  {
+   "date": "2023-07-31",
+   "composite": -0.0095,
+   "stance": "Neutral",
+   "sp500": 4588.96
+  },
+  {
+   "date": "2023-08-31",
+   "composite": 0.1696,
+   "stance": "Neutral",
+   "sp500": 4507.66
+  },
+  {
+   "date": "2023-09-30",
+   "composite": -0.0622,
+   "stance": "Neutral",
+   "sp500": 4288.05
+  },
+  {
+   "date": "2023-10-31",
+   "composite": -0.1958,
+   "stance": "Neutral",
+   "sp500": 4193.8
+  },
+  {
+   "date": "2023-11-30",
+   "composite": -0.0762,
+   "stance": "Neutral",
+   "sp500": 4567.8
+  },
+  {
+   "date": "2023-12-31",
+   "composite": 0.0905,
+   "stance": "Neutral",
+   "sp500": 4769.83
+  },
+  {
+   "date": "2024-01-31",
+   "composite": 0.1155,
+   "stance": "Neutral",
+   "sp500": 4845.65
+  },
+  {
+   "date": "2024-02-29",
+   "composite": 0.1155,
+   "stance": "Neutral",
+   "sp500": 5096.27
+  },
+  {
+   "date": "2024-03-31",
+   "composite": 0.2583,
+   "stance": "Neutral",
+   "sp500": 5254.35
+  },
+  {
+   "date": "2024-04-30",
+   "composite": 0.0458,
+   "stance": "Neutral",
+   "sp500": 5035.69
+  },
+  {
+   "date": "2024-05-31",
+   "composite": 0.2125,
+   "stance": "Neutral",
+   "sp500": 5277.51
+  },
+  {
+   "date": "2024-06-30",
+   "composite": 0.15,
+   "stance": "Neutral",
+   "sp500": 5460.48
+  },
+  {
+   "date": "2024-07-31",
+   "composite": 0.028,
+   "stance": "Neutral",
+   "sp500": 5522.3
+  },
+  {
+   "date": "2024-08-31",
+   "composite": -0.2292,
+   "stance": "Neutral",
+   "sp500": 5648.4
+  },
+  {
+   "date": "2024-09-30",
+   "composite": -0.1042,
+   "stance": "Neutral",
+   "sp500": 5762.48
+  },
+  {
+   "date": "2024-10-31",
+   "composite": -0.1155,
+   "stance": "Neutral",
+   "sp500": 5705.45
+  },
+  {
+   "date": "2024-11-30",
+   "composite": 0.2792,
+   "stance": "Neutral",
+   "sp500": 6032.38
+  },
+  {
+   "date": "2024-12-31",
+   "composite": 0.2792,
+   "stance": "Neutral",
+   "sp500": 5881.63
+  },
+  {
+   "date": "2025-01-31",
+   "composite": 0.3625,
+   "stance": "Neutral",
+   "sp500": 6040.53
+  },
+  {
+   "date": "2025-02-28",
+   "composite": 0.5083,
+   "stance": "Neutral",
+   "sp500": 5954.5
+  },
+  {
+   "date": "2025-03-31",
+   "composite": 0.3267,
+   "stance": "Neutral",
+   "sp500": 5611.85
+  },
+  {
+   "date": "2025-04-30",
+   "composite": -0.126,
+   "stance": "Neutral",
+   "sp500": 5569.06
+  },
+  {
+   "date": "2025-05-31",
+   "composite": 0.3777,
+   "stance": "Neutral",
+   "sp500": 5911.69
+  },
+  {
+   "date": "2025-06-30",
+   "composite": 0.2466,
+   "stance": "Neutral",
+   "sp500": 6204.95
+  },
+  {
+   "date": "2025-07-31",
+   "composite": 0.325,
+   "stance": "Neutral",
+   "sp500": 6339.39
+  },
+  {
+   "date": "2025-08-31",
+   "composite": 0.2625,
+   "stance": "Neutral",
+   "sp500": 6460.26
+  },
+  {
+   "date": "2025-09-30",
+   "composite": 0.3458,
+   "stance": "Neutral",
+   "sp500": 6688.46
+  },
+  {
+   "date": "2025-10-31",
+   "composite": 0.4292,
+   "stance": "Neutral",
+   "sp500": 6840.2
+  },
+  {
+   "date": "2025-11-30",
+   "composite": 0.3458,
+   "stance": "Neutral",
+   "sp500": 6849.09
+  },
+  {
+   "date": "2025-12-31",
+   "composite": 0.1958,
+   "stance": "Neutral",
+   "sp500": 6845.5
+  },
+  {
+   "date": "2026-01-31",
+   "composite": 0.2625,
+   "stance": "Neutral",
+   "sp500": 6939.03
+  },
+  {
+   "date": "2026-02-28",
+   "composite": 0.2792,
+   "stance": "Neutral",
+   "sp500": 6878.88
+  },
+  {
+   "date": "2026-03-31",
+   "composite": 0.263,
+   "stance": "Neutral",
+   "sp500": 6528.52
+  },
+  {
+   "date": "2026-04-30",
+   "composite": 0.6042,
+   "stance": "Neutral",
+   "sp500": 7209.01
+  },
+  {
+   "date": "2026-05-31",
+   "composite": 0.6042,
+   "stance": "Overweight",
+   "sp500": 7580.06
+  },
+  {
+   "date": "2026-06-30",
+   "composite": 0.2458,
+   "stance": "Overweight",
+   "sp500": 7499.36
+  },
+  {
+   "date": "2026-07-31",
+   "composite": 0.4583,
+   "stance": "Neutral",
+   "sp500": 7489.72
+  },
+  {
+   "date": "2026-08-31",
+   "composite": 0.4583,
+   "stance": "Neutral",
+   "sp500": 7686.14
+  },
+  {
+   "date": "2026-09-30",
+   "composite": 0.2598,
+   "stance": "Neutral",
+   "sp500": 7651.54
+  },
+  {
+   "date": "2026-10-31",
+   "composite": 0.3571,
+   "stance": "Neutral",
+   "sp500": 7580.07
+  }
+ ],
+ "sources": [
+  {
+   "id": "CFNAI",
+   "name": "Chicago Fed National Activity Index",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "INDPRO",
+   "name": "Industrial production",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "UNRATE",
+   "name": "Unemployment rate",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "SAHMREALTIME",
+   "name": "Sahm rule (real time)",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "ICSA",
+   "name": "Initial jobless claims",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "NROU",
+   "name": "Natural rate of unemployment (CBO)",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "PCEPILFE",
+   "name": "Core PCE price index",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "CPIAUCSL",
+   "name": "CPI, all items",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "DFEDTARU",
+   "name": "Fed funds target, upper bound",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "FEDFUNDS",
+   "name": "Effective fed funds rate",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "DGS10",
+   "name": "10-year Treasury yield",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "DGS2",
+   "name": "2-year Treasury yield",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "DGS3MO",
+   "name": "3-month Treasury yield",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "NFCI",
+   "name": "Chicago Fed financial conditions index",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "NFCICREDIT",
+   "name": "Chicago Fed financial conditions, credit subindex",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "NCBEILQ027S",
+   "name": "Corporate equities, market value (Fed Z.1)",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "GDP",
+   "name": "Nominal GDP",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "DFII10",
+   "name": "10-year real Treasury yield (TIPS)",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "WALCL",
+   "name": "Federal Reserve total assets",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "WTREGEN",
+   "name": "Treasury General Account",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "RRPONTSYD",
+   "name": "Overnight reverse repo balances",
+   "rights": "public",
+   "available": true
+  },
+  {
+   "id": "SP500",
+   "name": "S&P 500 index",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "VIXCLS",
+   "name": "CBOE VIX",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "VXVCLS",
+   "name": "CBOE 3-month VIX",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "BAMLH0A0HYM2",
+   "name": "ICE BofA US high-yield spread",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "ETF prices",
+   "name": "Adjusted closes for 22 ETFs (Yahoo Finance, Stooq as fallback)",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "Shiller CAPE and P/E",
+   "name": "S&P 500 valuation history (Shiller's dataset; multpl.com when reachable)",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "Current P/E",
+   "name": "Trailing P/E of an S&P 500 index fund (Yahoo Finance)",
+   "rights": "third_party",
+   "available": true
+  },
+  {
+   "id": "AAII survey",
+   "name": "AAII investor sentiment survey",
+   "rights": "third_party",
+   "available": true
+  }
+ ]
+}

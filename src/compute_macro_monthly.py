@@ -4,17 +4,25 @@ import time
 import math
 import pandas as pd
 import numpy as np
-from fredapi import Fred
+try:
+    from fredapi import Fred
+except ImportError:  # tests run without the client installed
+    Fred = None
 
 # ------------------------
 # Config
 # ------------------------
-FRED_API_KEY = os.getenv("FRED_API_KEY")
-if not FRED_API_KEY:
-    print("ERROR: FRED_API_KEY is not set.", file=sys.stderr)
-    sys.exit(1)
+_fred = None
 
-fred = Fred(api_key=FRED_API_KEY)
+def _client():
+    global _fred
+    if _fred is None:
+        key = os.getenv("FRED_API_KEY")
+        if not key:
+            print("ERROR: FRED_API_KEY is not set.", file=sys.stderr)
+            sys.exit(1)
+        _fred = Fred(api_key=key)
+    return _fred
 
 OUT_PATH = "data/macro_monthly_history.csv"
 INTERP_REPORT_PATH = "data/interpolation_report.csv"
@@ -25,7 +33,7 @@ INDPRO = "INDPRO"                  # Industrial Production (index)
 CFNAI  = "CFNAI"                   # Chicago Fed National Activity Index
 DGS10  = "DGS10"                   # 10Y Treasury (percent, daily)
 DGS3MO = "DGS3MO"                  # 3M Treasury (percent, daily)
-BAML_OAS = "BAMLH0A0HYM2"          # HY OAS (bps, daily)
+BAML_OAS = "BAMLH0A0HYM2"          # HY OAS (percent, daily; FRED serves about 3 years)
 UNRATE = "UNRATE"                  # Unemployment rate (%)
 CPI    = "CPIAUCSL"                # CPI (index, SA)
 GDP_Q  = "A191RL1Q225SBEA"         # Real GDP QoQ SAAR (%), quarterly
@@ -37,7 +45,7 @@ SP500   = "SP500"                  # S&P 500 (index level, daily)
 # Risk params
 TREND_SMA_MONTHS = 10
 CREDIT_SMA_MONTHS = 12
-CREDIT_OAS_BPS_THRESHOLD = 500.0
+CREDIT_OAS_PCT_THRESHOLD = 5.0   # FRED reports the HY spread in percent (5.0 = 500 bps)
 VIX_THRESHOLD = 25.0
 
 # ------------------------
@@ -50,7 +58,8 @@ def ensure_dir(path: str):
 
 def month_index(start=START_DATE, end=None):
     if end is None:
-        end = pd.Timestamp.today().to_period("M").to_timestamp(how="start")
+        # last complete month: a run on Dec 2 produces rows through November
+        end = (pd.Timestamp.today().to_period("M") - 1).to_timestamp(how="start")
     idx = pd.date_range(start=pd.Timestamp(start), end=end, freq="MS")  # 1st of month
     return idx
 
@@ -59,7 +68,7 @@ def fred_series(code: str, start: str) -> pd.Series:
     last_err = None
     for i in range(4):
         try:
-            s = fred.get_series(code, observation_start=start)
+            s = _client().get_series(code, observation_start=start)
             s = pd.Series(s)
             s.index = pd.to_datetime(s.index)
             return s.dropna()
@@ -75,16 +84,16 @@ def to_monthly_from_daily(s: pd.Series) -> pd.Series:
     if s.empty:
         return s
     s = s.sort_index()
-    m = s.resample("M").median()  # month-end labels
+    m = s.resample("ME").median()  # month-end labels
     # relabel to month start (avoid 'MS' freq string in Period)
     m.index = m.index.to_period("M").to_timestamp(how="start")
     # ensure full monthly index, then interpolate within the series (no cross-metric impact)
     full_idx = month_index(start=max(pd.Timestamp(START_DATE), m.index.min()))
     m = m.reindex(full_idx)
     interp_mask_before = m.isna()
-    m = m.interpolate(method="linear", limit_direction="both")
-    # for any leading/trailing NaNs still left (unlikely), ffill/bfill to ensure a value every month
-    m = m.ffill().bfill()
+    m = m.interpolate(method="linear", limit_area="inside")
+    # carry the latest value forward; months before the series starts stay empty
+    m = m.ffill()
     interp_mask_after = m.isna()
     # return series + a boolean mask of which points were originally interpolated
     return m, interp_mask_before & (~interp_mask_after)
@@ -98,8 +107,8 @@ def to_monthly_from_monthly(s: pd.Series) -> pd.Series:
     full_idx = month_index(start=max(pd.Timestamp(START_DATE), s.index.min()))
     m = s.reindex(full_idx)
     interp_mask_before = m.isna()
-    m = m.interpolate(method="linear", limit_direction="both")
-    m = m.ffill().bfill()
+    m = m.interpolate(method="linear", limit_area="inside")
+    m = m.ffill()
     interp_mask_after = m.isna()
     return m, interp_mask_before & (~interp_mask_after)
 
@@ -193,21 +202,25 @@ def main():
     houst,  houst_interp  = to_monthly_from_monthly(houst_raw)
     vix,    vix_interp    = to_monthly_from_daily(vix_raw)
     spx,    spx_interp    = to_monthly_from_daily(spx_raw)
+    # The 10-month trend rule is defined on month-end closes, not the monthly median
+    spx_close = spx_raw.sort_index().resample("ME").last()
+    spx_close.index = spx_close.index.to_period("M").to_timestamp(how="start")
+    spx = spx_close.reindex(spx.index).where(lambda x: x.notna(), spx)
 
     # Conform all series to common index (independent filling already done)
     series_dict = {
-        "indpro": indpro.reindex(idx).ffill().bfill(),
-        "cfnai":  cfnai.reindex(idx).ffill().bfill(),
-        "dgs10":  dgs10.reindex(idx).ffill().bfill(),
-        "dgs3mo": dgs3m.reindex(idx).ffill().bfill(),
-        "hy_oas": hy_oas.reindex(idx).ffill().bfill(),
-        "unrate": unrate.reindex(idx).ffill().bfill(),
-        "cpi":    cpi.reindex(idx).ffill().bfill(),
-        "gdp_saar": gdp_m.reindex(idx).ffill().bfill(),
-        "umcsent": umcs.reindex(idx).ffill().bfill(),
-        "houst":   houst.reindex(idx).ffill().bfill(),
-        "vix":     vix.reindex(idx).ffill().bfill(),
-        "sp500":   spx.reindex(idx).ffill().bfill(),
+        "indpro": indpro.reindex(idx).ffill(),
+        "cfnai":  cfnai.reindex(idx).ffill(),
+        "dgs10":  dgs10.reindex(idx).ffill(),
+        "dgs3mo": dgs3m.reindex(idx).ffill(),
+        "hy_oas": hy_oas.reindex(idx).ffill(),
+        "unrate": unrate.reindex(idx).ffill(),
+        "cpi":    cpi.reindex(idx).ffill(),
+        "gdp_saar": gdp_m.reindex(idx).ffill(),
+        "umcsent": umcs.reindex(idx).ffill(),
+        "houst":   houst.reindex(idx).ffill(),
+        "vix":     vix.reindex(idx).ffill(),
+        "sp500":   spx.reindex(idx).ffill(),
     }
 
     df = pd.DataFrame(series_dict, index=idx)
@@ -254,10 +267,12 @@ def main():
 
     df["hy_oas_sma_12m"] = rolling_sma(df["hy_oas"], CREDIT_SMA_MONTHS)
     hy_barrier = pd.concat(
-        [pd.Series(CREDIT_OAS_BPS_THRESHOLD, index=df.index), df["hy_oas_sma_12m"]],
+        [pd.Series(CREDIT_OAS_PCT_THRESHOLD, index=df.index), df["hy_oas_sma_12m"]],
         axis=1
     ).max(axis=1)
+    # 1 = stress, 0 = calm. Months without spread data count as 0 and are flagged below.
     df["credit_off"] = (df["hy_oas"] > hy_barrier).astype(int)
+    df["hy_oas_available"] = df["hy_oas"].notna().astype(int)
 
     df["vix_off"] = (df["vix"] > VIX_THRESHOLD).astype(int)
     df["off_votes"] = df["credit_off"] + df["vix_off"]
@@ -278,7 +293,7 @@ def main():
     front_cols = [
         "date",
         "macro_regime", "macro_score", "indpro_signal", "cfnai_signal", "yield_curve_signal",
-        "risk_regime", "off_votes", "trend_on", "credit_off", "vix_off",
+        "risk_regime", "off_votes", "trend_on", "credit_off", "vix_off", "hy_oas_available",
     ]
 
     # Everything else, stable order
