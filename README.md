@@ -13,8 +13,10 @@ Educational model output. Not personal investment advice.
 | `src/frameworks.py` | Framework votes, family scoring, the consensus rules and the model allocation. Pure functions, no network |
 | `src/compute_signals.py` | Fetches data, runs the frameworks, writes `docs/data/signals.json` and `data/consensus_history.csv` |
 | `src/compute_macro_monthly.py` | The original macro and risk regime script, feeding the classic view |
+| `src/brief.py` | Writes the monthly brief from the signals, by fixed rules, into `docs/data/briefs.json` |
+| `docs/posts/` | Your own posts, as Markdown. Add a file, then list it in `docs/posts/index.json` |
 | `src/backtest.py` | What following each framework, and the consensus allocation, would have returned |
-| `docs/` | The site (GitHub Pages): dashboard, lessons, calculator, backtest, methodology, classic view |
+| `docs/` | The site (GitHub Pages): dashboard, lessons, calculator, briefs, backtest, methodology, classic view |
 | `docs/data/lessons.json` | Lesson text for every framework and metric. Edit this to change the wording |
 | `tests/` | Tests for the scoring rules, run on synthetic series |
 

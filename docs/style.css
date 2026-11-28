@@ -152,3 +152,12 @@ table.mini td { padding: 5px 8px 5px 0; border-bottom: 1px solid var(--border); 
 /* backtest tables */
 .txt-pos { color: var(--green); } .txt-neg { color: var(--red); }
 .calc td .muted, .calc td.muted { font-size: 0.72rem; }
+
+/* briefs and posts */
+.post .body ul, .post .body ol { padding-left: 20px; font-size: 0.88rem; display: grid; gap: 6px; }
+.post .body p + p { margin-top: 8px; }
+.md h2 { font-size: 0.95rem; margin: 14px 0 4px; }
+.md h3 { font-size: 0.88rem; margin: 12px 0 4px; }
+.md p, .md li { font-size: 0.88rem; }
+.md { display: block !important; }
+.md > * + * { margin-top: 8px; }

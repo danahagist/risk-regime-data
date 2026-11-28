@@ -15,14 +15,14 @@ const ASSET_NAME = { stocks: 'Stocks', bonds: 'Bonds', cash: 'Cash', alternative
 
 function renderNav(active) {
   const pages = [['index.html', 'Dashboard'], ['learn.html', 'Learn'], ['calculator.html', 'Calculator'],
-    ['backtest.html', 'Backtest'], ['methodology.html', 'Methodology'], ['classic.html', 'Classic view']];
+    ['briefs.html', 'Briefs'], ['backtest.html', 'Backtest'], ['methodology.html', 'Methodology'], ['classic.html', 'Classic view']];
   $('#topbar').innerHTML = `<h1>Market Regime Consensus</h1><nav>${pages.map(([href, name]) =>
     `<a href="${href}" class="${href === active ? 'active' : ''}">${name}</a>`).join('')}</nav>`;
 }
 
 function renderFooter(d) {
   $('footer').innerHTML = `
-    <span>${d ? `Signals as of the end of ${esc(d.as_of_label)}. Generated ${esc(d.generated_at)}. Updated monthly.` : ''}</span>
+    <span>${d ? `Signals as of the end of ${esc(d.as_of_label)}.${d.generated_at ? ` Generated ${esc(d.generated_at)}.` : ''} Updated monthly.` : ''}</span>
     <span>Educational model output, the same for every visitor. It is not personal investment advice and does not know your goals, taxes or time horizon.</span>
     <span>This product uses the FRED&reg; API but is not endorsed or certified by the Federal Reserve Bank of St. Louis.
       <a href="https://fred.stlouisfed.org/docs/api/terms_of_use.html">FRED API terms of use</a>.</span>`;

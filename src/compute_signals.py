@@ -21,6 +21,7 @@ import fred_data  # noqa: E402
 import market_data  # noqa: E402
 import frameworks as fw  # noqa: E402
 import backtest  # noqa: E402
+import brief  # noqa: E402
 
 OUT_JSON = "docs/data/signals.json"
 OUT_HISTORY = "data/consensus_history.csv"
@@ -255,6 +256,7 @@ def main():
     ap.add_argument("--out", default=OUT_JSON)
     ap.add_argument("--history-out", default=OUT_HISTORY)
     ap.add_argument("--backtest-out", default=OUT_BACKTEST)
+    ap.add_argument("--briefs-out", default=None, help="briefs file to update (default: docs/data/briefs.json on live runs, none on fixture runs)")
     args = ap.parse_args()
 
     if args.fixture:
@@ -276,6 +278,16 @@ def main():
     out = full.dropna(subset=["composite"]).copy()
     out.insert(0, "date", out.index.strftime("%Y-%m-%d"))
     out.to_csv(args.history_out, index=False)
+
+    briefs_out = args.briefs_out or (None if args.fixture else brief.OUT_BRIEFS)
+    if briefs_out:
+        try:   # the brief is written from the signals above; it must never block them
+            with open(brief.LESSONS) as fh:
+                lessons = json.load(fh)
+            all_briefs = brief.update_file(brief.build(payload, lessons), briefs_out)
+            print(f"Brief: {all_briefs[0]['title']} ({len(all_briefs)} on file)")
+        except Exception as e:
+            print(f"Brief failed: {type(e).__name__}: {e}", file=sys.stderr)
 
     try:   # the backtest is a report; it must never block the monthly signals
         bt = build_backtest(raw, asof=args.asof)

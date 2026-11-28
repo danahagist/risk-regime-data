@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briefs</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div id="app"><div class="loading">Loading briefs...</div></div>
+<footer></footer>
+
+<script src="app.js"></script>
+<script>
+renderNav('briefs.html');
+
+function briefBody(b) {
+  return b.sections.map((s) => `<div><h4>${esc(s.heading)}</h4>
+      ${s.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}
+      ${s.bullets.length ? `<ul>${s.bullets.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${s.link ? `<p><a href="learn.html#${esc(s.link)}">Read the full lesson</a></p>` : ''}</div>`).join('') +
+    `<p class="hint">${esc(b.disclaimer)}</p>`;
+}
+
+function briefCard(b, open) {
+  return `<details class="lesson post" id="${esc(b.id)}" ${open ? 'open' : ''}>
+    <summary><span class="title">${esc(b.title)} <span class="tag plain">Monthly brief</span></span><span class="now">${esc(b.summary)}</span></summary>
+    <div class="body">${briefBody(b)}</div></details>`;
+}
+
+async function postCard(p) {
+  let html = '<p class="hint">This post could not be loaded.</p>';
+  try {
+    const r = await fetch('posts/' + p.file, { cache: 'no-store' });
+    if (r.ok) {
+      const text = await r.text();
+      html = window.marked ? marked.parse(text) : `<pre style="white-space:pre-wrap">${esc(text)}</pre>`;
+    }
+  } catch (e) { /* keep the fallback */ }
+  return `<details class="lesson post" id="${esc(p.file.replace(/\.md$/, ''))}">
+    <summary><span class="title">${esc(p.title)} <span class="tag blue">Post</span></span><span class="now">${esc(p.date)}${p.summary ? '. ' + esc(p.summary) : ''}</span></summary>
+    <div class="body md">${html}</div></details>`;
+}
+
+Promise.all([
+  loadJSON('data/briefs.json').catch(() => []),
+  loadJSON('posts/index.json').catch(() => []),
+]).then(async ([briefs, posts]) => {
+  const postCards = await Promise.all(posts.map(postCard));
+  const sample = briefs.some((b) => b.sample);
+  $('#app').innerHTML = sampleBanner({ sample }) + `
+    <div class="card">
+      <p>What the frameworks are saying about markets and the economy, in plain language. A new brief is written from the data at the start of each month, alongside occasional longer posts.</p>
+      <p class="hint" style="margin-top:6px">The briefs describe current readings. They are not forecasts.</p>
+    </div>
+    <h2>Monthly briefs</h2>
+    ${briefs.length ? briefs.map((b, i) => briefCard(b, i === 0)).join('') : '<p class="hint">The first brief appears after the next monthly run.</p>'}
+    ${postCards.length ? `<h2>Posts</h2>${postCards.join('')}` : ''}`;
+  renderFooter(briefs.length ? { as_of_label: briefs[0].title.split(':')[0], generated_at: '' } : null);
+  const target = location.hash && document.getElementById(location.hash.slice(1));
+  if (target) { target.open = true; target.scrollIntoView(); }
+}).catch(showError);
+</script>
+</body>
+</html>

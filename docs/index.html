@@ -108,7 +108,8 @@ function families(d) {
 
 function changes(d) {
   return `<h2>What changed this month</h2><div class="card"><ul class="notes">${
-    d.changes.length ? d.changes.map((c) => `<li>${esc(c)}</li>`).join('') : '<li>No votes changed from last month.</li>'}</ul></div>`;
+    d.changes.length ? d.changes.map((c) => `<li>${esc(c)}</li>`).join('') : '<li>No votes changed from last month.</li>'}</ul>
+    <p class="hint" style="margin-top:10px"><a href="briefs.html#${esc(d.as_of.slice(0, 7))}">Read this month's brief</a> for the full picture in plain language.</p></div>`;
 }
 
 function metrics(d, lessons) {

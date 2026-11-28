@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/macro_monthly_history.csv data/consensus_history.csv data/sp500_earnings_points.csv docs/data/signals.json docs/data/backtest.json
+          git add data/macro_monthly_history.csv data/consensus_history.csv data/sp500_earnings_points.csv docs/data/signals.json docs/data/backtest.json docs/data/briefs.json
           if ! git diff --cached --quiet; then
             git commit -m "Update monthly data [skip ci]"
             git push
