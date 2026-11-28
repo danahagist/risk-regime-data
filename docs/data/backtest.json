@@ -19,9 +19,9 @@
    "months": 263,
    "cagr": 0.0817,
    "volatility": 0.0913,
-   "max_drawdown": -0.2807,
-   "worst_12m": -0.2403,
-   "sharpe": 0.7074,
+   "max_drawdown": -0.2805,
+   "worst_12m": -0.2401,
+   "sharpe": 0.7076,
    "horizons": {
     "3m": 0.0209,
     "6m": 0.0426,
@@ -342,7 +342,7 @@
    "date": "2007-11",
    "consensus": 1.2674,
    "neutral": 1.2805,
-   "sixty_forty": 1.2549,
+   "sixty_forty": 1.255,
    "stocks": 1.3303
   },
   {
@@ -362,7 +362,7 @@
   {
    "date": "2008-02",
    "consensus": 1.2203,
-   "neutral": 1.2287,
+   "neutral": 1.2288,
    "sixty_forty": 1.1932,
    "stocks": 1.2039
   },
@@ -417,1520 +417,1520 @@
   },
   {
    "date": "2008-10",
-   "consensus": 1.0232,
+   "consensus": 1.0235,
    "neutral": 1.0,
    "sixty_forty": 0.9813,
    "stocks": 0.8849
   },
   {
    "date": "2008-11",
-   "consensus": 1.0015,
+   "consensus": 1.0018,
    "neutral": 0.9674,
    "sixty_forty": 0.9522,
    "stocks": 0.8233
   },
   {
    "date": "2008-12",
-   "consensus": 1.0365,
+   "consensus": 1.0367,
    "neutral": 0.9935,
    "sixty_forty": 0.9832,
    "stocks": 0.8314
   },
   {
    "date": "2009-01",
-   "consensus": 0.9846,
+   "consensus": 0.9849,
    "neutral": 0.9389,
    "sixty_forty": 0.9269,
    "stocks": 0.7631
   },
   {
    "date": "2009-02",
-   "consensus": 0.9271,
+   "consensus": 0.9273,
    "neutral": 0.8744,
    "sixty_forty": 0.8632,
    "stocks": 0.6811
   },
   {
    "date": "2009-03",
-   "consensus": 0.9703,
+   "consensus": 0.9706,
    "neutral": 0.9215,
    "sixty_forty": 0.9102,
    "stocks": 0.7378
   },
   {
    "date": "2009-04",
-   "consensus": 1.0208,
+   "consensus": 1.021,
    "neutral": 0.9771,
    "sixty_forty": 0.9663,
    "stocks": 0.8111
   },
   {
    "date": "2009-05",
-   "consensus": 1.0539,
+   "consensus": 1.0541,
    "neutral": 1.0199,
    "sixty_forty": 1.003,
    "stocks": 0.8586
   },
   {
    "date": "2009-06",
-   "consensus": 1.0531,
+   "consensus": 1.0534,
    "neutral": 1.0188,
    "sixty_forty": 1.0043,
    "stocks": 0.858
   },
   {
    "date": "2009-07",
-   "consensus": 1.0987,
+   "consensus": 1.099,
    "neutral": 1.0694,
    "sixty_forty": 1.0543,
    "stocks": 0.922
   },
   {
    "date": "2009-08",
-   "consensus": 1.1232,
+   "consensus": 1.1235,
    "neutral": 1.0959,
    "sixty_forty": 1.0828,
    "stocks": 0.9561
   },
   {
    "date": "2009-09",
-   "consensus": 1.1499,
+   "consensus": 1.1502,
    "neutral": 1.1247,
    "sixty_forty": 1.111,
    "stocks": 0.99
   },
   {
    "date": "2009-10",
-   "consensus": 1.1429,
+   "consensus": 1.1432,
    "neutral": 1.1155,
    "sixty_forty": 1.0992,
    "stocks": 0.9709
   },
   {
    "date": "2009-11",
-   "consensus": 1.1888,
+   "consensus": 1.1891,
    "neutral": 1.1658,
    "sixty_forty": 1.1455,
    "stocks": 1.0308
   },
   {
    "date": "2009-12",
-   "consensus": 1.192,
+   "consensus": 1.1924,
    "neutral": 1.1705,
    "sixty_forty": 1.15,
    "stocks": 1.0504
   },
   {
    "date": "2010-01",
-   "consensus": 1.165,
+   "consensus": 1.1653,
    "neutral": 1.1473,
    "sixty_forty": 1.1314,
    "stocks": 1.0123
   },
   {
    "date": "2010-02",
-   "consensus": 1.1917,
+   "consensus": 1.1921,
    "neutral": 1.1716,
    "sixty_forty": 1.1535,
    "stocks": 1.0438
   },
   {
    "date": "2010-03",
-   "consensus": 1.2347,
+   "consensus": 1.235,
    "neutral": 1.2141,
    "sixty_forty": 1.1956,
    "stocks": 1.1074
   },
   {
    "date": "2010-04",
-   "consensus": 1.2554,
+   "consensus": 1.2557,
    "neutral": 1.2319,
    "sixty_forty": 1.2113,
    "stocks": 1.1245
   },
   {
    "date": "2010-05",
-   "consensus": 1.1946,
+   "consensus": 1.1949,
    "neutral": 1.175,
    "sixty_forty": 1.1588,
    "stocks": 1.0352
   },
   {
    "date": "2010-06",
-   "consensus": 1.1634,
+   "consensus": 1.1637,
    "neutral": 1.1449,
    "sixty_forty": 1.1311,
    "stocks": 0.9816
   },
   {
    "date": "2010-07",
-   "consensus": 1.2142,
+   "consensus": 1.2145,
    "neutral": 1.195,
    "sixty_forty": 1.1813,
    "stocks": 1.0487
   },
   {
    "date": "2010-08",
-   "consensus": 1.1872,
+   "consensus": 1.1875,
    "neutral": 1.1682,
    "sixty_forty": 1.1555,
    "stocks": 1.0015
   },
   {
    "date": "2010-09",
-   "consensus": 1.2509,
+   "consensus": 1.2512,
    "neutral": 1.2349,
    "sixty_forty": 1.2176,
    "stocks": 1.0912
   },
   {
    "date": "2010-10",
-   "consensus": 1.2802,
+   "consensus": 1.2805,
    "neutral": 1.2663,
    "sixty_forty": 1.2462,
    "stocks": 1.1329
   },
   {
    "date": "2010-11",
-   "consensus": 1.2766,
+   "consensus": 1.2769,
    "neutral": 1.2637,
    "sixty_forty": 1.2421,
    "stocks": 1.1329
   },
   {
    "date": "2010-12",
-   "consensus": 1.3248,
+   "consensus": 1.3252,
    "neutral": 1.3157,
    "sixty_forty": 1.2885,
    "stocks": 1.2086
   },
   {
    "date": "2011-01",
-   "consensus": 1.343,
-   "neutral": 1.3328,
+   "consensus": 1.3433,
+   "neutral": 1.3329,
    "sixty_forty": 1.3061,
    "stocks": 1.2368
   },
   {
    "date": "2011-02",
-   "consensus": 1.3723,
+   "consensus": 1.3727,
    "neutral": 1.3652,
    "sixty_forty": 1.3349,
    "stocks": 1.2797
   },
   {
    "date": "2011-03",
-   "consensus": 1.3729,
+   "consensus": 1.3733,
    "neutral": 1.3658,
    "sixty_forty": 1.3338,
    "stocks": 1.2799
   },
   {
    "date": "2011-04",
-   "consensus": 1.4079,
+   "consensus": 1.4082,
    "neutral": 1.4006,
    "sixty_forty": 1.3653,
    "stocks": 1.3169
   },
   {
    "date": "2011-05",
-   "consensus": 1.4012,
+   "consensus": 1.4015,
    "neutral": 1.394,
    "sixty_forty": 1.3629,
    "stocks": 1.3022
   },
   {
    "date": "2011-06",
-   "consensus": 1.3806,
+   "consensus": 1.381,
    "neutral": 1.3757,
    "sixty_forty": 1.3467,
    "stocks": 1.2802
   },
   {
    "date": "2011-07",
-   "consensus": 1.379,
+   "consensus": 1.3794,
    "neutral": 1.3706,
    "sixty_forty": 1.3396,
    "stocks": 1.2546
   },
   {
    "date": "2011-08",
-   "consensus": 1.3472,
+   "consensus": 1.3476,
    "neutral": 1.3357,
    "sixty_forty": 1.3036,
    "stocks": 1.1856
   },
   {
    "date": "2011-09",
-   "consensus": 1.2765,
+   "consensus": 1.2768,
    "neutral": 1.2746,
    "sixty_forty": 1.2533,
    "stocks": 1.1033
   },
   {
    "date": "2011-10",
-   "consensus": 1.3691,
+   "consensus": 1.3695,
    "neutral": 1.3628,
    "sixty_forty": 1.336,
    "stocks": 1.2237
   },
   {
    "date": "2011-11",
-   "consensus": 1.3656,
+   "consensus": 1.3659,
    "neutral": 1.3586,
    "sixty_forty": 1.331,
    "stocks": 1.2188
   },
   {
    "date": "2011-12",
-   "consensus": 1.3697,
+   "consensus": 1.37,
    "neutral": 1.3681,
    "sixty_forty": 1.3465,
    "stocks": 1.2315
   },
   {
    "date": "2012-01",
-   "consensus": 1.4159,
+   "consensus": 1.4162,
    "neutral": 1.4143,
    "sixty_forty": 1.3879,
    "stocks": 1.2886
   },
   {
    "date": "2012-02",
-   "consensus": 1.4543,
+   "consensus": 1.4547,
    "neutral": 1.4519,
    "sixty_forty": 1.424,
    "stocks": 1.3445
   },
   {
    "date": "2012-03",
-   "consensus": 1.4833,
+   "consensus": 1.4836,
    "neutral": 1.4763,
    "sixty_forty": 1.4482,
    "stocks": 1.3878
   },
   {
    "date": "2012-04",
-   "consensus": 1.4775,
+   "consensus": 1.4779,
    "neutral": 1.4738,
    "sixty_forty": 1.4476,
    "stocks": 1.3785
   },
   {
    "date": "2012-05",
-   "consensus": 1.4052,
+   "consensus": 1.4055,
    "neutral": 1.4191,
    "sixty_forty": 1.4017,
    "stocks": 1.2957
   },
   {
    "date": "2012-06",
-   "consensus": 1.4406,
+   "consensus": 1.441,
    "neutral": 1.4551,
    "sixty_forty": 1.4357,
    "stocks": 1.3483
   },
   {
    "date": "2012-07",
-   "consensus": 1.4575,
+   "consensus": 1.4578,
    "neutral": 1.4738,
    "sixty_forty": 1.4537,
    "stocks": 1.3643
   },
   {
    "date": "2012-08",
-   "consensus": 1.4794,
-   "neutral": 1.4999,
+   "consensus": 1.4798,
+   "neutral": 1.4998,
    "sixty_forty": 1.4756,
    "stocks": 1.3984
   },
   {
    "date": "2012-09",
-   "consensus": 1.5032,
+   "consensus": 1.5036,
    "neutral": 1.5255,
    "sixty_forty": 1.4996,
    "stocks": 1.4339
   },
   {
    "date": "2012-10",
-   "consensus": 1.4866,
+   "consensus": 1.487,
    "neutral": 1.506,
    "sixty_forty": 1.483,
    "stocks": 1.4078
   },
   {
    "date": "2012-11",
-   "consensus": 1.493,
+   "consensus": 1.4934,
    "neutral": 1.5129,
    "sixty_forty": 1.4896,
    "stocks": 1.4158
   },
   {
    "date": "2012-12",
-   "consensus": 1.4998,
+   "consensus": 1.5002,
    "neutral": 1.5186,
    "sixty_forty": 1.4961,
    "stocks": 1.4284
   },
   {
    "date": "2013-01",
-   "consensus": 1.5437,
+   "consensus": 1.5441,
    "neutral": 1.5631,
    "sixty_forty": 1.5384,
    "stocks": 1.5015
   },
   {
    "date": "2013-02",
-   "consensus": 1.5555,
+   "consensus": 1.5559,
    "neutral": 1.574,
    "sixty_forty": 1.5538,
    "stocks": 1.5207
   },
   {
    "date": "2013-03",
-   "consensus": 1.5978,
+   "consensus": 1.5982,
    "neutral": 1.611,
    "sixty_forty": 1.5898,
    "stocks": 1.5784
   },
   {
    "date": "2013-04",
-   "consensus": 1.618,
+   "consensus": 1.6184,
    "neutral": 1.6297,
    "sixty_forty": 1.6143,
    "stocks": 1.6088
   },
   {
    "date": "2013-05",
-   "consensus": 1.6362,
+   "consensus": 1.6367,
    "neutral": 1.6398,
    "sixty_forty": 1.6242,
-   "stocks": 1.6467
+   "stocks": 1.6468
   },
   {
    "date": "2013-06",
-   "consensus": 1.6143,
+   "consensus": 1.6147,
    "neutral": 1.6133,
    "sixty_forty": 1.601,
    "stocks": 1.6248
   },
   {
    "date": "2013-07",
-   "consensus": 1.6658,
+   "consensus": 1.6662,
    "neutral": 1.6689,
    "sixty_forty": 1.6524,
    "stocks": 1.7087
   },
   {
    "date": "2013-08",
-   "consensus": 1.6349,
+   "consensus": 1.6354,
    "neutral": 1.6381,
    "sixty_forty": 1.6172,
    "stocks": 1.6575
   },
   {
    "date": "2013-09",
-   "consensus": 1.6721,
+   "consensus": 1.6726,
    "neutral": 1.6714,
    "sixty_forty": 1.6552,
    "stocks": 1.7099
   },
   {
    "date": "2013-10",
-   "consensus": 1.7225,
+   "consensus": 1.723,
    "neutral": 1.7218,
    "sixty_forty": 1.7067,
    "stocks": 1.7891
   },
   {
    "date": "2013-11",
-   "consensus": 1.7544,
+   "consensus": 1.7549,
    "neutral": 1.7484,
    "sixty_forty": 1.7353,
    "stocks": 1.8421
   },
   {
    "date": "2013-12",
-   "consensus": 1.7828,
+   "consensus": 1.7833,
    "neutral": 1.7713,
    "sixty_forty": 1.7584,
    "stocks": 1.8899
   },
   {
    "date": "2014-01",
-   "consensus": 1.7448,
+   "consensus": 1.7452,
    "neutral": 1.7422,
    "sixty_forty": 1.7321,
    "stocks": 1.8233
   },
   {
    "date": "2014-02",
-   "consensus": 1.8067,
+   "consensus": 1.8071,
    "neutral": 1.7966,
    "sixty_forty": 1.782,
    "stocks": 1.9063
   },
   {
    "date": "2014-03",
-   "consensus": 1.8145,
+   "consensus": 1.815,
    "neutral": 1.8033,
    "sixty_forty": 1.7898,
    "stocks": 1.9221
   },
   {
    "date": "2014-04",
-   "consensus": 1.8271,
+   "consensus": 1.8276,
    "neutral": 1.816,
    "sixty_forty": 1.8032,
    "stocks": 1.9355
   },
   {
    "date": "2014-05",
-   "consensus": 1.8569,
+   "consensus": 1.8574,
    "neutral": 1.8457,
    "sixty_forty": 1.8368,
    "stocks": 1.9804
   },
   {
    "date": "2014-06",
-   "consensus": 1.8911,
+   "consensus": 1.8916,
    "neutral": 1.8722,
    "sixty_forty": 1.8591,
    "stocks": 2.0213
   },
   {
    "date": "2014-07",
-   "consensus": 1.8646,
+   "consensus": 1.8651,
    "neutral": 1.8517,
    "sixty_forty": 1.8422,
    "stocks": 1.9941
   },
   {
    "date": "2014-08",
-   "consensus": 1.919,
+   "consensus": 1.9195,
    "neutral": 1.9016,
    "sixty_forty": 1.8943,
    "stocks": 2.0728
   },
   {
    "date": "2014-09",
-   "consensus": 1.887,
+   "consensus": 1.8875,
    "neutral": 1.876,
    "sixty_forty": 1.874,
    "stocks": 2.0442
   },
   {
    "date": "2014-10",
-   "consensus": 1.9163,
+   "consensus": 1.9168,
    "neutral": 1.9052,
    "sixty_forty": 1.9084,
    "stocks": 2.0923
   },
   {
    "date": "2014-11",
-   "consensus": 1.9474,
+   "consensus": 1.9479,
    "neutral": 1.9361,
    "sixty_forty": 1.9449,
    "stocks": 2.1498
   },
   {
    "date": "2014-12",
-   "consensus": 1.9453,
+   "consensus": 1.9458,
    "neutral": 1.93,
    "sixty_forty": 1.9431,
    "stocks": 2.1444
   },
   {
    "date": "2015-01",
-   "consensus": 1.9241,
+   "consensus": 1.9246,
    "neutral": 1.909,
    "sixty_forty": 1.9245,
    "stocks": 2.0808
   },
   {
    "date": "2015-02",
-   "consensus": 1.9952,
+   "consensus": 1.9958,
    "neutral": 1.9676,
    "sixty_forty": 1.9825,
    "stocks": 2.1978
   },
   {
    "date": "2015-03",
-   "consensus": 1.9708,
+   "consensus": 1.9713,
    "neutral": 1.9472,
    "sixty_forty": 1.9668,
    "stocks": 2.1633
   },
   {
    "date": "2015-04",
-   "consensus": 1.9826,
+   "consensus": 1.9831,
    "neutral": 1.9602,
    "sixty_forty": 1.9759,
    "stocks": 2.1845
   },
   {
    "date": "2015-05",
-   "consensus": 1.9948,
+   "consensus": 1.9953,
    "neutral": 1.9715,
    "sixty_forty": 1.9877,
    "stocks": 2.2126
   },
   {
    "date": "2015-06",
-   "consensus": 1.9631,
+   "consensus": 1.9637,
    "neutral": 1.9411,
    "sixty_forty": 1.9549,
    "stocks": 2.1677
   },
   {
    "date": "2015-07",
-   "consensus": 1.9853,
+   "consensus": 1.9858,
    "neutral": 1.9631,
    "sixty_forty": 1.9881,
    "stocks": 2.2166
   },
   {
    "date": "2015-08",
-   "consensus": 1.9124,
+   "consensus": 1.9129,
    "neutral": 1.8911,
    "sixty_forty": 1.9127,
    "stocks": 2.0815
   },
   {
    "date": "2015-09",
-   "consensus": 1.8853,
+   "consensus": 1.8858,
    "neutral": 1.8642,
    "sixty_forty": 1.8897,
    "stocks": 2.0284
   },
   {
    "date": "2015-10",
-   "consensus": 1.9831,
+   "consensus": 1.9836,
    "neutral": 1.961,
    "sixty_forty": 1.9866,
    "stocks": 2.201
   },
   {
    "date": "2015-11",
-   "consensus": 1.9785,
+   "consensus": 1.979,
    "neutral": 1.9564,
    "sixty_forty": 1.9879,
    "stocks": 2.209
   },
   {
    "date": "2015-12",
-   "consensus": 1.9566,
-   "neutral": 1.9319,
+   "consensus": 1.9571,
+   "neutral": 1.932,
    "sixty_forty": 1.9658,
    "stocks": 2.1708
   },
   {
    "date": "2016-01",
-   "consensus": 1.9028,
+   "consensus": 1.9033,
    "neutral": 1.882,
    "sixty_forty": 1.9168,
    "stocks": 2.0628
   },
   {
    "date": "2016-02",
-   "consensus": 1.9053,
+   "consensus": 1.9058,
    "neutral": 1.8911,
    "sixty_forty": 1.9226,
    "stocks": 2.061
   },
   {
    "date": "2016-03",
-   "consensus": 1.9759,
+   "consensus": 1.9764,
    "neutral": 1.974,
    "sixty_forty": 2.007,
    "stocks": 2.1997
   },
   {
    "date": "2016-04",
-   "consensus": 1.9955,
+   "consensus": 1.9961,
    "neutral": 1.9875,
    "sixty_forty": 2.0138,
    "stocks": 2.2084
   },
   {
    "date": "2016-05",
-   "consensus": 2.0106,
+   "consensus": 2.0111,
    "neutral": 2.0053,
    "sixty_forty": 2.0344,
    "stocks": 2.2459
   },
   {
    "date": "2016-06",
-   "consensus": 2.0341,
+   "consensus": 2.0346,
    "neutral": 2.0278,
    "sixty_forty": 2.0544,
    "stocks": 2.2537
   },
   {
    "date": "2016-07",
-   "consensus": 2.0762,
+   "consensus": 2.0767,
    "neutral": 2.073,
    "sixty_forty": 2.1038,
    "stocks": 2.3359
   },
   {
    "date": "2016-08",
-   "consensus": 2.0739,
+   "consensus": 2.0745,
    "neutral": 2.0719,
    "sixty_forty": 2.1035,
    "stocks": 2.3387
   },
   {
    "date": "2016-09",
-   "consensus": 2.0795,
+   "consensus": 2.08,
    "neutral": 2.0749,
    "sixty_forty": 2.104,
    "stocks": 2.3389
   },
   {
    "date": "2016-10",
-   "consensus": 2.0501,
+   "consensus": 2.0506,
    "neutral": 2.0466,
    "sixty_forty": 2.0753,
    "stocks": 2.2983
   },
   {
    "date": "2016-11",
-   "consensus": 2.0749,
+   "consensus": 2.0754,
    "neutral": 2.0726,
    "sixty_forty": 2.0999,
    "stocks": 2.383
   },
   {
    "date": "2016-12",
-   "consensus": 2.1038,
+   "consensus": 2.1044,
    "neutral": 2.1006,
    "sixty_forty": 2.1275,
    "stocks": 2.4313
   },
   {
    "date": "2017-01",
-   "consensus": 2.1321,
+   "consensus": 2.1326,
    "neutral": 2.1271,
    "sixty_forty": 2.1522,
    "stocks": 2.4748
   },
   {
    "date": "2017-02",
-   "consensus": 2.1877,
+   "consensus": 2.1883,
    "neutral": 2.183,
    "sixty_forty": 2.2085,
    "stocks": 2.572
   },
   {
    "date": "2017-03",
-   "consensus": 2.1853,
+   "consensus": 2.1859,
    "neutral": 2.1823,
    "sixty_forty": 2.2097,
    "stocks": 2.5752
   },
   {
    "date": "2017-04",
-   "consensus": 2.2011,
+   "consensus": 2.2015,
    "neutral": 2.2008,
    "sixty_forty": 2.2308,
    "stocks": 2.6008
   },
   {
    "date": "2017-05",
-   "consensus": 2.2251,
+   "consensus": 2.2256,
    "neutral": 2.2232,
    "sixty_forty": 2.2559,
    "stocks": 2.6375
   },
   {
    "date": "2017-06",
-   "consensus": 2.2327,
+   "consensus": 2.2331,
    "neutral": 2.23,
    "sixty_forty": 2.2643,
    "stocks": 2.6543
   },
   {
    "date": "2017-07",
-   "consensus": 2.2695,
+   "consensus": 2.2699,
    "neutral": 2.2633,
    "sixty_forty": 2.2953,
    "stocks": 2.7089
   },
   {
    "date": "2017-08",
-   "consensus": 2.2798,
+   "consensus": 2.2802,
    "neutral": 2.2764,
    "sixty_forty": 2.3079,
    "stocks": 2.7168
   },
   {
    "date": "2017-09",
-   "consensus": 2.3102,
+   "consensus": 2.3106,
    "neutral": 2.2993,
    "sixty_forty": 2.3306,
    "stocks": 2.7715
   },
   {
    "date": "2017-10",
-   "consensus": 2.3435,
+   "consensus": 2.3439,
    "neutral": 2.3345,
    "sixty_forty": 2.3644,
    "stocks": 2.8368
   },
   {
    "date": "2017-11",
-   "consensus": 2.3862,
+   "consensus": 2.3866,
    "neutral": 2.3771,
    "sixty_forty": 2.4064,
    "stocks": 2.9235
   },
   {
    "date": "2017-12",
-   "consensus": 2.4087,
+   "consensus": 2.4091,
    "neutral": 2.4008,
    "sixty_forty": 2.4285,
    "stocks": 2.959
   },
   {
    "date": "2018-01",
-   "consensus": 2.4969,
+   "consensus": 2.4973,
    "neutral": 2.4777,
    "sixty_forty": 2.4996,
    "stocks": 3.1258
   },
   {
    "date": "2018-02",
-   "consensus": 2.4286,
+   "consensus": 2.4293,
    "neutral": 2.4132,
    "sixty_forty": 2.435,
    "stocks": 3.0121
   },
   {
    "date": "2018-03",
-   "consensus": 2.395,
+   "consensus": 2.3957,
    "neutral": 2.3803,
    "sixty_forty": 2.4015,
    "stocks": 2.9296
   },
   {
    "date": "2018-04",
-   "consensus": 2.4025,
+   "consensus": 2.4032,
    "neutral": 2.3826,
    "sixty_forty": 2.3999,
    "stocks": 2.9447
   },
   {
    "date": "2018-05",
-   "consensus": 2.4423,
+   "consensus": 2.443,
    "neutral": 2.4232,
    "sixty_forty": 2.4413,
    "stocks": 3.0163
   },
   {
    "date": "2018-06",
-   "consensus": 2.4449,
+   "consensus": 2.4455,
    "neutral": 2.4291,
    "sixty_forty": 2.4507,
    "stocks": 3.0336
   },
   {
    "date": "2018-07",
-   "consensus": 2.494,
+   "consensus": 2.4947,
    "neutral": 2.4802,
    "sixty_forty": 2.5049,
    "stocks": 3.146
   },
   {
    "date": "2018-08",
-   "consensus": 2.5428,
+   "consensus": 2.5435,
    "neutral": 2.5313,
    "sixty_forty": 2.5586,
    "stocks": 3.2464
   },
   {
    "date": "2018-09",
-   "consensus": 2.5536,
+   "consensus": 2.5543,
    "neutral": 2.5376,
    "sixty_forty": 2.5613,
    "stocks": 3.2657
   },
   {
    "date": "2018-10",
-   "consensus": 2.4415,
+   "consensus": 2.4422,
    "neutral": 2.4255,
    "sixty_forty": 2.4485,
    "stocks": 3.0401
   },
   {
    "date": "2018-11",
-   "consensus": 2.4668,
+   "consensus": 2.4675,
    "neutral": 2.4526,
    "sixty_forty": 2.4834,
    "stocks": 3.0964
   },
   {
    "date": "2018-12",
-   "consensus": 2.3471,
+   "consensus": 2.3477,
    "neutral": 2.3384,
    "sixty_forty": 2.3718,
    "stocks": 2.8238
   },
   {
    "date": "2019-01",
-   "consensus": 2.4752,
+   "consensus": 2.4759,
    "neutral": 2.4632,
    "sixty_forty": 2.4944,
    "stocks": 3.0499
   },
   {
    "date": "2019-02",
-   "consensus": 2.5183,
+   "consensus": 2.519,
    "neutral": 2.5119,
    "sixty_forty": 2.5418,
    "stocks": 3.1488
   },
   {
    "date": "2019-03",
-   "consensus": 2.5555,
+   "consensus": 2.5562,
    "neutral": 2.5542,
    "sixty_forty": 2.591,
    "stocks": 3.2058
   },
   {
    "date": "2019-04",
-   "consensus": 2.6179,
+   "consensus": 2.6186,
    "neutral": 2.6158,
    "sixty_forty": 2.6524,
    "stocks": 3.3367
   },
   {
    "date": "2019-05",
-   "consensus": 2.5288,
+   "consensus": 2.5295,
    "neutral": 2.5283,
    "sixty_forty": 2.5712,
    "stocks": 3.1239
   },
   {
    "date": "2019-06",
-   "consensus": 2.6409,
+   "consensus": 2.6417,
    "neutral": 2.65,
    "sixty_forty": 2.6899,
    "stocks": 3.3413
   },
   {
    "date": "2019-07",
-   "consensus": 2.6654,
+   "consensus": 2.6662,
    "neutral": 2.6749,
    "sixty_forty": 2.7162,
    "stocks": 3.3918
   },
   {
    "date": "2019-08",
-   "consensus": 2.6633,
+   "consensus": 2.6641,
    "neutral": 2.6728,
    "sixty_forty": 2.7192,
    "stocks": 3.335
   },
   {
    "date": "2019-09",
-   "consensus": 2.6882,
+   "consensus": 2.689,
    "neutral": 2.698,
    "sixty_forty": 2.7443,
    "stocks": 3.3999
   },
   {
    "date": "2019-10",
-   "consensus": 2.7314,
+   "consensus": 2.7322,
    "neutral": 2.7387,
    "sixty_forty": 2.7829,
    "stocks": 3.4751
   },
   {
    "date": "2019-11",
-   "consensus": 2.786,
+   "consensus": 2.7868,
    "neutral": 2.7959,
    "sixty_forty": 2.843,
    "stocks": 3.6009
   },
   {
    "date": "2019-12",
-   "consensus": 2.834,
+   "consensus": 2.8348,
    "neutral": 2.851,
    "sixty_forty": 2.892,
    "stocks": 3.7055
   },
   {
    "date": "2020-01",
-   "consensus": 2.8542,
+   "consensus": 2.855,
    "neutral": 2.865,
    "sixty_forty": 2.9148,
    "stocks": 3.704
   },
   {
    "date": "2020-02",
-   "consensus": 2.735,
+   "consensus": 2.7358,
    "neutral": 2.7375,
    "sixty_forty": 2.7948,
    "stocks": 3.4108
   },
   {
    "date": "2020-03",
-   "consensus": 2.5136,
+   "consensus": 2.5143,
    "neutral": 2.5162,
    "sixty_forty": 2.5795,
    "stocks": 2.9849
   },
   {
    "date": "2020-04",
-   "consensus": 2.7212,
+   "consensus": 2.7219,
    "neutral": 2.7235,
    "sixty_forty": 2.7938,
    "stocks": 3.3639
   },
   {
    "date": "2020-05",
-   "consensus": 2.7938,
+   "consensus": 2.7946,
    "neutral": 2.8141,
    "sixty_forty": 2.8812,
    "stocks": 3.5242
   },
   {
    "date": "2020-06",
-   "consensus": 2.8269,
+   "consensus": 2.8277,
    "neutral": 2.8548,
    "sixty_forty": 2.9194,
    "stocks": 3.5867
   },
   {
    "date": "2020-07",
-   "consensus": 2.9271,
+   "consensus": 2.928,
    "neutral": 2.9784,
    "sixty_forty": 3.0382,
    "stocks": 3.7979
   },
   {
    "date": "2020-08",
-   "consensus": 3.0184,
+   "consensus": 3.0193,
    "neutral": 3.099,
    "sixty_forty": 3.1554,
    "stocks": 4.063
   },
   {
    "date": "2020-09",
-   "consensus": 2.9435,
+   "consensus": 2.9443,
    "neutral": 3.0225,
    "sixty_forty": 3.0833,
    "stocks": 3.9109
   },
   {
    "date": "2020-10",
-   "consensus": 2.8918,
+   "consensus": 2.8926,
    "neutral": 2.9695,
    "sixty_forty": 3.0303,
    "stocks": 3.8133
   },
   {
    "date": "2020-11",
-   "consensus": 3.0945,
+   "consensus": 3.0953,
    "neutral": 3.1776,
    "sixty_forty": 3.2427,
    "stocks": 4.2281
   },
   {
    "date": "2020-12",
-   "consensus": 3.1831,
+   "consensus": 3.184,
    "neutral": 3.259,
    "sixty_forty": 3.3159,
    "stocks": 4.3848
   },
   {
    "date": "2021-01",
-   "consensus": 3.1576,
+   "consensus": 3.1585,
    "neutral": 3.2319,
    "sixty_forty": 3.2857,
    "stocks": 4.3401
   },
   {
    "date": "2021-02",
-   "consensus": 3.204,
+   "consensus": 3.2049,
    "neutral": 3.2742,
    "sixty_forty": 3.3206,
    "stocks": 4.4608
   },
   {
    "date": "2021-03",
-   "consensus": 3.2787,
-   "neutral": 3.3506,
+   "consensus": 3.2797,
+   "neutral": 3.3507,
    "sixty_forty": 3.3958,
    "stocks": 4.6633
   },
   {
    "date": "2021-04",
-   "consensus": 3.4078,
+   "consensus": 3.4087,
    "neutral": 3.4739,
    "sixty_forty": 3.5135,
    "stocks": 4.91
   },
   {
    "date": "2021-05",
-   "consensus": 3.4426,
+   "consensus": 3.4436,
    "neutral": 3.4998,
    "sixty_forty": 3.5303,
    "stocks": 4.9423
   },
   {
    "date": "2021-06",
-   "consensus": 3.4901,
+   "consensus": 3.4911,
    "neutral": 3.5523,
-   "sixty_forty": 3.5894,
+   "sixty_forty": 3.5895,
    "stocks": 5.0531
   },
   {
    "date": "2021-07",
-   "consensus": 3.5627,
+   "consensus": 3.5637,
    "neutral": 3.6197,
    "sixty_forty": 3.6581,
    "stocks": 5.1765
   },
   {
    "date": "2021-08",
-   "consensus": 3.6326,
+   "consensus": 3.6337,
    "neutral": 3.6806,
    "sixty_forty": 3.7204,
    "stocks": 5.3305
   },
   {
    "date": "2021-09",
-   "consensus": 3.5121,
+   "consensus": 3.5131,
    "neutral": 3.5694,
    "sixty_forty": 3.6028,
    "stocks": 5.0821
   },
   {
    "date": "2021-10",
-   "consensus": 3.6973,
+   "consensus": 3.6983,
    "neutral": 3.7261,
    "sixty_forty": 3.7543,
    "stocks": 5.4387
   },
   {
    "date": "2021-11",
-   "consensus": 3.6607,
+   "consensus": 3.6618,
    "neutral": 3.7023,
    "sixty_forty": 3.7403,
    "stocks": 5.395
   },
   {
    "date": "2021-12",
-   "consensus": 3.7953,
+   "consensus": 3.7964,
    "neutral": 3.8103,
    "sixty_forty": 3.8387,
    "stocks": 5.6445
   },
   {
    "date": "2022-01",
-   "consensus": 3.6541,
+   "consensus": 3.6551,
    "neutral": 3.6728,
    "sixty_forty": 3.6865,
    "stocks": 5.3468
   },
   {
    "date": "2022-02",
-   "consensus": 3.5945,
+   "consensus": 3.5955,
    "neutral": 3.6067,
    "sixty_forty": 3.6043,
    "stocks": 5.189
   },
   {
    "date": "2022-03",
-   "consensus": 3.6677,
+   "consensus": 3.6687,
    "neutral": 3.6671,
    "sixty_forty": 3.6451,
    "stocks": 5.384
   },
   {
    "date": "2022-04",
-   "consensus": 3.46,
+   "consensus": 3.4609,
    "neutral": 3.4355,
    "sixty_forty": 3.3976,
    "stocks": 4.9115
   },
   {
    "date": "2022-05",
-   "consensus": 3.4713,
+   "consensus": 3.4723,
    "neutral": 3.4492,
    "sixty_forty": 3.4126,
    "stocks": 4.9226
   },
   {
    "date": "2022-06",
-   "consensus": 3.3019,
+   "consensus": 3.3028,
    "neutral": 3.2548,
    "sixty_forty": 3.2225,
    "stocks": 4.5166
   },
   {
    "date": "2022-07",
-   "consensus": 3.4639,
+   "consensus": 3.4649,
    "neutral": 3.4559,
    "sixty_forty": 3.4333,
    "stocks": 4.9326
   },
   {
    "date": "2022-08",
-   "consensus": 3.3658,
+   "consensus": 3.3668,
    "neutral": 3.3363,
    "sixty_forty": 3.3075,
    "stocks": 4.7313
   },
   {
    "date": "2022-09",
-   "consensus": 3.177,
+   "consensus": 3.1779,
    "neutral": 3.1018,
    "sixty_forty": 3.0692,
    "stocks": 4.2939
   },
   {
    "date": "2022-10",
-   "consensus": 3.298,
+   "consensus": 3.299,
    "neutral": 3.2442,
    "sixty_forty": 3.2032,
    "stocks": 4.6429
   },
   {
    "date": "2022-11",
-   "consensus": 3.429,
+   "consensus": 3.4288,
    "neutral": 3.3981,
    "sixty_forty": 3.3588,
    "stocks": 4.901
   },
   {
    "date": "2022-12",
-   "consensus": 3.3262,
+   "consensus": 3.3265,
    "neutral": 3.2725,
    "sixty_forty": 3.231,
    "stocks": 4.6186
   },
   {
    "date": "2023-01",
-   "consensus": 3.4663,
+   "consensus": 3.4665,
    "neutral": 3.4347,
    "sixty_forty": 3.3959,
    "stocks": 4.909
   },
   {
    "date": "2023-02",
-   "consensus": 3.4026,
+   "consensus": 3.4029,
    "neutral": 3.3476,
    "sixty_forty": 3.3085,
    "stocks": 4.7856
   },
   {
    "date": "2023-03",
-   "consensus": 3.4987,
+   "consensus": 3.499,
    "neutral": 3.4559,
    "sixty_forty": 3.417,
    "stocks": 4.963
   },
   {
    "date": "2023-04",
-   "consensus": 3.5381,
+   "consensus": 3.5384,
    "neutral": 3.4957,
    "sixty_forty": 3.4577,
    "stocks": 5.0423
   },
   {
    "date": "2023-05",
-   "consensus": 3.5369,
+   "consensus": 3.5371,
    "neutral": 3.4874,
    "sixty_forty": 3.4514,
    "stocks": 5.0656
   },
   {
    "date": "2023-06",
-   "consensus": 3.6747,
+   "consensus": 3.675,
    "neutral": 3.6205,
    "sixty_forty": 3.5805,
    "stocks": 5.3939
   },
   {
    "date": "2023-07",
-   "consensus": 3.7501,
+   "consensus": 3.7504,
    "neutral": 3.7023,
    "sixty_forty": 3.6506,
    "stocks": 5.5704
   },
   {
    "date": "2023-08",
-   "consensus": 3.7122,
+   "consensus": 3.7125,
    "neutral": 3.6585,
    "sixty_forty": 3.6058,
    "stocks": 5.4799
   },
   {
    "date": "2023-09",
-   "consensus": 3.5901,
+   "consensus": 3.5904,
    "neutral": 3.5238,
    "sixty_forty": 3.4658,
    "stocks": 5.2199
   },
   {
    "date": "2023-10",
-   "consensus": 3.5418,
+   "consensus": 3.542,
    "neutral": 3.467,
    "sixty_forty": 3.3989,
    "stocks": 5.1066
   },
   {
    "date": "2023-11",
-   "consensus": 3.7666,
+   "consensus": 3.7669,
    "neutral": 3.7057,
    "sixty_forty": 3.6476,
    "stocks": 5.5731
   },
   {
    "date": "2023-12",
-   "consensus": 3.9009,
+   "consensus": 3.9012,
    "neutral": 3.8473,
    "sixty_forty": 3.8015,
    "stocks": 5.8275
   },
   {
    "date": "2024-01",
-   "consensus": 3.9401,
+   "consensus": 3.9403,
    "neutral": 3.8831,
    "sixty_forty": 3.8355,
    "stocks": 5.9203
   },
   {
    "date": "2024-02",
-   "consensus": 4.0441,
+   "consensus": 4.0444,
    "neutral": 3.9873,
    "sixty_forty": 3.933,
    "stocks": 6.2293
   },
   {
    "date": "2024-03",
-   "consensus": 4.1369,
+   "consensus": 4.1372,
    "neutral": 4.0904,
    "sixty_forty": 4.0244,
    "stocks": 6.433
   },
   {
    "date": "2024-04",
-   "consensus": 4.0031,
+   "consensus": 4.0034,
    "neutral": 3.9666,
    "sixty_forty": 3.8871,
    "stocks": 6.1736
   },
   {
    "date": "2024-05",
-   "consensus": 4.1484,
+   "consensus": 4.1487,
    "neutral": 4.1091,
    "sixty_forty": 4.031,
    "stocks": 6.4859
   },
   {
    "date": "2024-06",
-   "consensus": 4.2477,
+   "consensus": 4.248,
    "neutral": 4.2076,
    "sixty_forty": 4.1307,
    "stocks": 6.7147
   },
   {
    "date": "2024-07",
-   "consensus": 4.3131,
+   "consensus": 4.3134,
    "neutral": 4.2724,
    "sixty_forty": 4.2006,
    "stocks": 6.796
   },
   {
    "date": "2024-08",
-   "consensus": 4.3934,
+   "consensus": 4.3938,
    "neutral": 4.352,
    "sixty_forty": 4.2841,
    "stocks": 6.9548
   },
   {
    "date": "2024-09",
-   "consensus": 4.4697,
+   "consensus": 4.47,
    "neutral": 4.4315,
    "sixty_forty": 4.3609,
    "stocks": 7.1009
   },
   {
    "date": "2024-10",
-   "consensus": 4.4058,
+   "consensus": 4.4062,
    "neutral": 4.3816,
    "sixty_forty": 4.2936,
    "stocks": 7.0375
   },
   {
    "date": "2024-11",
-   "consensus": 4.5818,
+   "consensus": 4.5821,
    "neutral": 4.5482,
    "sixty_forty": 4.4663,
    "stocks": 7.4572
   },
   {
    "date": "2024-12",
-   "consensus": 4.4884,
+   "consensus": 4.4888,
    "neutral": 4.4607,
    "sixty_forty": 4.3716,
    "stocks": 7.2778
   },
   {
    "date": "2025-01",
-   "consensus": 4.5885,
+   "consensus": 4.5888,
    "neutral": 4.5509,
    "sixty_forty": 4.4511,
    "stocks": 7.4733
   },
   {
    "date": "2025-02",
-   "consensus": 4.5862,
+   "consensus": 4.5866,
    "neutral": 4.5498,
    "sixty_forty": 4.457,
    "stocks": 7.3784
   },
   {
    "date": "2025-03",
-   "consensus": 4.46,
+   "consensus": 4.4603,
    "neutral": 4.4115,
    "sixty_forty": 4.3075,
    "stocks": 6.9673
   },
   {
    "date": "2025-04",
-   "consensus": 4.4396,
+   "consensus": 4.4399,
    "neutral": 4.3916,
-   "sixty_forty": 4.2925,
+   "sixty_forty": 4.2926,
    "stocks": 6.9069
   },
   {
    "date": "2025-05",
-   "consensus": 4.6009,
+   "consensus": 4.6013,
    "neutral": 4.5516,
    "sixty_forty": 4.444,
    "stocks": 7.3409
   },
   {
    "date": "2025-06",
-   "consensus": 4.7698,
+   "consensus": 4.7701,
    "neutral": 4.7181,
    "sixty_forty": 4.6069,
    "stocks": 7.7181
   },
   {
    "date": "2025-07",
-   "consensus": 4.8322,
+   "consensus": 4.8326,
    "neutral": 4.7832,
    "sixty_forty": 4.6657,
    "stocks": 7.8959
   },
   {
    "date": "2025-08",
-   "consensus": 4.9124,
+   "consensus": 4.9127,
    "neutral": 4.8647,
    "sixty_forty": 4.7453,
    "stocks": 8.0579
   },
   {
    "date": "2025-09",
-   "consensus": 5.0644,
+   "consensus": 5.0647,
    "neutral": 5.0021,
    "sixty_forty": 4.8681,
    "stocks": 8.3449
   },
   {
    "date": "2025-10",
-   "consensus": 5.1586,
+   "consensus": 5.159,
    "neutral": 5.0901,
    "sixty_forty": 4.9497,
    "stocks": 8.5439
   },
   {
    "date": "2025-11",
-   "consensus": 5.1895,
+   "consensus": 5.1899,
    "neutral": 5.114,
    "sixty_forty": 4.9675,
    "stocks": 8.5605
   },
   {
    "date": "2025-12",
-   "consensus": 5.1948,
+   "consensus": 5.1952,
    "neutral": 5.1161,
    "sixty_forty": 4.9644,
    "stocks": 8.5674
   },
   {
    "date": "2026-01",
-   "consensus": 5.2455,
+   "consensus": 5.2459,
    "neutral": 5.1935,
    "sixty_forty": 5.0132,
    "stocks": 8.6936
   },
   {
    "date": "2026-02",
-   "consensus": 5.271,
+   "consensus": 5.2714,
    "neutral": 5.2071,
    "sixty_forty": 5.0193,
    "stocks": 8.6185
   },
   {
    "date": "2026-03",
-   "consensus": 5.1011,
+   "consensus": 5.1014,
    "neutral": 5.0312,
    "sixty_forty": 4.8345,
    "stocks": 8.1929
   },
   {
    "date": "2026-04",
-   "consensus": 5.4404,
+   "consensus": 5.4408,
    "neutral": 5.359,
    "sixty_forty": 5.1425,
    "stocks": 9.0536
   },
   {
    "date": "2026-05",
-   "consensus": 5.5986,
+   "consensus": 5.5991,
    "neutral": 5.5248,
    "sixty_forty": 5.311,
-   "stocks": 9.53
+   "stocks": 9.5301
   },
   {
    "date": "2026-06",
-   "consensus": 5.505,
+   "consensus": 5.5055,
    "neutral": 5.4663,
    "sixty_forty": 5.2836,
    "stocks": 9.432
   },
   {
    "date": "2026-07",
-   "consensus": 5.523,
+   "consensus": 5.5235,
    "neutral": 5.4626,
    "sixty_forty": 5.2573,
    "stocks": 9.4352
   },
   {
    "date": "2026-08",
-   "consensus": 5.6626,
+   "consensus": 5.6632,
    "neutral": 5.5798,
    "sixty_forty": 5.35,
    "stocks": 9.6881
   },
   {
    "date": "2026-09",
-   "consensus": 5.6039,
+   "consensus": 5.6044,
    "neutral": 5.5211,
    "sixty_forty": 5.2836,
    "stocks": 9.6562
   },
   {
    "date": "2026-10",
-   "consensus": 5.5876,
-   "neutral": 5.5263,
+   "consensus": 5.5881,
+   "neutral": 5.5264,
    "sixty_forty": 5.3032,
    "stocks": 9.5687
   }
@@ -4037,5 +4037,5 @@
    }
   }
  ],
- "generated_at": "2026-11-27 23:30 UTC"
+ "generated_at": "2026-11-28 01:50 UTC"
 }
